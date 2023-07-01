@@ -290,6 +290,8 @@ async function checkStatus() {
   // Show the offline banner if the connection is not successful
   if (!online) {
     offlineBanner.classList.remove("hidden");
+  }else{
+    offlineBanner.classList.add("hidden");
   }
 }
 
