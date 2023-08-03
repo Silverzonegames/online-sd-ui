@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
+
+  <title>Stable Diffusion Image Generator</title>
+  <style>
+    /* Additional Custom Styles can be added here */
+    /* Adjust the text color of the textarea */
+    textarea {
+      color: #000;
+    }
+  </style>
+  <script src="https://kit.fontawesome.com/9685c3d611.js" crossorigin="anonymous"></script>
+  <style>
+    /* Updated Color Scheme */
+    body {
+      background-color: #1c1c27;
+      color: #28293d;
+    }
+
+    label,
+    h1,
+    p {
+      color: white;
+    }
+
+    .bg-blue-500 {
+      background-color: #3d7bfa;
+    }
+
+    .max-h-160 {
+      max-height: 80rem
+        /* 320px */
+      ;
+    }
+
+    .min-h-160 {
+      min-height: 40rem
+    }
+
+    #alert {
+      position: fixed;
+      top: 2rem;
+      /* Adjust this value to set the desired distance from the top */
+      right: 2rem;
+      /* Adjust this value to set the desired distance from the right */
+      z-index: 999;
+      /* Adjust this value if necessary to ensure the notification appears above other elements */
+      max-width: 42rem;
+      min-width: 16rem;
+    }
+
+    .fullscreen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .panel {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #1c1c27;
+    }
+
+    .fullscreen-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .slider-container {
+      width: 50%;
+      /* Adjust the width as per your preference */
+      display: flex;
+      align-items: end;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body>
+  <header class="py-4 px-8 bg-gray-800 flex justify-between items-center w-full h-16 z-50 fixed">
+    <div class="relative">
+      <h1 class="text-2xl font-bold">Stable Diffusion Image Generator</h1>
+    </div>
+    <div class="relative">
+      <!-- New URL input field -->
+      <input id="urlInput" type="url"
+      class="px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg"
+      value="http://127.0.0.1:7860" />
+      <!-- Share icon button using Font Awesome -->
+      <button type="button" class="text-white z-10 align-middle">
+        <i class="fas fa-share"></i>
+      </button>
+    </div>
+  </header>
+  
+  <div class ="h-16"></div>
+  <div id="offlineBanner" class="bg-red-500 text-white text-center py-2  mb-4 hidden">Offline</div>
+  <div id="connectingBanner" class="bg-blue-500 text-white text-center py-2  mb-4 hidden">Connecting...</div>
+  
+  <!-- Paint modal -->
+  <div id="paintModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <!-- Modal header -->
+        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Paint
+          </h3>
+          <button type="button"
+            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="paintModal">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="p-6 space-y-6">
+          <!-- Brush controls -->
+          <div class="flex items-center mt-4 z-10 space-x-4 ">
+            <label for="brush-size">Brush Size:</label>
+            <input type="range" id="brush-size" min="5" max="100" step="1" value="10">
+            <button id="clear-button" class="px-4 py-2 bg-red-500 text-white rounded">Clear Canvas</button>
+            <label for="eraser-toggle" class="flex items-center">
+              Eraser:
+              <input type="checkbox" id="eraser-toggle" class="h-6 w-6 ml-2">
+            </label>
+          </div>
+
+          <!-- The div containing image and canvas -->
+          <div class="relative">
+            <!-- The image -->
+            <img src="image.png" alt="Image" class="w-full" id="image">
+
+            <!-- The drawable canvas -->
+            <canvas id="drawable-canvas" class="absolute top-0 left-0 opacity-75"
+              style="background: transparent;"></canvas>
+          </div>
+        </div>
+
+
+
+        <!-- Modal footer -->
+        <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <button id="paintDoneBtn" data-modal-hide="paintModal" type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Done</button>
+          <button data-modal-hide="paintModal" type="button"
+            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--End Paint Modal-->
+
+  <!--Fulscreen Modal-->
+
+
+  <!-- Main modal -->
+  <div id="defaultModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-6xl max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <!-- Modal header -->
+        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Image Details
+          </h3>
+          <button type="button"
+            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="defaultModal">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="max-w-8xl mx-auto my-8 p-4 flex flex-col md:flex-row max-h-full">
+          <img id="fullscreenImage" src="image.png" alt="Image"
+            class="w-2/3 h-auto object-cover rounded-lg float-left mr-4">
+
+          <p id="fullscreenInfo" class="w-1/2 text-base leading-relaxed text-white">
+            Hello There
+          </p>
+        </div>
+
+
+        <!-- Modal footer -->
+
+      </div>
+    </div>
+  </div>
+  <!--End FullScreenModal-->
+
+
+
+
+
+
+
+  <!--Alert-->
+  <div id="alert"
+    class="p-4 mb-4 text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800 hidden"
+    role="alert">
+    <div class="flex items-center">
+      <svg class="flex-shrink-0 w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+        viewBox="0 0 20 20">
+        <path
+          d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+      </svg>
+      <span class="sr-only">Error</span>
+      <h3 class="text-lg font-medium">Error</h3>
+    </div>
+    <div class="mt-2 mb-4 text-sm" id="errorMessage">
+      More info about this info danger goes here. This example text is going to run a bit longer so that you can see how
+      spacing within an alert works with this kind of content.
+    </div>
+    <div class="flex">
+      <button id="dismissButton" type="button"
+        class="text-red-800 bg-transparent border border-red-800 hover:bg-red-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-red-600 dark:border-red-600 dark:text-red-500 dark:hover:text-white dark:focus:ring-red-800"
+        data-dismiss-target="#alert-additional-content-2" aria-label="Close">
+        Dismiss
+      </button>
+    </div>
+  </div>
+
+  <!-- Image side... -->
+  <div class="pr-4 fixed top-16, w-1/3 h-full pt-8">
+
+    <div class="mb-6 center flex">
+      <button id="generateBtn"
+        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg text-lg">
+        Generate
+      </button>
+    </div>
+
+
+    <div id="imageDisplay" class="border border-gray-500 p-4 rounded-lg mb-4 md:mb-4 relative">
+      <img data-modal-target="defaultModal" data-modal-toggle="defaultModal" id="outputImage" src="placeholder.png"
+        alt="Generated Image" class="w-full rounded-md">
+
+
+      <!-- Image buttons -->
+      <div id="imgButtons" class="flex justify-center space-x-2 mt-2">
+
+      </div>
+
+    </div>
+    <div id="generatedImageOptions" class="flex justify-center mt-4 hidden">
+      <button id="downloadBtn"
+        class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
+        <i class="fas fa-download mr-2"></i> Download
+      </button>
+      <button id="useImageBtn"
+        class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
+        <i class="fa-regular fa-image"></i> Use Image
+      </button>
+    </div>
+  </div>
+
+<div class="fixed left-1/3 right-0 flex">
+  <!-- Input Side... -->
+  <div class="pl-4 pr-4 mb-16 overflow-y-auto w-1/2 h-screen pt-8 pb-8" id="inputSide">
+    <div class="flex">
+      <label class="block text-lg font-semibold mb-2">Prompt</label>
+  
+      <!-- Styles DropDown -->
+      <div class="relative ml-auto">
+        <button id="stylesDropdownButton"
+          class="px-4 py-2 border rounded bg-white text-gray-800 font-semibold shadow">
+          Select Styles
+        </button>
+        <div id="stylesDropdown"
+          class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-md hidden overflow-y-auto max-h-96">
+          <!-- The styles will be added dynamically here -->
+        </div>
+      </div>
+    </div>
+  
+  
+    <div class="mb-6">
+      <textarea id="prompt"
+        class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg resize-y">(masterpiece:1.2, best quality),</textarea>
+    </div>
+  
+  
+  
+    <div class="mb-6">
+      <label class="block text-lg font-semibold mb-2">Negative Prompt</label>
+      <textarea id="negativePrompt"
+        class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg resize-y">worst quality, low quality:1.4, monochrome, zombie, (interlocked fingers), easynegative, (nsfw),</textarea>
+    </div>
+  
+    <div class="container mx-auto mt-10 p-4">
+      <div class="border border-gray-300 p-4 rounded-lg max-w-lg mx-auto shadow">
+        <h2 class="text-2xl font-bold mb-4 text-white">Lora weights</h2>
+        <div class="overflow-y-scroll max-h-60" id="sliderContainer">
+          <!-- Lora elements will be added here dynamically -->
+        </div>
+      </div>
+    </div>
+  
+  
+  
+    <script>
+      // Function to format the slider value with a trailing ".0" if it's a whole number
+      function formatSliderValue(value) {
+        return value % 1 === 0 ? `${value}.0` : value;
+      }
+  
+      // Listen for slider changes
+      const sliders = document.querySelectorAll('.slider-container input');
+      const weightDisplays = document.querySelectorAll('.weight-display');
+  
+      sliders.forEach((slider, index) => {
+        slider.addEventListener('input', function () {
+          const formattedValue = formatSliderValue(parseFloat(this.value));
+          weightDisplays[index].textContent = formattedValue;
+        });
+      });
+    </script>
+  
+    <!-- Settings -->
+  
+    <div id="accordion-open" data-accordion="open">
+      <h2 id="accordion-open-heading-1">
+        <button type="button"
+          class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+          data-accordion-target="#accordion-open-body-1" aria-expanded="true" aria-controls="accordion-open-body-1">
+          <span class="flex items-center"><svg class="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd"></path>
+            </svg>Settings</span>
+          <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5 5 1 1 5" />
+          </svg>
+        </button>
+      </h2>
+      <div id="accordion-open-body-1" class="hidden" aria-labelledby="accordion-open-heading-1">
+        <div class="p-5 border border-b-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+          <!-- Options Here -->
+          <div class="flex mb-4">
+            <!-- First row: Sampling method Dropdown -->
+            <div class="mr-4">
+              <label class="block mb-2 text-gray-500 dark:text-gray-400" for="sampling-method">Sampling
+                method:</label>
+              <select id="sampling-method" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded">
+                <option value="Euler a">Euler a</option>
+                <option value="Euler">Euler</option>
+                <option value="LMS">LMS</option>
+                <option value="Heun">Heun</option>
+                <option value="DPM2">DPM2</option>
+                <option value="DPM2 a">DPM2 a</option>
+                <option value="DPM++ 2S a">DPM++ 2S a</option>
+                <option value="DPM++ 2M">DPM++ 2M</option>
+                <option value="DPM++ SDE">DPM++ SDE</option>
+                <option value="DPM++ 2M SDE">DPM++ 2M SDE</option>
+                <option value="DPM fast">DPM fast</option>
+                <option value="DPM adaptive">DPM adaptive</option>
+                <option value="LMS Karras">LMS Karras</option>
+                <option value="DPM2 Karras">DPM2 Karras</option>
+                <option value="DPM2 a Karras">DPM2 a Karras</option>
+                <option value="DPM++ 2S a Karras">DPM++ 2S a Karras</option>
+                <option value="DPM++ 2M Karras">DPM++ 2M Karras</option>
+                <option value="DPM++ SDE Karras">DPM++ SDE Karras</option>
+                <option value="DPM++ 2M SDE Karras">DPM++ 2M SDE Karras</option>
+                <option value="Restart">Restart</option>
+                <option value="DDIM">DDIM</option>
+                <option value="PLMS">PLMS</option>
+                <option value="UniPC">UniPC</option>
+              </select>
+            </div>
+  
+            <!-- Steps slider (1-100 scale) -->
+            <div class="mr-4">
+              <label id="steps-value" class="block mb-2 text-gray-500 dark:text-gray-400" for="steps-slider">Steps:
+                20</label>
+              <input type="range" id="steps-slider"
+                class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                min="1" max="100" value="20" step="1">
+            </div>
+  
+            <!-- Slider (1-30) -->
+            <div>
+              <label id="scale-value" class="block mb-2 text-gray-500 dark:text-gray-400" for="scale-slider">CFG
+                Scale: 7</label>
+              <input type="range" id="scale-slider"
+                class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                min="1" max="30" value="7" step="1">
+            </div>
+          </div>
+  
+          <div class="flex mb-4">
+            <!-- Second Row: Seed number input -->
+            <div class="mr-4">
+              <label class="block mb-2 text-gray-500 dark:text-gray-400" for="seed-input">Seed:</label>
+              <input type="number" id="seed-input"
+                class="w-32 p-2 border border-gray-300 dark:border-gray-700 rounded" min="-1">
+            </div>
+  
+            <!-- Resolution slider -->
+            <div class="mr-4">
+              <label id="arText" class="block mb-2 text-gray-500 dark:text-gray-400"
+                for="resolution-slider">Resolution: 512x512</label>
+              <input type="range" id="aspectRatioSlider"
+                class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                min="0" max="2" step="0.5" value="1">
+            </div>
+  
+            <!-- Batch size slider -->
+            <div>
+              <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
+                for="batch-size-slider">Batch Size: 1</label>
+              <input type="range" id="batchSizeSlider"
+                class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                min="1" max="4" step="1" value="1">
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 id="accordion-open-heading-3">
+        <button type="button"
+          class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+          data-accordion-target="#accordion-open-body-3" aria-expanded="false" aria-controls="accordion-open-body-3">
+          <span class="flex items-center"><svg class="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd"></path>
+            </svg>Img2img</span>
+          <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5 5 1 1 5" />
+          </svg>
+        </button>
+      </h2>
+      <div id="accordion-open-body-3" class="hidden" aria-labelledby="accordion-open-heading-3">
+        <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+          <!--Image-->
+  
+          <div class="flex items-center mb-6">
+            <!-- Display Uploaded Image -->
+            <div class="mr-4">
+              <label for="imageInput" class="cursor-pointer">
+                <div class="relative">
+                  <img id="uploadedImage" class="w-48 h-48 object-cover border border-gray-500 rounded-lg shadow-md">
+                  <img id="maskImage" class="absolute top-0 left-0 w-full h-full object-cover rounded-lg opacity-75">
+  
+                  <button id="removeImageButton"
+                    class="absolute top-1 right-1 p-1 rounded-full w-6 h-6  bg-black opacity-50 text-white text-sm font-bold cursor-pointer hidden">X</button>
+                </div>
+              </label>
+  
+  
+  
+              <input type="file" id="imageInput" class="hidden">
+            </div>
+  
+            <!-- Weight Slider -->
+            <div class>
+              <div id="imageUploadText" for="imageInput"><label class="block text-lg font-semibold mb-2">Upload
+                  Image</label></div>
+              <div id="imageOptions" class="hidden">
+                <label class="block text-lg font-semibold mb-2">Denoising Strength: <span
+                    id="weightValue">0.75</span></label>
+                <input type="range" id="weightSlider" min="0" max="1" step="0.01" value="0.75"
+                  class="w-48 px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg" />
+                <p id="imagesizeText">Size: 512x512</p>
+                <button data-modal-target="paintModal" data-modal-toggle="paintModal" id="paintBtn"
+                  class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded-lg">
+                  <i class="fa-solid fa-paintbrush"></i> Paint
+                </button>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Nested accordion -->
+          <div id="accordion-controlnet" data-accordion="collapse" class="hidden">
+            <h2 id="accordion-controlnet-heading-1">
+              <button type="button"
+                class="flex items-center justify-between w-full p-5 rounded-t-xl font-medium text-left text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                data-accordion-target="#accordion-controlnet-body-1" aria-expanded="false"
+                aria-controls="accordion-controlnet-body-1">
+                <span>Controlnet</span>
+                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5 5 1 1 5" />
+                </svg>
+              </button>
+            </h2>
+            <div id="accordion-controlnet-body-1" class="hidden" aria-labelledby="accordion-controlnet-heading-1">
+              <div class="p-5 border border-gray-200 dark:border-gray-700">
+                <p class="text-gray-500 dark:text-gray-400">The main difference is that the core components from
+                  Flowbite are open source under the MIT license, whereas Tailwind UI is a paid product.</p>
+              </div>
+            </div>
+          </div>
+          <!-- End: Nested accordion -->
+  
+          <!-- Nested accordion -->
+          <div id="accordion-inpainting-options" data-accordion="collapse" class="hidden">
+            <h2 id="accordion-inpainting-options-heading-1">
+              <button type="button"
+                class="flex items-center justify-between w-full p-5 rounded-t-xl font-medium text-left text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                data-accordion-target="#accordion-inpainting-options-body-1" aria-expanded="false"
+                aria-controls="accordion-inpainting-options-body-1">
+                <span>Inpainting Options</span>
+                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5 5 1 1 5" />
+                </svg>
+              </button>
+            </h2>
+            <div id="accordion-inpainting-options-body-1" class="hidden"
+              aria-labelledby="accordion-inpainting-options-heading-1">
+              <div class="p-5 border border-gray-200 dark:border-gray-700 space-y-6">
+  
+  
+                <!-- Row 0: Use Controlnet toggle -->
+                <div class="flex items-center space-x-4">
+                  <span class="text-white">Use Controlnet:</span>
+                  <label for="use-controlnet"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="checkbox" id="use-controlnet" checked>
+                    <span class="ml-2">Controlnet</span>
+                  </label>
+                </div>
+  
+  
+                <!-- Row 1: Mask mode -->
+                <div class="flex items-center space-x-4">
+                  <span class="text-white">Mask mode:</span>
+                  <label for="inpaint-masked"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="inpaint-masked" name="mask-mode" value="0" checked>
+                    <span class="ml-2">Inpaint masked</span>
+                  </label>
+                  <label for="inpaint-not-masked"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="inpaint-not-masked" name="mask-mode" value="1">
+                    <span class="ml-2">Inpaint Not masked</span>
+                  </label>
+                </div>
+  
+                <!-- Row 2: Masked content fill -->
+                <div class="flex items-center space-x-4">
+                  <span class="text-white">Masked content fill:</span>
+                  <label for="fill"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="fill" name="masked-fill" value="0">
+                    <span class="ml-2">Fill</span>
+                  </label>
+                  <label for="original"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="original" name="masked-fill" value="1" checked>
+                    <span class="ml-2">Original</span>
+                  </label>
+                  <label for="latent-noise-fill"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="latent-noise-fill" name="masked-fill" value="2">
+                    <span class="ml-2">noise</span>
+                  </label>
+                  <label for="latent-nothing-fill"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="latent-nothing-fill" name="masked-fill" value="3">
+                    <span class="ml-2">nothing</span>
+                  </label>
+                </div>
+  
+                <!-- Row 3: Inpaint area -->
+                <div class="flex items-center space-x-4">
+                  <span class="text-white">Inpaint area:</span>
+                  <label for="whole-picture"
+                    class="flex items-center text-white rounded-lg bg-gray-500 border-gray-600 border-2 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="whole-picture" name="inpaint-area" value="false" checked>
+                    <span class="ml-2">Whole picture</span>
+                  </label>
+                  <label for="only-masked"
+                    class="flex items-center text-white rounded-lg bg-gray-500 px-4 py-2 cursor-pointer">
+                    <input type="radio" id="only-masked" name="inpaint-area" value="true">
+                    <span class="ml-2">Only Masked</span>
+                  </label>
+                </div>
+  
+                <!-- Row 4: Pixels 0-256 slider -->
+                <div class="flex items-center space-x-4">
+                  <span class="text-white">Only masked padding, pixels:</span>
+                  <input type="range" id="pixels-slider" min="0" max="256" step="4" value="32">
+                  <span id="pixels-slider-value" class="text-white">128</span>
+                </div>
+  
+              </div>
+            </div>
+          </div>
+          <!-- End: Nested accordion -->
+        </div>
+      </div>
+    </div>
+  
+    <div class="h-16"></div>
+  </div>
+
+  <!-- Loras -->
+  <div class="bg-white w-1/2" id="lorasSide">
+      <div class="mx-auto  px-4 py-16 sm:px-6 sm:py-12">
+
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold tracking-tight text-gray-900">Extra Networks</h2>
+        <!-- Search bar -->
+        <div class="ml-4">
+          <input type="text" id="searchInput" class="w-full px-4 py-2 text-gray-900 rounded-lg border border-gray-300 focus:ring focus:ring-blue-300" placeholder="Search...">
+        </div>
+      </div>
+
+      <div id="categories">
+        <!-- Categories added by script go here-->
+      </div>
+
+      <div class="mt-6 overflow-x-auto">
+        <div id="lorasContainer"
+          class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 max-w-screen max-h-screen pb-96 min-h-160 overflow-y-auto">
+          <!-- Loras added by script go here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+  <script src="script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+</body>
+
+</html>
