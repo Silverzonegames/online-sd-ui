@@ -335,7 +335,8 @@ function addLoraEntry(imageSrc, name, category) {
   nameHeading.classList.add('text-sm', 'text-gray-700');
 
   const nameLink = document.createElement('a');
-  nameLink.href = '#';
+  nameLink.classList.add("whitespace-normal", "break-words");
+  //nameLink.href = '#';
 
   const nameSpan = document.createElement('span');
   nameSpan.classList.add('absolute', 'inset-0');
@@ -600,6 +601,7 @@ function HandleLoras() {
             item.path.replace(installDir + "\\", "").replace(".safetensors", ".json"), //config
             lyco, //lycoris
             false, //isHypernetwork
+            item.metadata //metadata
           );
 
           loras.push(_lora);
@@ -1330,7 +1332,8 @@ class LoraData {
   config = "";
   isLyco = false;
   isHypernet = false;
-  constructor(name, alias, path, image, category, config, isLyco, isHypernet = false) {
+  metadata = {}
+  constructor(name, alias, path, image, category, config, isLyco, isHypernet = false, metadata = {}) {
     this.name = name;
     this.alias = alias;
     this.path = path;
@@ -1339,6 +1342,7 @@ class LoraData {
     this.config = config;
     this.isLyco = isLyco;
     this.isHypernet = isHypernet;
+    this.metadata = metadata;
   }
 }
 const stepsSlider = document.getElementById("steps-slider");
