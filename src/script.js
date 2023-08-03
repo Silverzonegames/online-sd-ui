@@ -232,10 +232,10 @@ function updateFullscreenImage(base64) {
     }
     return response.json();
   }).then(data => {
-      console.log(data)
-      words = ["Negative prompt","Steps","Sampler","CFG scale","Seed","Size","Model hash","Model","Denoising strength","Clip skip","ENSD","TI hashes","Version","Lora hashes"];
+    console.log(data)
+    words = ["Negative prompt", "Steps", "Sampler", "CFG scale", "Seed", "Size", "Model hash", "Model", "Denoising strength", "Clip skip", "ENSD", "TI hashes", "Version", "Lora hashes"];
 
-      info.innerHTML =boldWords("<strong>Prompt</strong>:"+data["info"],words);
+    info.innerHTML = boldWords("<strong>Prompt</strong>:" + data["info"], words);
   });
 
 }
@@ -305,7 +305,6 @@ function handleAspectRatioChange() {
 
 
 
-
 function addLoraEntry(imageSrc, name, category) {
   // Create the necessary HTML elements
   const entryDiv = document.createElement('div');
@@ -313,20 +312,24 @@ function addLoraEntry(imageSrc, name, category) {
   entryDiv.id = name;
 
   const imageDiv = document.createElement('div');
-  imageDiv.classList.add('aspect-h-1', 'aspect-w-1', 'w-full', 'overflow-hidden', 'rounded-md', 'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100',);//border-4
+  imageDiv.classList.add(
+    'aspect-h-1', 'aspect-w-1', 'w-full', 'overflow-hidden', 'rounded-md',
+    'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100'
+  );
 
   const image = document.createElement('img');
   image.src = imageSrc;
   image.alt = 'Lora Thumbnail';
-  image.classList.add('h-full', 'w-full', 'object-cover', 'object-center', 'lg:w-full', 'max-h-768');
+  image.classList.add(
+    'h-full', 'w-full', 'object-cover', 'object-center', 'lg:w-full', 'max-h-768'
+  );
   image.onerror = () => {
-    if(!image.src.includes(".preview")){
+    if (!image.src.includes(".preview")) {
       image.src = image.src.replace(".png", ".preview.png");
-    }else{
+    } else {
       image.src = "img/card-no-preview.png";
     }
-
-  }
+  };
 
   const infoDiv = document.createElement('div');
   infoDiv.classList.add('mt-4');
@@ -336,22 +339,29 @@ function addLoraEntry(imageSrc, name, category) {
 
   const nameLink = document.createElement('a');
   nameLink.classList.add("whitespace-normal", "break-words");
-  //nameLink.href = '#';
 
   const nameSpan = document.createElement('span');
-  nameSpan.classList.add('absolute', 'inset-0');
+  //nameSpan.classList.add('absolute', 'inset-0');
 
   const nameText = document.createTextNode(name);
 
   const categoryParagraph = document.createElement('p');
   categoryParagraph.classList.add('mt-1', 'text-sm', 'text-gray-500');
-  categoryParagraph.textContent = category.replaceAll("\\","/");
+  categoryParagraph.textContent = category.replaceAll("\\", "/");
 
-  // Add click event listener to the entry
-  entryDiv.addEventListener('click', function () {
-    event.preventDefault(); // Prevent default link behavior
+  // Add click event listener to the imageDiv
+  imageDiv.addEventListener('click', function (event) {
     handleLoraEntryClick(name, category);
+    event.preventDefault(); // Prevent default link behavior
   });
+
+  // Add click event listener to the nameLink
+  infoDiv.addEventListener('click', function (event) {
+    event.preventDefault(); // Prevent default link behavior
+    ShowLoraInfo(name, imageSrc);
+  });
+  infoDiv.setAttribute('data-modal-target', 'loraInfoModal');
+  infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
 
   // Append the elements to their respective parent elements
   entryDiv.appendChild(imageDiv);
@@ -367,8 +377,138 @@ function addLoraEntry(imageSrc, name, category) {
   infoDiv.appendChild(categoryParagraph);
 
   // Append the entry to the container element
+  const lorasContainer = document.getElementById('lorasContainer');
   lorasContainer.appendChild(entryDiv);
 }
+
+
+
+function ShowLoraInfo(name, imgsrc) {
+  console.log('Show Lora info:', name);
+
+  //update image
+  document.getElementById("loraInfoImage").src = imgsrc;
+  //update title
+  document.getElementById("loraName").textContent = name;
+
+  const loraDesc = document.getElementById("loraDesc");
+  const loraMetadata = document.getElementById("loraMetadata");
+  const loraActivationText = document.getElementById("loraActivationText");
+  const loraPreferredWeight = document.getElementById("loraPreferredWeight");
+  const loraNotes = document.getElementById("loraNotes");
+
+  const lora = getLoraByName(name);
+
+  loraDesc.textContent = "";
+  loraMetadata.innerHTML = "";
+  loraActivationText.textContent = "";
+  loraPreferredWeight.textContent = "";
+  loraNotes.textContent = "";
+  fetch(url + '/file=' + lora.config)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+
+      loraDesc.textContent = data["description"];
+      loraActivationText.textContent = data["activation text"];
+      if (data["preferred weight"] == 0) {
+        loraPreferredWeight.textContent = "1";
+      } else {
+        loraPreferredWeight.textContent = data["preferred weight"];
+      }
+      loraNotes.innerHTML = data["notes"].replaceAll("\n", " <br> ");
+
+      AddMetaData("SD Version", data["sd version"]);
+
+      if (lora.metadata["ss_sd_model_name"]) {
+        AddMetaData("Model", lora.metadata["ss_sd_model_name"]);
+      }
+      if (lora.metadata["ss_clip_skip"]) {
+        AddMetaData("Clip Skip", lora.metadata["ss_clip_skip"]);
+      }
+
+    });
+
+  console.log(lora.metadata);
+  document.getElementById("datasetTags").innerHTML = "";
+  // Extract tags and counts from the data and add them to the container, sorted by highest count and limited to 25
+  if (lora.metadata["ss_tag_frequency"]) {
+    document.getElementById("datasetTagsContainer").classList.remove("hidden")
+    const tagFrequency = lora.metadata["ss_tag_frequency"];
+    const firstKey = Object.keys(tagFrequency)[0];
+    const firstObject = tagFrequency[firstKey];
+
+    // Convert the object into an array of [key, value] pairs and sort by count in descending order
+    const sortedTags = Object.entries(firstObject).sort((a, b) => b[1] - a[1]);
+
+    // Loop through the sorted array and add the tags to the container, limiting to 25
+    let count = 0;
+    for (const [tag, countValue] of sortedTags) {
+      const colors = ["red", "blue", "green", "yellow", "purple","orange","pink","cyan","emerald"]
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      Addtags(tag, countValue, randomColor);
+      count++;
+      if (count === 25) {
+        break;
+      }
+    }
+  }else{
+    document.getElementById("datasetTagsContainer").classList.add("hidden");
+
+  }
+
+  //show modal
+  document.getElementById("loraModalToggle").click();
+}
+function AddMetaData(data, value) {
+  const loraMetadata = document.getElementById("loraMetadata");
+
+  // Create a new paragraph element to hold the metadata and its value
+  const metadataContainer = document.createElement("p");
+  metadataContainer.classList.add("border-b-2");
+
+  // Create a "b" element for the metadata label
+  const metadataLabel = document.createElement("b");
+  metadataLabel.textContent = data + ": ";
+
+  // Create a "span" element for the metadata value
+  const metadataValueElement = document.createElement("span");
+  metadataValueElement.textContent = value;
+
+  // Append the metadata label and value to the container
+  metadataContainer.appendChild(metadataLabel);
+  metadataContainer.appendChild(metadataValueElement);
+
+  // Append the container to the loraMetadata element
+  loraMetadata.appendChild(metadataContainer);
+}
+
+function Addtags(tag, count, color) {
+  const container = document.getElementById("datasetTags");
+
+  const bgcolor = "bg-" + color + "-200";
+  const fgcolor = "bg-" + color + "-400";
+
+  // Create the outer div for the tag
+  const tagDiv = document.createElement("div");
+  tagDiv.classList.add("flex-shrink-0", "text-black", bgcolor, "rounded-lg", "p-1");
+
+  // Create the text for the tag
+  const tagText = document.createTextNode(tag + " ");
+  tagDiv.appendChild(tagText);
+
+  // Create the span for the count
+  const countSpan = document.createElement("span");
+  countSpan.classList.add("text-white", "rounded", fgcolor,); // Add "text-xs" class for smaller font size
+  countSpan.textContent = count;
+  tagDiv.appendChild(countSpan);
+
+  // Append the tag to the container
+  container.appendChild(tagDiv);
+}
+
+
+
 
 // Event handler for Lora entry click
 function handleLoraEntryClick(name, category) {
@@ -397,7 +537,7 @@ function handleLoraEntryClick(name, category) {
 
       lora = getLoraByName(name);
 
-      
+
       let text = data["activation text"];
       let weight = data["preferred weight"];
 
@@ -407,26 +547,26 @@ function handleLoraEntryClick(name, category) {
       if (text == null) {
         text = "";
       }
-      if(lora.isLyco == true) {
+      if (lora.isLyco == true) {
         promptField.value += `<lyco:${name}:${weight}> ${text}`;
-      }else if(lora.isHypernet){
+      } else if (lora.isHypernet) {
         promptField.value += `<hypernet:${name}:1>`;
-      }else{
+      } else {
         promptField.value += `<lora:${name}:${weight}> ${text}`;
       }
-      
+
 
       UpdateLoraDisplays();
 
     }).catch(error => {
       lora = getLoraByName(name);
       console.log("Lora config " + lora.config + " not found.");
-      if(lora.isLyco){
+      if (lora.isLyco) {
         promptField.value += `<lyco:${name}:1>`;
-      }else if(lora.isHypernet){
+      } else if (lora.isHypernet) {
         promptField.value += `<hypernet:${name}:1>`;
       }
-      else{
+      else {
         promptField.value += `<lora:${name}:1>`;
       }
       UpdateLoraDisplays();
@@ -560,7 +700,7 @@ function HandleLoras() {
         folder = folder.replace("/", "\\");
         folder = folder.replace("\\" + name, "");
         folder = folder.replace("models\\Lora\\", "");
-        folder = folder.replace("models\\","");
+        folder = folder.replace("models\\", "");
         folder = folder.replace("LyCORIS\\", "");
         folder = folder.replace(".safetensors", "");
         folder = folder.replace(".ckpt", "");
@@ -657,7 +797,7 @@ function HandleHypernetworks() {
         folder = folder.replace("/", "\\");
         folder = folder.replace("\\" + name, "");
         folder = folder.replace("models\\Lora\\", "");
-        folder = folder.replace("models\\","");
+        folder = folder.replace("models\\", "");
         folder = folder.replace("hypernetworks\\", "");
         folder = folder.replace(".safetensors", "");
         folder = folder.replace(".ckpt", "");
@@ -695,7 +835,7 @@ function HandleHypernetworks() {
             item.path,//path
             path,//image
             folder, //category
-            item.path.replace(installDir + "\\", "").replace(".safetensors", ".json").replace(".pt",".json"), //config
+            item.path.replace(installDir + "\\", "").replace(".safetensors", ".json").replace(".pt", ".json"), //config
             false, //lycoris
             true
           );
@@ -863,25 +1003,25 @@ function Search(searchTerm) {
   for (var i = 0; i < elements.length; i++) {
     var element = elements[i];
 
-   
-      loraName = element.id;
 
-      loraName = element.id.toLowerCase();
-      _searchTerm = searchTerm.toLowerCase();
-      _searchTerm = _searchTerm.trim();
-      _searchTerm = _searchTerm.replaceAll(" ","")
-      loraName = loraName.replaceAll(" ", "");
-      loraName = loraName.replaceAll("_", "");
-      loraName = loraName.replaceAll("-","");
+    loraName = element.id;
+
+    loraName = element.id.toLowerCase();
+    _searchTerm = searchTerm.toLowerCase();
+    _searchTerm = _searchTerm.trim();
+    _searchTerm = _searchTerm.replaceAll(" ", "")
+    loraName = loraName.replaceAll(" ", "");
+    loraName = loraName.replaceAll("_", "");
+    loraName = loraName.replaceAll("-", "");
 
 
-      if (loraName.includes(_searchTerm) || element.id.toLowerCase().includes(searchTerm.toLowerCase()) || getLoraByName(element.id).category.toLowerCase().includes(searchTerm.toLowerCase())) {
-        element.classList.remove("hidden");
-      } else {
-        element.classList.add("hidden");
-      }
+    if (loraName.includes(_searchTerm) || element.id.toLowerCase().includes(searchTerm.toLowerCase()) || getLoraByName(element.id).category.toLowerCase().includes(searchTerm.toLowerCase())) {
+      element.classList.remove("hidden");
+    } else {
+      element.classList.add("hidden");
     }
-  
+  }
+
 }
 
 function handleURLChange() {
@@ -1451,10 +1591,10 @@ let _url = GetBackendFromUrlString();
 
 
 
-if(_url) {
-  
+if (_url) {
 
-  if(!_url.includes("http://","https://",)) {
+
+  if (!_url.includes("http://", "https://",)) {
     // For links like 666eed1fa5f4e412ea -> https://666eed1fa5f4e412ea.gradio.live
     if (_url.length === 18 && !_url.includes('.', '_', '-', ' ',)) {
       gradioLink = "https://" + _url + ".gradio.live";
@@ -1465,11 +1605,11 @@ if(_url) {
       ngrokLink = "https://" + _url + ".ngrok-free.app/";
       url = ngrokLink;
       urlInput.value = ngrokLink;
-    } else if(_url.split('-').length === 4){ //cloudflarelinks like tight-arrivals-double-respected -> https://tight-arrivals-double-respected.trycloudflare.com
+    } else if (_url.split('-').length === 4) { //cloudflarelinks like tight-arrivals-double-respected -> https://tight-arrivals-double-respected.trycloudflare.com
       cloudFlareLink = "https://" + _url + ".trycloudflare.com";
       url = cloudFlareLink;
       urlInput.value = cloudFlareLink;
-    }else{
+    } else {
       url = "http://" + _url;
       urlInput.value = url;
     }

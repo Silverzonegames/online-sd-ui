@@ -90,6 +90,8 @@
       display: flex;
       align-items: end;
     }
+
+
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
@@ -221,14 +223,14 @@
   <!--Lora Info Modal-->
 
   <!-- Modal toggle -->
-  <button data-modal-target="defaultModal" data-modal-toggle="defaultModal"
-    class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 top-16 fixed z-50"
+  <button id="loraModalToggle" data-modal-target="loraInfoModal" data-modal-toggle="loraInfoModal"
+    class="block hidden text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 z-50 hidden"
     type="button">
     Toggle modal
   </button>
 
   <!-- Main modal -->
-  <div id="defaultModal" tabindex="-1" aria-hidden="true"
+  <div id="loraInfoModal" tabindex="-1" aria-hidden="true"
     class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative w-full max-w-2xl max-h-full">
       <!-- Modal content -->
@@ -240,7 +242,7 @@
           </h3>
           <button type="button"
             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-            data-modal-hide="defaultModal">
+            data-modal-hide="loraInfoModal">
             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
@@ -252,30 +254,38 @@
         <div class="p-6 space-y-6">
           <div class="flex items-start">
             <!-- Image on the left -->
-            <img src="img/card-no-preview.png" alt="Card Preview" class="w-48 h-auto">
+            <img id="loraInfoImage" src="img/card-no-preview.png" alt="Card Preview" class="w-48 h-auto">
 
             <!-- Text on the right -->
             <div class="ml-4">
-              <h2 class="text-2xl font-bold">Lora Name</h2>
-              <p class="text-gray-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a efficitur diam, a
+              <h2 id="loraName" class="text-2xl font-bold">Lora Name</h2>
+              <p id="loraDesc"class="text-gray-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a efficitur diam, a
                 tincidunt lacus. Curabitur facilisis tempor ante, at viverra orci auctor eget. Aliquam tincidunt nibh
                 vitae erat commodo, at rutrum odio vehicula. Cras purus eros, blandit sed condimentum eget, finibus sit
                 amet purus. </p>
-              <div id="loraMetadata">
-                <p class="border-b-2"><b>Metadata: </b> Value</p>
-                <p class="border-b-2"><b>Metadata: </b> Value</p>
-                <p class="border-b-2"><b>Metadata: </b> Value</p>
-                <p class="border-b-2"><b>Metadata: </b> Value</p>
-                <p class="border-b-2"><b>Metadata: </b> Value</p>
-                <p class="border-b-2"><b>Metadata: </b> Value</p>
-                <p class="border-b-2"><b>Metadata: </b> Value</p>
-
+              <div id="loraMetadata" class="mt-4">
+                <p class="border-b-2"><b>Metadata:</b> <span id="metadataValue">Value</span></p>
               </div>
 
             </div>
           </div>
-          <p><b>Activation Text:</b> <span id="loraActivationText">Placeholder Text</span></p>
-          <p><b>Preferred Weight:</b> <span id="loraPreferredWeight">1</span></p>
+          
+          <div id="datasetTagsContainer" class="border-2 rounded-lg w-full p-4">
+            <h2 class="text-lg font-bold mb-4">Training dataset tags</h2>
+            <div id="datasetTags" class="flex flex-wrap gap-2">
+              <!-- Tags added through script go here -->
+            </div>
+          </div>
+          
+          
+          
+          
+          
+          
+
+
+          <p><b>Activation Text:</b> <span id="loraActivationText" class="text-blue-400">Placeholder Text</span></p>
+          <p><b>Preferred Weight:</b> <span id="loraPreferredWeight" class="text-blue-400">1</span></p>
 
           <h3><b>Notes</b></h3>
           <p id="loraNotes"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris feugiat lobortis nibh a
@@ -292,9 +302,9 @@
 
         <!-- Modal footer -->
         <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-          <button data-modal-hide="defaultModal" type="button"
+          <button data-modal-hide="loraInfoModal" type="button"
             class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Use</button>
-          <button data-modal-hide="defaultModal" type="button"
+          <button data-modal-hide="loraInfoModal" type="button"
             class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-50 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Close</button>
         </div>
       </div>
