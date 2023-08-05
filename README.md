@@ -1,1 +1,1 @@
-# diffusion-ui
+# Easy Ui for Automatic1111
