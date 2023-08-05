@@ -67,6 +67,10 @@ let installDir = "";
 let controlNetModel = "control_v11p_sd15_inpaint_fp16 [be8bc0ed]";
 let controlnetModels = [];
 
+_link = window.location.pathname.replace("index.html","") +"history/";
+
+document.getElementById("historyLink").href = _link;
+console.log("Link: " + _link);
 
 
 // Image generation function
@@ -2081,7 +2085,8 @@ document.getElementById("ultimateUpscaleBtn").addEventListener('click', () => {
   uploadedImageBase64 = document.getElementById("outputImage").src.replace("data:image/png;base64,", "")
   generateImage(true);
 })
-document.getElementById("historyLink").href = window.location.pathname.replace("index.html","") +"history/";
+
+
 
 
 let _url = GetBackendFromUrlString();

@@ -223,4 +223,4 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
   removeFromIndexedDB(currentID);
   //loadImagesFromIndexedDB();
 })
-document.getElementById("generateLink").href = window.location.pathname.replace("history/","");
+document.getElementById("generateLink").href = window.location.pathname.replace("/history/","");
