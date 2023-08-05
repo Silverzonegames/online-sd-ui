@@ -1,6 +1,12 @@
 // Select the aspect ratio slider element
-const aspectRatioSlider = document.getElementById("aspectRatioSlider");
-const aspectText = document.getElementById("arText");
+//const aspectRatioSlider = document.getElementById("aspectRatioSlider");
+//const aspectText = document.getElementById("arText");
+
+const widthSlider = document.getElementById("width-slider");
+const heightSlider = document.getElementById("height-slider");
+
+const widthText = document.getElementById("widthText");
+const heightText = document.getElementById("heightText");
 
 // Event listener for batch size slider change
 const batchSizeSlider = document.getElementById('batchSizeSlider');
@@ -27,6 +33,8 @@ const paintButton = document.getElementById("paintBtn");
 
 const removeImageButton = document.getElementById("removeImageButton");
 
+const historykey = "history";
+
 let selectedStyles = [];
 
 let online = true;
@@ -44,6 +52,7 @@ let categories = ["All"];
 let currentLoras = [];
 let loras = [];
 let loraConfigs = {};
+let currentLoraInfo = "";
 
 let currentCategory = "All";
 let currentSubCategory = "";
@@ -59,8 +68,15 @@ let controlNetModel = "control_v11p_sd15_inpaint_fp16 [be8bc0ed]";
 let controlnetModels = [];
 
 
+
 // Image generation function
-function generateImage() {
+function generateImage(isUpscale=false) {
+
+
+  if(isUpscale == undefined){
+    isUpscale = false;
+  }
+
 
   checkStatus();
   const imageDisplay = document.getElementById('outputImage');
@@ -82,6 +98,11 @@ function generateImage() {
   let useControlnet = null;
 
 
+  if(isUpscale == true){
+    img2img = true;
+    isInpaint = false;
+  }
+
   if (isInpaint) {
     maskMode = document.querySelector('input[name="mask-mode"]:checked').value;
     maskedFill = document.querySelector('input[name="masked-fill"]:checked').value;
@@ -94,18 +115,23 @@ function generateImage() {
   if (controlNetModel == null) {
     useControlnet = false;
   }
+  const batchSize = parseInt(batchSizeSlider.value);
+  const saveToServer = document.getElementById("saveToServer").checked
 
-  const payload = {
+  let payload = {
     "prompt": document.getElementById('prompt').value,
     "negative_prompt": document.getElementById('negativePrompt').value,
     "steps": parseInt(stepsSlider.value),
     "width": width,
     "height": height,
     "sampler_name": samplerDropdown.value,
-    "batch_size": parseInt(batchSizeSlider.value),
+    "batch_size": batchSize,
     "styles": selectedStyles,
     "cfg_scale": parseFloat(cfgSlider.value),
     "seed": parseInt(seedDropdown.value),
+    "save_images": saveToServer,
+    "do_not_save_grid":true,
+    "do_not_save_samples":true
   };
   if (img2img) {
     payload["init_images"] = [uploadedImageBase64];
@@ -133,6 +159,32 @@ function generateImage() {
     }
   }
 
+  if(isUpscale){
+    payload["denoising_strength"] = 0.25;
+    payload["batch_size"] = 1,
+    payload["script_name"] = "Ultimate SD upscale",
+    payload["script_args"] = [
+      "4x-UltraSharp",
+      512,
+      0,
+      8,
+      32,
+      64,
+      0.275,
+      32,
+      0,
+      true,
+      0,
+      false,
+      8,
+      0,
+      2,
+      1080,
+      1440,
+      2,
+  ];
+  }
+
   console.log(JSON.stringify(payload, null, 2));
 
   api = url + '/sdapi/v1/txt2img';
@@ -157,6 +209,10 @@ function generateImage() {
     })
     .then(data => {
 
+      if(isUpscale){
+        uploadedImageBase64 = "";
+      }
+
       if (data.error) {
         showMessage(data.error);
       }
@@ -178,7 +234,49 @@ function generateImage() {
       const imgButtonContainer = document.getElementById("imgButtons");
       imgButtonContainer.innerHTML = "";
 
+      i = 0;
+
       generatedImages.forEach((imageSrc, index) => {
+
+        CanSave = true;
+
+        if(batchSize > 1 && i == 0 && saveToServer){
+          CanSave = false;
+        }
+        if(i>=(batchSize)){
+          i++;
+          return;
+        }
+
+        console.log(i);
+
+        if(document.getElementById("saveToHistory").checked && CanSave){
+
+          const _payload = {
+            "image": imageSrc.replace("data:image/png;base64,", ""),
+          }
+        
+          fetch(url + "/sdapi/v1/png-info", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(_payload)
+          }).then(response => {
+            if (!response.ok) {
+              showMessage(response.error);
+              throw new Error('Request failed');
+            }
+            return response.json();
+          }).then(data => {
+            addToImageHistory(imageSrc, data["info"]);
+          }).catch(error => {
+            console.error('Error:', error);
+          });
+
+        }
+
+
         // Create the image button
         const imageButton = document.createElement('img');
         imageButton.src = imageSrc;
@@ -193,6 +291,8 @@ function generateImage() {
 
         // Append the image button to the container
         imgButtonContainer.appendChild(imageButton);
+
+        i++;
       });
 
 
@@ -211,7 +311,69 @@ function generateImage() {
 
 }
 
+function createIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = window.indexedDB.open("ImageDB", 1);
+
+    request.onerror = (event) => {
+      console.error("Error opening database:", event.target.error);
+      reject(event.target.error);
+    };
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      resolve(db);
+    };
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("images")) {
+        db.createObjectStore("images", { keyPath: "id", autoIncrement: true });
+      }
+    };
+  });
+}
+
+async function addToImageHistory(imageBase64, text) {
+  try {
+    const db = await createIndexedDB();
+    const transaction = db.transaction(["images"], "readwrite");
+    const store = transaction.objectStore("images");
+
+    const imageBlob = base64toBlob(imageBase64); // Helper function to convert base64 to Blob
+    const entry = { imageBlob, text, timestamp: Date.now() };
+
+    store.add(entry);
+
+    console.log("Image and text added to the history successfully. with text: " + text);
+  } catch (error) {
+    console.error("Error while adding image and text to history:", error);
+  }
+}
+
+
+function base64toBlob(base64Data) {
+  const binaryString = atob(base64Data.split(",")[1]);
+  const arrayBuffer = new ArrayBuffer(binaryString.length);
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  for (let i = 0; i < binaryString.length; i++) {
+    uint8Array[i] = binaryString.charCodeAt(i);
+  }
+
+  return new Blob([uint8Array], { type: "image/png" }); // Change the type accordingly for different image formats
+}
+
+
+
 function updateFullscreenImage(base64) {
+
+  base64 = String(base64);
+
+  if(!base64.startsWith("data:image/png;base64,")) {
+    base64 = "data:image/png;base64," + base64;
+  }
+
   document.getElementById("fullscreenImage").src = `${base64}`;
   const info = document.getElementById("fullscreenInfo");
 
@@ -233,7 +395,17 @@ function updateFullscreenImage(base64) {
     return response.json();
   }).then(data => {
     console.log(data)
-    words = ["Negative prompt", "Steps", "Sampler", "CFG scale", "Seed", "Size", "Model hash", "Model", "Denoising strength", "Clip skip", "ENSD", "TI hashes", "Version", "Lora hashes"];
+
+    if(data["info"] == "" || data["info"] == null) {
+      info.innerHTML = "No Info";
+      return;
+    }
+
+    words = ["Negative prompt", "Hires steps", "Steps", "Sampler", "CFG scale", "Seed", "Size", "Model hash", 
+    "Model", "Denoising strength", "Clip skip", "ENSD", "TI hashes", "Version", "Lora hashes","Ultimate SD upscale upscaler",
+    "Ultimate SD upscale tile_width","Ultimate SD upscale tile_height","Ultimate SD upscale mask_blur","Ultimate SD upscale padding",
+    "Hires upscale","Hires upscaler",
+  ];
 
     info.innerHTML = boldWords("<strong>Prompt</strong>:" + data["info"], words);
   });
@@ -267,41 +439,41 @@ async function GetControlnetModel(name) {
 
 
 // Function to handle the aspect ratio slider change event
-function handleAspectRatioChange() {
+// function handleAspectRatioChange() {
 
 
 
-  // Get the value of the aspect ratio from the slider
-  const aspectRatio = aspectRatioSlider.value;
+//   // Get the value of the aspect ratio from the slider
+//   const aspectRatio = aspectRatioSlider.value;
 
-  if (aspectRatio == 1) {
-    width = 512;
-    height = 512;
-  }
-  else if (aspectRatio == 1.5) {
-    width = 512;
-    height = 640;
-  }
-  else if (aspectRatio == 2) {
-    width = 512;
-    height = 768;
-  }
-  else if (aspectRatio == 0.5) {
-    width = 640;
-    height = 512;
-  } else if (aspectRatio == 0) {
-    width = 768;
-    height = 512;
-  }
-
-
-  // Update the aspect ratio text
-  aspectText.textContent = `Resolution: ${width}x${height}`;
+//   if (aspectRatio == 1) {
+//     width = 512;
+//     height = 512;
+//   }
+//   else if (aspectRatio == 1.5) {
+//     width = 512;
+//     height = 640;
+//   }
+//   else if (aspectRatio == 2) {
+//     width = 512;
+//     height = 768;
+//   }
+//   else if (aspectRatio == 0.5) {
+//     width = 640;
+//     height = 512;
+//   } else if (aspectRatio == 0) {
+//     width = 768;
+//     height = 512;
+//   }
 
 
-  // Use the aspect ratio value as needed (replace this with your actual implementation)
-  console.log("Aspect Ratio:", aspectRatio);
-}
+//   // Update the aspect ratio text
+//   aspectText.textContent = `Resolution: ${width}x${height}`;
+
+
+//   // Use the aspect ratio value as needed (replace this with your actual implementation)
+//   console.log("Aspect Ratio:", aspectRatio);
+// }
 
 
 
@@ -385,17 +557,27 @@ function addLoraEntry(imageSrc, name, category) {
 
 function ShowLoraInfo(name, imgsrc) {
   console.log('Show Lora info:', name);
+  currentLoraInfo = name;
+
 
   //update image
   document.getElementById("loraInfoImage").src = imgsrc;
   //update title
   document.getElementById("loraName").textContent = name;
 
+
+  if(isLoraInPrompt(name)){
+    document.getElementById("loraUseBtn").textContent = "Remove";
+  }else{
+    document.getElementById("loraUseBtn").textContent = "Add";
+  }
+
   const loraDesc = document.getElementById("loraDesc");
   const loraMetadata = document.getElementById("loraMetadata");
   const loraActivationText = document.getElementById("loraActivationText");
   const loraPreferredWeight = document.getElementById("loraPreferredWeight");
   const loraNotes = document.getElementById("loraNotes");
+  const loraLink = document.getElementById("loraLink");
 
   const lora = getLoraByName(name);
 
@@ -409,14 +591,24 @@ function ShowLoraInfo(name, imgsrc) {
     .then(data => {
       console.log(data);
 
-      loraDesc.textContent = data["description"];
-      loraActivationText.textContent = data["activation text"];
+      loraDesc.innerHTML = data["description"];
+
+      tags = GetActivationTags(data["activation text"]);
+
+      tags.forEach(tag => {
+        loraActivationText.innerHTML+='<code class="bg-blue-500">'+tag+"</code> ";
+      });
+      AddCodeBlockButtons(loraActivationText);
+
+
+
       if (data["preferred weight"] == 0) {
-        loraPreferredWeight.textContent = "1";
+        loraPreferredWeight.textContent = "Not Set";
       } else {
         loraPreferredWeight.textContent = data["preferred weight"];
       }
       loraNotes.innerHTML = data["notes"].replaceAll("\n", " <br> ");
+      AddCodeBlockButtons(loraNotes);
 
       AddMetaData("SD Version", data["sd version"]);
 
@@ -429,29 +621,29 @@ function ShowLoraInfo(name, imgsrc) {
 
     });
 
+  
+  fetch(url + '/file=' + lora.config.replace(".json",".civitai.info"))
+  .then(response => response.json())
+  .then(data => {
+
+    if(data["modelId"] == null){
+      loraLink.classList.add("hidden");
+
+    }else{
+      loraLink.classList.remove("hidden");
+      loraLink.href="https://civitai.com/models/"+data["modelId"]+"?modelVersionId="+data["id"]
+    }
+  }).catch(error => {
+    loraLink.classList.add("hidden");
+  });
+
   console.log(lora.metadata);
   document.getElementById("datasetTags").innerHTML = "";
   // Extract tags and counts from the data and add them to the container, sorted by highest count and limited to 25
   if (lora.metadata["ss_tag_frequency"]) {
+    build_tags(lora.metadata)
     document.getElementById("datasetTagsContainer").classList.remove("hidden")
-    const tagFrequency = lora.metadata["ss_tag_frequency"];
-    const firstKey = Object.keys(tagFrequency)[0];
-    const firstObject = tagFrequency[firstKey];
 
-    // Convert the object into an array of [key, value] pairs and sort by count in descending order
-    const sortedTags = Object.entries(firstObject).sort((a, b) => b[1] - a[1]);
-
-    // Loop through the sorted array and add the tags to the container, limiting to 25
-    let count = 0;
-    for (const [tag, countValue] of sortedTags) {
-      const colors = ["red", "blue", "green", "yellow", "purple","orange","pink","cyan","emerald"]
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      Addtags(tag, countValue, randomColor);
-      count++;
-      if (count === 25) {
-        break;
-      }
-    }
   }else{
     document.getElementById("datasetTagsContainer").classList.add("hidden");
 
@@ -460,6 +652,40 @@ function ShowLoraInfo(name, imgsrc) {
   //show modal
   document.getElementById("loraModalToggle").click();
 }
+
+function AddCodeBlockButtons(element) {
+  const codeBlocks = element.querySelectorAll("code");
+  codeBlocks.forEach(codeBlock => {
+    codeBlock.style.cursor = "pointer"; // Change cursor to indicate it's clickable
+
+    UpdateCodeBlocks(element);
+
+    codeBlock.addEventListener("click", () => {
+        // Print the code block's text content to the console
+        console.log(codeBlock.textContent);
+
+        if(IsInPrompt(codeBlock.textContent, true)){
+          RemoveFromPrompt(codeBlock.textContent);
+        }else{
+          AddToPrompt(codeBlock.textContent,true);
+        }
+        UpdateCodeBlocks(element);
+    });
+  });
+}
+function UpdateCodeBlocks(element){
+  const codeBlocks = element.querySelectorAll("code");
+  codeBlocks.forEach(codeBlock => {
+    codeBlock.style.cursor = "pointer"; // Change cursor to indicate it's clickable
+
+    if(IsInPrompt(codeBlock.textContent,true)){
+      codeBlock.classList.add("border-2");
+    }else{
+      codeBlock.classList.remove("border-2");
+    }
+  });
+}
+
 function AddMetaData(data, value) {
   const loraMetadata = document.getElementById("loraMetadata");
 
@@ -495,6 +721,7 @@ function Addtags(tag, count, color) {
 
   // Create the text for the tag
   const tagText = document.createTextNode(tag + " ");
+  tagDiv.style.cursor = "pointer";
   tagDiv.appendChild(tagText);
 
   // Create the span for the count
@@ -505,13 +732,146 @@ function Addtags(tag, count, color) {
 
   // Append the tag to the container
   container.appendChild(tagDiv);
+
+  if(IsInPrompt(tag)){
+    tagDiv.classList.add("border-4","border-"+color+"-400",);
+  }else{
+    tagDiv.classList.remove("border-4","border-"+color+"-400",);
+  }
+  tagDiv.style.cursor == "pointer";// Change cursor to indicate it's clickable
+  // Add event listener to the tagDiv
+  tagDiv.addEventListener("click", function () {
+    console.log(tag); // Replace this with your desired action when the tag is clicked.
+
+    if(IsInPrompt(tag)){
+      tagDiv.classList.remove("border-4","border-"+color+"-400",);
+      RemoveFromPrompt(tag);
+    }else{
+      tagDiv.classList.add("border-4","border-"+color+"-400",);
+      AddToPrompt(tag);
+    }
+  });
+}
+
+function RemoveFromPrompt(string){
+
+  tags = promptField.value.split(",");
+
+  for(let i = 0; i < tags.length; i++){
+    tags[i] = tags[i].trim();
+    if(tags[i] == string){
+      tags.splice(i, 1); // Remove the element at index i from the tags array
+      promptField.value = tags.join(", ");
+      promptField.value = promptField.value.replaceAll(",,",",");
+      if(promptField.value.startsWith(",")){
+        promptField.value = promptField.value.replace(",","");
+      }
+      return;
+    }
+  }
+
+  if(IsInPrompt(", "+string)){
+    promptField.value = promptField.value.replace(", "+string, "");
+  }else{
+    promptField.value = promptField.value.replace(string, "");
+  }
+  promptField.value = promptField.value.replaceAll(",,",",");
+  if(promptField.value.startsWith(",")){
+    promptField.value = promptField.value.replace(",","");
+  }
+}
+function AddToPrompt (tag, forceSingleInstance = false) {
+  if (forceSingleInstance == true && IsInPrompt(tag,false)) {
+    
+  }else{
+    if(promptField.value.replaceAll(" ","").length>0){
+      promptField.value = promptField.value.replace(/[,\s]+$/, "") + ", " + tag;
+    }else{
+      promptField.value += tag;
+    }
+  }
+}
+
+function IsInPrompt(string, exact=false){
+  if(exact == false){
+    return promptField.value.includes(string);
+  }else{
+    tags = promptField.value.split(",");
+
+    inPrompt = false;
+
+    for(let i = 0; i < tags.length; i++){
+      tags[i] = tags[i].trim();
+      if(tags[i] == string){
+        inPrompt = true;
+      }
+    }
+    return inPrompt;
+  }
+}
+function GetActivationTags(string) {
+  let tags = [];
+  if(string.includes("|")){
+    tags = string.split("|");
+  }else{
+    tags = string.split(",");
+  }
+  return tags;
+}
+
+function build_tags(metadata) {
+  // Helper function to check if a tagset meets the required conditions
+  function is_non_comma_tagset(tags) {
+    const average_tag_length = Object.keys(tags).reduce((sum, tag) => sum + tag.length, 0) / Object.keys(tags).length;
+    return average_tag_length >= 16;
+  }
+
+  const tags = {};
+
+  for (const [_, tags_dict] of Object.entries(metadata["ss_tag_frequency"] || {})) {
+    for (const [tag, tag_count] of Object.entries(tags_dict)) {
+      const cleanedTag = tag.trim();
+      tags[cleanedTag] = (tags[cleanedTag] || 0) + parseInt(tag_count);
+    }
+  }
+
+  if (Object.keys(tags).length > 0 && is_non_comma_tagset(tags)) {
+    const new_tags = {};
+
+    const re_word = /\b\w{3,}\b/; //I don't even know what this does but it works
+    for (const text in tags) {
+      const text_count = tags[text];
+      const words = text.match(re_word);
+      if (words) {
+        words.forEach(word => {
+          if (word.length >= 3) {
+            new_tags[word] = (new_tags[word] || 0) + text_count;
+          }
+        });
+      }
+    }
+
+    Object.assign(tags, new_tags);
+  }
+
+  const ordered_tags = Object.keys(tags).sort((a, b) => tags[b] - tags[a]);
+
+  // Function to generate class names based on the provided color
+
+
+  const container = document.getElementById("datasetTags");
+  for (const tag of ordered_tags) {
+    const count = tags[tag];
+    const colors = ["red", "blue", "green", "yellow", "purple","orange","pink","cyan","emerald"]
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    Addtags(tag, count, randomColor);
+  }
 }
 
 
 
-
 // Event handler for Lora entry click
-function handleLoraEntryClick(name, category) {
+function handleLoraEntryClick(name, category = "") {
   console.log('Lora Entry Clicked:', name, category);
 
   UpdateLoraDisplays();
@@ -540,6 +900,7 @@ function handleLoraEntryClick(name, category) {
 
       let text = data["activation text"];
       let weight = data["preferred weight"];
+      tags = GetActivationTags(text);
 
       if (weight == 0 || weight == null) {
         weight = 1;
@@ -547,12 +908,16 @@ function handleLoraEntryClick(name, category) {
       if (text == null) {
         text = "";
       }
+
       if (lora.isLyco == true) {
-        promptField.value += `<lyco:${name}:${weight}> ${text}`;
+        AddToPrompt(`<lyco:${name}:${weight}>`);
+        AddToPrompt(tags[0],true);
       } else if (lora.isHypernet) {
-        promptField.value += `<hypernet:${name}:1>`;
+        AddToPrompt(`<hypernet:${name}:1>`);
+        AddToPrompt(tags[0],true);
       } else {
-        promptField.value += `<lora:${name}:${weight}> ${text}`;
+        AddToPrompt(`<lora:${name}:${weight}>`,true);
+        AddToPrompt(tags[0],true);
       }
 
 
@@ -560,14 +925,18 @@ function handleLoraEntryClick(name, category) {
 
     }).catch(error => {
       lora = getLoraByName(name);
-      console.log("Lora config " + lora.config + " not found.");
+      console.log("Lora config error:"+error);
+      
+      let weight = 1;
+      
+
       if (lora.isLyco) {
-        promptField.value += `<lyco:${name}:1>`;
+        AddToPrompt(`<lyco:${name}:${weight}>`);
       } else if (lora.isHypernet) {
-        promptField.value += `<hypernet:${name}:1>`;
+        AddToPrompt(`<hypernet:${name}:1>`);
       }
       else {
-        promptField.value += `<lora:${name}:1>`;
+        AddToPrompt(`<lora:${name}:${weight}>`);
       }
       UpdateLoraDisplays();
 
@@ -607,15 +976,19 @@ function ChangeLoraWeight(name, weight) {
   promptField.value = promptField.value.replace(regex, `$1${weight}>`);
 }
 
+
 function removeLoraFromPrompt(name) {
   const regex = new RegExp(`<(?:lora|lyco|hypernet):${name}:-?[0-9]+(\\.[0-9]+)?>`, 'g');
-  promptField.value = promptField.value.replace(regex, '');
+  RemoveFromPrompt(regex);
 
   const config = getLoraConfigByName(name);
   if (config != null) {
     const activationText = config["activation text"]
     if (activationText != null) {
-      promptField.value = promptField.value.replace(activationText, "");
+      let tags = GetActivationTags(activationText);
+      tags.forEach(tag => {
+        RemoveFromPrompt(tag)
+      });
     }
   }
 }
@@ -666,6 +1039,9 @@ function UpdateLoraDisplays() {
 }
 
 
+/**
+ * Handles the Loras functionality.
+ */
 function HandleLoras() {
 
   const container = document.getElementById("lorasContainer");
@@ -675,7 +1051,14 @@ function HandleLoras() {
   }
   categories = ["All"];
 
-  fetch(url + '/sdapi/v1/loras')
+  let apis = ["/sdapi/v1/loras","/sdapi/v1/hypernetworks"];
+
+  for (let i = 0; i < apis.length; i++) {
+    let isHyperNetwork = false;
+    if(i==1){
+      isHyperNetwork = true;
+    }
+    fetch(url + apis[i])
     .then(response => response.json())
     .then(data => {
 
@@ -684,28 +1067,32 @@ function HandleLoras() {
         // Access the properties of each item
         let lyco = item.path.includes("LyCORIS");
 
+        
+        if(isHyperNetwork){
+          lyco = false;
+        }
+
         const name = item.name;
         let path = item.path;
+
         // Convert the path to URL format
-        //path = path.replace(":\\", "%3A/");
         path = url + '/file=' + path;
         path = path.replace('.safetensors', '.png');
         path = path.replace('.ckpt', '.png');
         path = path.replace('.pt', '.png');
         path = path.replace("\\", "/");
 
-        let folder = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
 
-        folder = item.path.replace(installDir, "");
-        folder = folder.replace("/", "\\");
+        let folder = item.path;
+        folder = folder.replace("/", "\\"); //change linux / to windows \
+        folder = folder.split("\\models\\")[1];
         folder = folder.replace("\\" + name, "");
-        folder = folder.replace("models\\Lora\\", "");
-        folder = folder.replace("models\\", "");
+        folder = folder.replace("Lora\\", "");
         folder = folder.replace("LyCORIS\\", "");
+        folder = folder.replace("hypernetworks\\", "");
         folder = folder.replace(".safetensors", "");
         folder = folder.replace(".ckpt", "");
         folder = folder.replace(".pt", "");
-        folder = folder.replace("\\", "");
 
         let folders = folder.split("\\");
         i = 0;
@@ -728,7 +1115,7 @@ function HandleLoras() {
         }
 
 
-        if (installDir != "") {
+        if (item.path != "") {
 
 
 
@@ -738,9 +1125,9 @@ function HandleLoras() {
             item.path,//path
             path,//image
             folder, //category
-            item.path.replace(installDir + "\\", "").replace(".safetensors", ".json"), //config
+            "models\\"+item.path.split("\\models\\")[1].replace(".safetensors", ".json").replace(".pt",".json"), //config
             lyco, //lycoris
-            false, //isHypernetwork
+            isHyperNetwork, //isHypernetwork
             item.metadata //metadata
           );
 
@@ -759,14 +1146,17 @@ function HandleLoras() {
         console.log("Path:", path);
         console.log("Category:", folder);
       });
-
-      console.log("Loras:", loras);
-      HandleHypernetworks();
+      UpdateAllLoraConfigs();
+      console.log(apis[i]+": "+ loras);
     })
     .catch(error => {
       showMessage(error);
       console.error('Error:', error);
     });
+
+  }
+
+
 }
 
 function HandleHypernetworks() {
@@ -1039,7 +1429,6 @@ function GetDataDir() {
     .then(data => {
       installDir = data["Data path"]
       console.log("Data path:", installDir);
-      HandleLoras();
     })
 }
 
@@ -1133,6 +1522,24 @@ imageInput.addEventListener('change', function () {
     reader.readAsDataURL(file);
   }
 });
+// Event listener for the drop event on the drop area
+document.getElementById('imageContainer').addEventListener('drop', function (e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      UploadImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+});
+// Prevent the default behavior when an item is dragged over the image container
+document.getElementById('imageContainer').addEventListener('dragover', function (e) {
+  e.preventDefault();
+});
+
+
 //#endregion
 
 function UploadImage(source) {
@@ -1149,12 +1556,26 @@ function UploadImage(source) {
   setCanvasDimensions();
   redrawCanvasOnResize();
   imgElement.onload = function () {
-    const width = imgElement.naturalWidth;
-    const height = imgElement.naturalHeight;
-    console.log("Image Resolution:", width, "x", height);
-    document.getElementById("imagesizeText").textContent = "Size: " + width + "x" + height;
-    imageWidth = width;
-    imageHeight = height;
+    let _width = imgElement.naturalWidth;
+    let _height = imgElement.naturalHeight;
+    imageWidth = _width;
+    imageHeight = _height;
+
+    const res = LimitResolution(_width, _height,512);
+    _width = res[0];
+    _height = res[1];
+
+    width = _width;
+    height = _height;
+
+    widthSlider.value = _width;
+    widthText.textContent = "Width: " + _width;
+
+    heightSlider.value = _height;
+    heightText.textContent = "Height: " + _height;
+
+    console.log("Image Resolution:", imageWidth, "x", imageHeight);
+    document.getElementById("imagesizeText").textContent = "Size: " + _width + "x" + _height;
     // Now you can use 'width' and 'height' for your desired purpose.
   };
 
@@ -1461,6 +1882,20 @@ function showMessage(message, duration = 5000) {
   });
 }
 
+function LimitResolution(width,height,max){
+  let _width = width;
+  let _height = height;
+
+  if(width < height){
+    _width = max;
+    _height = parseInt(height/width*max);
+  }else{
+    _height = max;
+    _width = parseInt(width/height*max);
+  }
+
+  return [_width,_height];
+}
 
 
 class LoraData {
@@ -1485,6 +1920,22 @@ class LoraData {
     this.metadata = metadata;
   }
 }
+
+
+
+widthSlider.addEventListener('input', () => {
+  // Update the width value label
+  widthText.textContent = "Width: " + widthSlider.value;
+  width = widthSlider.value;
+})
+heightSlider.addEventListener('input', () => {
+  // Update the height value label
+  heightText.textContent = "Height: " + heightSlider.value;
+  height = heightSlider.value;
+})
+
+
+
 const stepsSlider = document.getElementById("steps-slider");
 const stepsValue = document.getElementById("steps-value");
 const cfgSlider = document.getElementById("scale-slider");
@@ -1492,8 +1943,9 @@ const cfgValue = document.getElementById("scale-value");
 
 // Event listener for generate button
 const generateBtn = document.getElementById('generateBtn');
-generateBtn.addEventListener('click', generateImage);
-aspectRatioSlider.addEventListener("input", handleAspectRatioChange);
+generateBtn.addEventListener('click', () => {
+  generateImage(false);
+})
 downloadBtn.addEventListener("click", Download);
 urlInput.addEventListener("change", handleURLChange)
 batchSizeSlider.addEventListener('input', () => {
@@ -1572,6 +2024,40 @@ document.getElementById("useImageBtn").addEventListener('click', () => {
   const image = document.getElementById("outputImage").src;
   UploadImage(image);
 })
+document.getElementById("loraUseBtn").addEventListener('click', () => {
+  if(currentLoraInfo != ""){
+    handleLoraEntryClick(currentLoraInfo);
+  }
+})
+loraInfoImage =  document.getElementById("loraInfoImage");
+loraInfoImage.addEventListener('click', () => {
+  toDataURL(loraInfoImage.src, function(dataUrl) {
+    console.log('RESULT:', dataUrl)
+    document.getElementById("imageDetailToggle").click();
+    updateFullscreenImage(dataUrl);
+  })
+})
+loraInfoImage.onerror = () => {
+  if(!loraInfoImage.src.includes(".preview")){
+    loraInfoImage.src = loraInfoImage.src.replace(".png", ".preview.png");
+  }else{
+    loraInfoImage.src = "img/card-no-preview";
+  }
+}
+
+function toDataURL(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function() {
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      callback(reader.result);
+    }
+    reader.readAsDataURL(xhr.response);
+  };
+  xhr.open('GET', url);
+  xhr.responseType = 'blob';
+  xhr.send();
+}
 
 removeImageButton.addEventListener('click', () => {
   maskImageBase64 = "";
@@ -1585,6 +2071,15 @@ removeImageButton.addEventListener('click', () => {
 })
 searchInput.addEventListener('input', (e) => {
   Search(e.target.value);
+})
+
+promptField.addEventListener('input', (e) => {
+  UpdateLoraDisplays();
+})
+
+document.getElementById("ultimateUpscaleBtn").addEventListener('click', () => {
+  uploadedImageBase64 = document.getElementById("outputImage").src.replace("data:image/png;base64,", "")
+  generateImage(true);
 })
 
 let _url = GetBackendFromUrlString();

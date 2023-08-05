@@ -90,7 +90,13 @@
       display: flex;
       align-items: end;
     }
-
+    code{
+      color: white;
+      background-color: #131315;
+      border-radius: 6px; 
+      padding-left: 6px;
+      padding-right: 6px;
+    }
 
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
@@ -101,8 +107,10 @@
 
 <body>
   <header class="py-4 px-8 bg-gray-800 flex justify-between items-center w-full h-16 z-50 fixed mt-0">
-    <div class="relative">
-      <h1 class="text-2xl font-bold">Stable Diffusion Image Generator</h1>
+    <div class="relative flex items-center">
+      <h1 class="text-2xl font-bold mr-4">Stable Diffusion Image Generator</h1>
+      <!-- History link -->
+      <a href="/history/index.html" class="text-white z-10 align-middle hover:text-blue-500">History</a>
     </div>
     <div class="relative">
       <!-- New URL input field -->
@@ -115,8 +123,9 @@
       </button>
     </div>
   </header>
-  <div id="offlineBanner" class="bg-red-500 text-white text-center py-2  mb-4 hidden">Offline</div>
-  <div id="connectingBanner" class="bg-blue-500 text-white text-center py-2  mb-4 hidden">Connecting...</div>
+  
+  
+
 
   <!-- Paint modal -->
   <div id="paintModal" tabindex="-1" aria-hidden="true"
@@ -177,8 +186,117 @@
   </div>
   <!--End Paint Modal-->
 
-  <!--Fulscreen Modal-->
 
+  <!--Lora Info Modal-->
+  <!-- Modal toggle -->
+  <button id="loraModalToggle" data-modal-target="loraInfoModal" data-modal-toggle="loraInfoModal"
+    class="block hidden text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 z-50 hidden"
+    type="button">
+    Toggle modal
+  </button>
+
+  <!-- Main modal -->
+  <div id="loraInfoModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <!-- Modal header -->
+        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Lora Info
+          </h3>
+          <button type="button"
+            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="loraInfoModal">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="p-6 space-y-6">
+          <div class="flex items-start">
+            <!-- Image on the left -->
+            <img id="loraInfoImage" src="img/card-no-preview.png" alt="Card Preview" class="w-48 h-auto">
+
+            <!-- Text on the right -->
+            <div class="ml-4">
+              <div class="flex items-center">
+                <h2 id="loraName" class="text-2xl font-bold">Lora Name</h2>
+                <a id="loraLink"href="#" target="_blank" class="flex items-center justify-center h-12 w-12 rounded-full bg-transparent">
+                  <i class="fa-solid fa-globe text-blue-500"></i>
+                </a>
+              </div>
+                       
+              <p id="loraDesc"class="text-gray-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a efficitur diam, a
+                tincidunt lacus. Curabitur facilisis tempor ante, at viverra orci auctor eget. Aliquam tincidunt nibh
+                vitae erat commodo, at rutrum odio vehicula. Cras purus eros, blandit sed condimentum eget, finibus sit
+                amet purus. </p>
+              <div id="loraMetadata" class="mt-4">
+                <p class="border-b-2"><b>Metadata:</b> <span id="metadataValue">Value</span></p>
+              </div>
+
+            </div>
+          </div>
+          
+          <div id="datasetTagsContainer" class="border-2 rounded-lg w-full p-4">
+            <h2 class="text-lg font-bold mb-4">Training dataset tags</h2>
+            <div class="max-h-48 overflow-y-auto">
+              <div id="datasetTags" class="flex flex-wrap gap-2">
+                <!-- Tags added through script go here -->
+              </div>
+            </div>
+          </div>
+          
+          
+          
+          
+          
+          
+          
+
+
+          <p><b>Activation Text:</b> <span id="loraActivationText" class="text-blue-400">Placeholder Text</span></p>
+          <p><b>Preferred Weight:</b> <span id="loraPreferredWeight" class="text-blue-400">1</span></p>
+
+          <h3><b>Notes</b></h3>
+          <div class="max-h-96 overflow-auto">
+            <p id="loraNotes"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris feugiat lobortis nibh a
+                varius. Donec tempor sapien augue, id lobortis nulla rhoncus fringilla. Mauris sed dui vitae quam bibendum
+                placerat a sit amet quam. Mauris tincidunt faucibus quam, id eleifend est aliquam a. Nunc convallis, tortor
+                convallis ullamcorper pellentesque, sapien tellus dignissim felis, quis fermentum metus ligula in elit.
+                Pellentesque hendrerit facilisis elit, vitae pretium quam scelerisque vitae. Nunc rhoncus tincidunt ligula
+                vitae dapibus. Vestibulum ut condimentum mi. Nunc sit amet scelerisque orci, volutpat fringilla nibh.
+                Suspendisse maximus porttitor ultrices. Integer at justo a neque condimentum faucibus non dictum ante. Proin
+                in ante massa. Nullam sapien justo, vestibulum ut neque vitae, vestibulum laoreet nunc. Duis dictum nulla
+                sed turpis rhoncus hendrerit. Maecenas eget orci quis neque porta rhoncus vitae in justo. </p>
+        </div>
+        
+        </div>
+
+
+        <!-- Modal footer -->
+        <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <button id="loraUseBtn"data-modal-hide="loraInfoModal" type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Use</button>
+          <button data-modal-hide="loraInfoModal" type="button"
+            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-50 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--End Lora Info Modal-->
+  
+  <!--FullScreenModal-->
+
+  <button id="imageDetailToggle" data-modal-target="ImageDetailModal" data-modal-toggle="ImageDetailModal"
+    class="block hidden text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 z-50 hidden"
+    type="button">
+    Toggle modal
+  </button>
 
   <!-- Main modal -->
   <div id="ImageDetailModal" tabindex="-1" aria-hidden="true"
@@ -220,98 +338,7 @@
   <!--End FullScreenModal-->
 
 
-  <!--Lora Info Modal-->
 
-  <!-- Modal toggle -->
-  <button id="loraModalToggle" data-modal-target="loraInfoModal" data-modal-toggle="loraInfoModal"
-    class="block hidden text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 z-50 hidden"
-    type="button">
-    Toggle modal
-  </button>
-
-  <!-- Main modal -->
-  <div id="loraInfoModal" tabindex="-1" aria-hidden="true"
-    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative w-full max-w-2xl max-h-full">
-      <!-- Modal content -->
-      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-        <!-- Modal header -->
-        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Lora Info
-          </h3>
-          <button type="button"
-            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-            data-modal-hide="loraInfoModal">
-            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-            </svg>
-            <span class="sr-only">Close modal</span>
-          </button>
-        </div>
-        <!-- Modal body -->
-        <div class="p-6 space-y-6">
-          <div class="flex items-start">
-            <!-- Image on the left -->
-            <img id="loraInfoImage" src="img/card-no-preview.png" alt="Card Preview" class="w-48 h-auto">
-
-            <!-- Text on the right -->
-            <div class="ml-4">
-              <h2 id="loraName" class="text-2xl font-bold">Lora Name</h2>
-              <p id="loraDesc"class="text-gray-50">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a efficitur diam, a
-                tincidunt lacus. Curabitur facilisis tempor ante, at viverra orci auctor eget. Aliquam tincidunt nibh
-                vitae erat commodo, at rutrum odio vehicula. Cras purus eros, blandit sed condimentum eget, finibus sit
-                amet purus. </p>
-              <div id="loraMetadata" class="mt-4">
-                <p class="border-b-2"><b>Metadata:</b> <span id="metadataValue">Value</span></p>
-              </div>
-
-            </div>
-          </div>
-          
-          <div id="datasetTagsContainer" class="border-2 rounded-lg w-full p-4">
-            <h2 class="text-lg font-bold mb-4">Training dataset tags</h2>
-            <div id="datasetTags" class="flex flex-wrap gap-2">
-              <!-- Tags added through script go here -->
-            </div>
-          </div>
-          
-          
-          
-          
-          
-          
-
-
-          <p><b>Activation Text:</b> <span id="loraActivationText" class="text-blue-400">Placeholder Text</span></p>
-          <p><b>Preferred Weight:</b> <span id="loraPreferredWeight" class="text-blue-400">1</span></p>
-
-          <h3><b>Notes</b></h3>
-          <p id="loraNotes"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris feugiat lobortis nibh a
-            varius. Donec tempor sapien augue, id lobortis nulla rhoncus fringilla. Mauris sed dui vitae quam bibendum
-            placerat a sit amet quam. Mauris tincidunt faucibus quam, id eleifend est aliquam a. Nunc convallis, tortor
-            convallis ullamcorper pellentesque, sapien tellus dignissim felis, quis fermentum metus ligula in elit.
-            Pellentesque hendrerit facilisis elit, vitae pretium quam scelerisque vitae. Nunc rhoncus tincidunt ligula
-            vitae dapibus. Vestibulum ut condimentum mi. Nunc sit amet scelerisque orci, volutpat fringilla nibh.
-            Suspendisse maximus porttitor ultrices. Integer at justo a neque condimentum faucibus non dictum ante. Proin
-            in ante massa. Nullam sapien justo, vestibulum ut neque vitae, vestibulum laoreet nunc. Duis dictum nulla
-            sed turpis rhoncus hendrerit. Maecenas eget orci quis neque porta rhoncus vitae in justo. </p>
-        </div>
-
-
-        <!-- Modal footer -->
-        <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-          <button data-modal-hide="loraInfoModal" type="button"
-            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Use</button>
-          <button data-modal-hide="loraInfoModal" type="button"
-            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-50 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!--End Lora Info Modal-->
 
 
 
@@ -342,44 +369,58 @@
     </div>
   </div>
 
-  <div class="flex flex-col md:flex-row md:max-h-screen pt-16 md:fixed">
-    <!-- Image side... -->
-    <div class="w-full md:w-1/3 pt-8 pr-4 h-screen overflow-y-auto max-h-screen">
-      <!-- Content goes here -->
+  <div class="flex flex-col md:flex-row md:h-screen w-screen pt-16 md:fixed">
+<!-- Image side... -->
+<div class="w-full md:w-1/2 p-4 md:pl-8 md:pr-4 h-full pb-8">
+  <!-- Content goes here -->
 
-      <div class="mb-6 center flex">
-        <button id="generateBtn"
-          class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg text-lg">
-          Generate
-        </button>
-      </div>
-
-
-      <div id="imageDisplay" class="border border-gray-500 p-4 rounded-lg mb-4 md:mb-4 relative">
-        <img data-modal-target="ImageDetailModal" data-modal-toggle="ImageDetailModal" id="outputImage"
-          src="placeholder.png" alt="Generated Image" class="w-full rounded-md">
+  <!--Generate Button-->
+  <div class="mb-6 flex justify-center md:justify-start">
+    <button id="generateBtn"
+      class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg text-lg">
+      Generate
+    </button>
+  </div>
 
 
-        <!-- Image buttons -->
-        <div id="imgButtons" class="flex justify-center space-x-2 mt-2">
 
-        </div>
 
-      </div>
-      <div id="generatedImageOptions" class="flex justify-center mt-4 hidden">
-        <button id="downloadBtn"
-          class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
-          <i class="fas fa-download mr-2"></i> Download
-        </button>
-        <button id="useImageBtn"
-          class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
-          <i class="fa-regular fa-image"></i> Use Image
-        </button>
-      </div>
-    </div>
+<!-- Image max width height max to the screen plus place for image option buttons --> 
+<div id="imageDisplay" class="border border-gray-500 p-4 rounded-lg relative max-h-screen">
+  <img data-modal-target="ImageDetailModal" data-modal-toggle="ImageDetailModal" id="outputImage"
+    src="placeholder.png" alt="Generated Image" class="object-contain h-full w-full rounded-md">
+      
+  <!-- Image buttons -->
+  <div id="imgButtons" class="flex justify-center mt-2 space-x-2 bottom-0">
+    <img alt="Image 1" class="w-12 h-12 border border-gray-500 rounded-md cursor-pointer" src="">
+  </div>
+</div>
+
+
+
+  
+
+  <!--Image Option Buttons-->
+  <div id="generatedImageOptions" class="flex justify-center mt-4 mb-4 gap-3 max-h-full">
+    <button id="downloadBtn"
+      class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
+      <i class="fas fa-download mr-2"></i> Download
+    </button>
+    <button id="useImageBtn"
+      class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
+      <i class="fa-regular fa-image"></i> Use Image
+    </button>
+    <button id="ultimateUpscaleBtn"
+      class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
+      <i class="fa-solid fa-arrow-up"></i> Ultimate Upscale
+    </button>
+  </div>
+</div>
+
+  
 
     <!-- Input Side... -->
-    <div class="w-full md:w-1/2 p-4 overflow-y-auto max-h-screen">
+    <div class="w-full md:w-1/2  p-4 overflow-y-auto max-h-screen">
       <!-- Content goes here -->
       <div class="flex">
         <label class="block text-lg font-semibold mb-2">Prompt</label>
@@ -408,7 +449,7 @@
       <div class="mb-6">
         <label class="block text-lg font-semibold mb-2">Negative Prompt</label>
         <textarea id="negativePrompt"
-          class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg resize-y">worst quality, low quality:1.4, monochrome, zombie, (interlocked fingers), easynegative, (nsfw),</textarea>
+          class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg resize-y">extra fingers,fewer fingers,(low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2),bad composition, inaccurate eyes, extra digit,fewer digits,(extra arms:1.2),easynegative  </textarea>
       </div>
 
       <div class="container mx-auto mt-10 p-4">
@@ -522,11 +563,16 @@
 
               <!-- Resolution slider -->
               <div class="mr-4">
-                <label id="arText" class="block mb-2 text-gray-500 dark:text-gray-400"
-                  for="resolution-slider">Resolution: 512x512</label>
-                <input type="range" id="aspectRatioSlider"
+                <label id="widthText" class="block mb-2 text-gray-500 dark:text-gray-400"
+                  for="width-slider">Width: 512</label>
+                <input type="range" id="width-slider"
                   class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                  min="0" max="2" step="0.5" value="1">
+                  min="128" max="1024" step="64" value="512">
+                  <label id="heightText" class="block mb-2 text-gray-500 dark:text-gray-400"
+                  for="height-slider">Height: 512</label>
+                <input type="range" id="height-slider"
+                  class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                  min="128" max="1024" step="64" value="512">
               </div>
 
               <!-- Batch size slider -->
@@ -538,6 +584,23 @@
                   min="1" max="4" step="1" value="1">
               </div>
             </div>
+
+            <div class="flex mb-4">
+              <div class="mr-8">
+                <label for="saveToServer" class="flex items-center cursor-pointer">
+                  <span class="block text-gray-500 dark:text-gray-400 mr-2" title="Save Images to Automatic1111 outputs. Also shows a grid of the generated images">Save images to server</span>
+                  <input type="checkbox" id="saveToServer" class="form-checkbox h-6 w-6 text-blue-600 dark:text-blue-400 rounded-md focus:ring-blue-200 dark:focus:ring-blue-800">
+                </label>
+              </div>
+              <div>
+                <label for="saveToHistory" class="flex items-center cursor-pointer">
+                  <span class="block text-gray-500 dark:text-gray-400 mr-2" title="Save Images to Local History Tab">Save images to History</span>
+                  <input type="checkbox" checked id="saveToHistory" class="form-checkbox h-6 w-6 text-blue-600 dark:text-blue-400 rounded-md focus:ring-blue-200 dark:focus:ring-blue-800">
+                </label>
+              </div>
+            </div>
+            
+
           </div>
         </div>
         <h2 id="accordion-open-heading-3">
@@ -561,20 +624,16 @@
 
             <div class="flex items-center mb-6">
               <!-- Display Uploaded Image -->
-              <div class="mr-4">
+              <div class="mr-4 img" id="imageContainer">
                 <label for="imageInput" class="cursor-pointer">
                   <div class="relative">
                     <img id="uploadedImage" class="w-48 h-48 object-cover border border-gray-500 rounded-lg shadow-md">
                     <img id="maskImage" class="absolute top-0 left-0 w-full h-full object-cover rounded-lg opacity-75">
-
                     <button id="removeImageButton"
-                      class="absolute top-1 right-1 p-1 rounded-full w-6 h-6  bg-black opacity-50 text-white text-sm font-bold cursor-pointer hidden">X</button>
+                      class="absolute top-1 right-1 p-1 rounded-full w-6 h-6 bg-black opacity-50 text-white text-sm font-bold cursor-pointer hidden">X</button>
                   </div>
                 </label>
-
-
-
-                <input type="file" id="imageInput" class="hidden">
+                <input type="file" id="imageInput" class="hidden" accept="image/png">
               </div>
 
               <!-- Weight Slider -->
@@ -751,25 +810,11 @@
         </div>
       </div>
     </div>
+
+    <div id="offlineBanner" class="bg-red-500 text-white text-center py-2 hidden fixed bottom-0 w-screen">Offline</div>
+    <div id="connectingBanner" class="bg-blue-500 text-white text-center py-2 fixed bottom-0 w-screen">Connecting...</div>
+
   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -781,5 +826,31 @@
   <script src="script.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
 </body>
+
+<style>
+  #imageDisplay {
+    @media (min-width: 768px) { 
+      height: 80%;
+    }
+    @media (min-width: 2048px) { 
+      height: 90%;
+    }
+  }
+  #outputImage{
+    
+    @media (min-width: 768px) { 
+      max-height: 85%;
+    }
+    @media (min-width: 1024px) { 
+      max-height: 90%;
+    }
+    max-width: 100%;
+    height: auto;
+    margin: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+</style>
+
 
 </html>
