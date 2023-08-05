@@ -2081,14 +2081,12 @@ document.getElementById("ultimateUpscaleBtn").addEventListener('click', () => {
   uploadedImageBase64 = document.getElementById("outputImage").src.replace("data:image/png;base64,", "")
   generateImage(true);
 })
+document.getElementById("historyLink").href = window.location.pathname.replace("index.html","") +"history/";
+
 
 let _url = GetBackendFromUrlString();
 
-
-
 if (_url) {
-
-
   if (!_url.includes("http://", "https://",)) {
     // For links like 666eed1fa5f4e412ea -> https://666eed1fa5f4e412ea.gradio.live
     if (_url.length === 18 && !_url.includes('.', '_', '-', ' ',)) {
@@ -2113,7 +2111,6 @@ if (_url) {
     url = _url;
     urlInput.value = _url;
   }
-
 }
 
 GetControlnetModel("inpaint");

@@ -223,5 +223,4 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
   removeFromIndexedDB(currentID);
   //loadImagesFromIndexedDB();
 })
-removeEntryById(57);
-
+document.getElementById("generateLink").href = window.location.pathname.replace("history/","");
