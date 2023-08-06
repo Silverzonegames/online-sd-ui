@@ -21,9 +21,6 @@ function createIndexedDB() {
     };
   });
 }
-
-
-
 let imagesList = [];
 let entries = [];
 let db = null;
@@ -69,8 +66,6 @@ async function loadImagesFromIndexedDB() {
     console.error("Error while loading images from IndexedDB:", error);
   }
 }
-
-
 async function removeFromIndexedDB(id) {
   try {
     if (!db) {
