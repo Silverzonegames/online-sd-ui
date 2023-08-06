@@ -1055,13 +1055,11 @@ function HandleLoras() {
   }
   categories = ["All"];
 
-  let apis = ["/sdapi/v1/loras","/sdapi/v1/hypernetworks"];
+  let apis = ["/sdapi/v1/hypernetworks","/sdapi/v1/loras"];
 
   for (let i = 0; i < apis.length; i++) {
-    let isHyperNetwork = false;
-    if(i==1){
-      isHyperNetwork = true;
-    }
+    let isHyperNetwork = apis[i].includes("hypernetworks");
+
     fetch(url + apis[i])
     .then(response => response.json())
     .then(data => {
@@ -1852,11 +1850,11 @@ async function checkStatus() {
 
 function GetBackendFromUrlString() {
   const currentURL = window.location.href;
-  const queryStringIndex = currentURL.indexOf('?');
+  const queryStringIndex = currentURL.indexOf('?url=');
   if (queryStringIndex !== -1) {
-    return currentURL.slice(queryStringIndex + 1);
+    return currentURL.slice(queryStringIndex + 5);
   } else {
-    return null; // Return null if there's no query string in the URL
+    return null; // Return null if there's no "?url=" in the URL
   }
 }
 function isLocalhost(url) {

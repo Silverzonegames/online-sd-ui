@@ -260,7 +260,16 @@
 
 
           <p><b>Activation Text:</b> <span id="loraActivationText" class="text-blue-400">Placeholder Text</span></p>
-          <p><b>Preferred Weight:</b> <span id="loraPreferredWeight" class="text-blue-400">1</span></p>
+
+          <div class="flex items-center">
+            <p class="mr-2"><b>Preferred Weight:</b></p>
+            <span id="loraPreferredWeight" class="text-blue-400 mr-2">1</span>
+            <input type="number" class="border border-gray-300 rounded p-1 w-16 text-center mr-2">
+            <button class=" text-white font-bold py-2 rounded">
+              <i class="fas fa-save mr-1"></i>
+            </button>
+          </div>
+          
 
           <h3><b>Notes</b></h3>
           <div class="max-h-96 overflow-auto">
@@ -829,6 +838,8 @@
 
 <style>
   #imageDisplay {
+
+    height: 80%;
     @media (min-width: 768px) { 
       height: 80%;
     }
@@ -837,7 +848,7 @@
     }
   }
   #outputImage{
-    
+    max-height: 85%;
     @media (min-width: 768px) { 
       max-height: 85%;
     }
