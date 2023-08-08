@@ -32,6 +32,7 @@ const removeImageButton = document.getElementById("removeImageButton");
 
 let selectedStyles = [];
 
+
 let online = true;
 
 let width = 512;
@@ -61,6 +62,7 @@ let installDir = "";
 
 let controlNetModel = "control_v11p_sd15_inpaint_fp16 [be8bc0ed]";
 let controlnetModels = [];
+
 
 _link = window.location.pathname.replace("index.html","") +"history/";
 

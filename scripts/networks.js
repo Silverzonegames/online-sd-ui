@@ -214,7 +214,10 @@ function addLoraEntry(imageSrc, name, category) {
     const loraActivationText = document.getElementById("loraActivationText");
     const loraPreferredWeight = document.getElementById("loraPreferredWeight");
     const loraNotes = document.getElementById("loraNotes");
+    const loraNotesContainer = document.getElementById("loraNotesContainer");
     const loraLink = document.getElementById("loraLink");
+    const loraCivitDesc = document.getElementById("loraCivitDesc");
+    const loraCivitDescContainer = document.getElementById("loraCivitDescContainer");
   
     const lora = getLoraByName(name);
   
@@ -223,6 +226,9 @@ function addLoraEntry(imageSrc, name, category) {
     loraActivationText.textContent = "";
     loraPreferredWeight.textContent = "";
     loraNotes.textContent = "";
+    loraNotesContainer.classList.add("hidden");
+    loraCivitDesc.innerHTML = "";
+    loraCivitDescContainer.classList.add("hidden");
     fetch(url + '/file=' + lora.config)
       .then(response => response.json())
       .then(data => {
@@ -244,7 +250,10 @@ function addLoraEntry(imageSrc, name, category) {
         } else {
           loraPreferredWeight.textContent = data["preferred weight"];
         }
-        loraNotes.innerHTML = data["notes"].replaceAll("\n", " <br> ");
+        loraNotes.innerHTML = data["notes"].replaceAll("\n", "<br>");
+        if(data["notes"] != ""){
+          loraNotesContainer.classList.remove("hidden");
+        }
         AddCodeBlockButtons(loraNotes);
   
         AddMetaData("SD Version", data["sd version"]);
@@ -269,6 +278,16 @@ function addLoraEntry(imageSrc, name, category) {
       }else{
         loraLink.classList.remove("hidden");
         loraLink.href="https://civitai.com/models/"+data["modelId"]+"?modelVersionId="+data["id"]
+
+        fetch("https://civitai.com/api/v1/models/"+data["modelId"])
+        .then(response => response.json())
+        .then(modelData => {
+          if(modelData){
+            loraCivitDesc.innerHTML = modelData["description"];
+            loraCivitDescContainer.classList.remove("hidden");
+          }
+        })
+
       }
     }).catch(error => {
       loraLink.classList.add("hidden");

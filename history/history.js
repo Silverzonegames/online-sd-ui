@@ -1,3 +1,7 @@
+_path = window.location.toString( );
+console.log(_path);
+document.getElementById("generateLink").href = _path.replace("/history/","");
+
 function createIndexedDB() {
   return new Promise((resolve, reject) => {
     const request = window.indexedDB.open("ImageDB", 1);
@@ -218,4 +222,4 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
   removeFromIndexedDB(currentID);
   //loadImagesFromIndexedDB();
 })
-document.getElementById("generateLink").href = window.location.pathname.replace("/history/","");
+

@@ -7,7 +7,7 @@
 
 
 // Image generation function
-function generateImage(isUpscale=false) {
+function generateImage(isUpscale=false,isUltimate=false,IsSDUpscale=false,isLatent=false) {
 
 
   if(isUpscale == undefined){
@@ -97,29 +97,42 @@ function generateImage(isUpscale=false) {
   }
 
   if(isUpscale){
-    payload["denoising_strength"] = 0.25;
-    payload["batch_size"] = 1,
-    payload["script_name"] = "Ultimate SD upscale",
-    payload["script_args"] = [
-      "4x-UltraSharp",
-      512,
-      0,
-      8,
-      32,
-      64,
-      0.275,
-      32,
-      0,
-      true,
-      0,
-      false,
-      8,
-      0,
-      2,
-      1080,
-      1440,
-      2,
-  ];
+    if(isUltimate){
+      payload["denoising_strength"] = parseFloat(document.getElementById("ultimate-upscale-denoising-strength").value);
+      payload["batch_size"] = 1,
+      payload["script_name"] = "Ultimate SD upscale",
+      payload["script_args"] = [
+        null, // _ (not used)
+        512, // tile_width
+        512, // tile_height
+        8, // mask_blur
+        32, // padding
+        parseInt(document.getElementById("ultimate-upscale-seams_fix_width").value), // seams_fix_width
+        parseFloat(document.getElementById("ultimate-upscale-seams_fix_denoise").value), // seams_fix_denoise
+        parseInt(document.getElementById("ultimate-upscale-seams_fix_padding").value), // seams_fix_padding
+        parseInt(document.getElementById("ultimate-upscale-upscaler_index").value), // upscaler_index
+        true, // save_upscaled_image a.k.a Upscaled
+        parseInt(document.getElementById("ultimate-upscale-redraw_mode").value), // redraw_mode
+        false, // save_seams_fix_image a.k.a Seams fix
+        8, // seams_fix_mask_blur
+        0, // seams_fix_type
+        2, // target_size_type
+        2048, // custom_width
+        2048, // custom_height
+        parseFloat(document.getElementById("ultimate-upscale-scale").value) // custom_scale
+    ];
+    }
+    else if(IsSDUpscale){
+      payload["denoising_strength"] = parseFloat(document.getElementById("sd-upscale-denoising-strength").value);
+      payload["batch_size"] = 1,
+      payload["script_name"] = "sd upscale",
+      payload["script_args"] = [
+        null, // _ (not used)
+        parseInt(document.getElementById("sd-upscale-tile_overlap").value), // tile overlap
+        document.getElementById("sd-upscale-upscaler_index").value, // upscaler index
+        parseFloat(document.getElementById("sd-upscale-scale").value)
+      ]
+    }
   }
 
   console.log(JSON.stringify(payload, null, 2));
@@ -586,9 +599,44 @@ function updateStyles() {
       });
     });
 }
+let upscalers = [];
+function getUpscalers(){
+  fetch(url + '/sdapi/v1/upscalers')
+  .then(response => response.json())
+  .then(data => {
+    upscalers = [];
+
+    data.forEach((upscaler) => {
+      upscalers.push(upscaler.name);
+    });      
+    console.log("Found upscalers:", upscalers);
+    updateUpscalers("ultimate-upscale-upscaler_index",true);
+    updateUpscalers("sd-upscale-upscaler_index")
+
+  }).catch(error => {
+    console.error("Error fetching upscalers:", error);
+  });
+}
+
+function updateUpscalers(id,useIndexValue=false){
+  const upscalerDropdown = document.getElementById(id);
+  upscalerDropdown.innerHTML = ""; // Clear existing options
+  upscalers.forEach((upscaler,index) => {
+    const option = document.createElement("option");
+    if(useIndexValue){
+      option.value = index; // Value is the index of the upscaler
+    }else{
+      option.value = upscaler;
+    }
+    option.textContent = upscaler;
+    upscalerDropdown.appendChild(option);
+  });
+}
 
 // Call updateStyles() to fetch and populate styles initially
 updateStyles();
+getUpscalers();
+
 //#endregion
 
 //#region image Input
@@ -1147,7 +1195,11 @@ promptField.addEventListener('input', (e) => {
 
 document.getElementById("ultimateUpscaleBtn").addEventListener('click', () => {
   uploadedImageBase64 = document.getElementById("outputImage").src.replace("data:image/png;base64,", "")
-  generateImage(true);
+  generateImage(true, true);
+})
+document.getElementById("SDUpscaleBtn").addEventListener('click', () => {
+  uploadedImageBase64 = document.getElementById("outputImage").src.replace("data:image/png;base64,", "")
+  generateImage(true, false, true);
 })
 
 
