@@ -509,10 +509,7 @@ function addLoraEntry(imageSrc, name, category) {
           text = "";
         }
   
-        if (lora.isLyco == true) {
-          AddToPrompt(`<lyco:${name}:${weight}>`);
-          AddToPrompt(tags[0],true);
-        } else if (lora.isHypernet) {
+        if (lora.isHypernet) {
           AddToPrompt(`<hypernet:${name}:1>`);
           AddToPrompt(tags[0],true);
         } else {
@@ -530,9 +527,7 @@ function addLoraEntry(imageSrc, name, category) {
         let weight = 1;
         
   
-        if (lora.isLyco) {
-          AddToPrompt(`<lyco:${name}:${weight}>`);
-        } else if (lora.isHypernet) {
+        if (lora.isHypernet) {
           AddToPrompt(`<hypernet:${name}:1>`);
         }
         else {
