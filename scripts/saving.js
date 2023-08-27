@@ -16,6 +16,8 @@ variables = {
     generatedImages: [],
     img2imgImage: "",
     img2imgMask: "",
+    serverType: ServerType.Automatic1111,
+    url: "http://127.0.0.1:7860"
 }
 function GetCurrentState(){
     variables["prompt"] = promptField.value;
@@ -34,6 +36,8 @@ function GetCurrentState(){
     variables["generatedImages"] = generatedImages;
     variables["img2imgImage"] = uploadedImageBase64;
     variables["img2imgMask"] = maskImageBase64;
+    variables["serverType"] = serverType;
+    variables["url"] = urlInput.value;
 }
 
 
@@ -48,6 +52,12 @@ function LoadState() {
     if (localStorage.getItem("state")){
         variables = JSON.parse(localStorage.getItem("state"));
     }
+
+    //server
+    serverType = variables["serverType"];
+    UpdateServer(variables["serverType"]);
+    urlInput.value = variables["url"];
+    url = urlInput.value
 
     //load variables
     promptField.value = variables["prompt"];
