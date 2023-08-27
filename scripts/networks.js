@@ -320,10 +320,10 @@ function addLoraEntry(imageSrc, name, category) {
           // Print the code block's text content to the console
           console.log(codeBlock.textContent);
   
-          if(IsInPrompt(codeBlock.textContent, true)){
+          if(IsInPrompt(codeBlock.textContent, true,true)){
             RemoveFromPrompt(codeBlock.textContent);
           }else{
-            AddToPrompt(codeBlock.textContent,true);
+            AddToPrompt(codeBlock.textContent,true,true);
           }
           UpdateCodeBlocks(element);
       });
@@ -334,7 +334,7 @@ function addLoraEntry(imageSrc, name, category) {
     codeBlocks.forEach(codeBlock => {
       codeBlock.style.cursor = "pointer"; // Change cursor to indicate it's clickable
   
-      if(IsInPrompt(codeBlock.textContent,true)){
+      if(IsInPrompt(codeBlock.textContent,true,true)){
         codeBlock.classList.add("border-2");
       }else{
         codeBlock.classList.remove("border-2");
@@ -389,7 +389,7 @@ function addLoraEntry(imageSrc, name, category) {
     // Append the tag to the container
     container.appendChild(tagDiv);
   
-    if(IsInPrompt(tag)){
+    if(IsInPrompt(tag,ignoreLoras=true)){
       tagDiv.classList.add("border-4","border-"+color+"-400",);
     }else{
       tagDiv.classList.remove("border-4","border-"+color+"-400",);
@@ -399,7 +399,7 @@ function addLoraEntry(imageSrc, name, category) {
     tagDiv.addEventListener("click", function () {
       console.log(tag); // Replace this with your desired action when the tag is clicked.
   
-      if(IsInPrompt(tag)){
+      if(IsInPrompt(tag,ignoreLoras=true)){
         tagDiv.classList.remove("border-4","border-"+color+"-400",);
         RemoveFromPrompt(tag);
       }else{
@@ -511,10 +511,10 @@ function addLoraEntry(imageSrc, name, category) {
   
         if (lora.isHypernet) {
           AddToPrompt(`<hypernet:${name}:1>`);
-          AddToPrompt(tags[0],true);
+          AddToPrompt(tags[0],true,true);
         } else {
           AddToPrompt(`<lora:${name}:${weight}>`,true);
-          AddToPrompt(tags[0],true);
+          AddToPrompt(tags[0],true,true);
         }
   
   

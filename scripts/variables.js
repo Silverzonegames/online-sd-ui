@@ -11,6 +11,7 @@ const batchSizeValue = document.getElementById('batchSizeValue');
 const downloadBtn = document.getElementById("downloadBtn");
 
 const promptField = document.getElementById('prompt');
+const negativePromptField = document.getElementById('negativePrompt');
 
 const urlInput = document.getElementById("urlInput");
 
@@ -28,6 +29,7 @@ const seedDropdown = document.getElementById("seed-input");
 const paintButton = document.getElementById("paintBtn");
 
 const removeImageButton = document.getElementById("removeImageButton");
+
 
 
 let selectedStyles = [];
@@ -57,6 +59,13 @@ let subCategory = 1;
 let generatingAmount = 0;
 
 let url = urlInput.value
+
+const ServerType = {
+  Automatic1111: "Automatic1111",
+  ComfyUI: "ComfyUI", //WIP
+  Horde: "Horde", //TODO
+}
+let serverType = ServerType.Automatic1111;
 
 let installDir = "";
 

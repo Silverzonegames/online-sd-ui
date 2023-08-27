@@ -166,13 +166,17 @@ function UpdateImagePlacement(searchTerm = "") {
 
 let currentEntry = null;
 let currentID = 0;
+let currentText = ""
+let currentImage = "";
 
 function updateFullscreenImage(image, text, entry,id) {
 
   currentEntry = entry;
   currentID = id;
+  currentText = text;
+  currentImage = image;
 
-  document.getElementById("imageDetailToggle").click();
+  document.getElementById("ImageDetailModal").classList.remove("hidden");
 
   console.log(text);
 
@@ -202,7 +206,55 @@ function boldWords(text, wordsToBold) {
   });
   return text;
 }
+const blobToBase64 = async blobUrl => {
+  // Fetch the data from the URL
+  const response = await fetch(blobUrl);
+  const blob = await response.blob();
 
+  // Convert the Blob to base64
+  const reader = new FileReader();
+  reader.readAsDataURL(blob);
+  
+  return new Promise(resolve => {
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
+  });
+};
+
+function ReUse() {
+  
+  blobToBase64(currentImage).then(base64 => {
+
+    let state = JSON.parse(localStorage.getItem("state"));
+
+    state["generatedImage"] = base64;
+    state["prompt"] = currentText.split("Negative prompt")[0];
+    state["negativePrompt"] = currentText.split("Negative prompt:")[1].split("Steps")[0];
+    state["steps"] = extractValueFromText(currentText, "Steps");
+    state["sampler"] = extractValueFromText(currentText, "Sampler");
+    state["cfg"] = extractValueFromText(currentText, "CFG scale");
+    state["seed"] = extractValueFromText(currentText, "Seed");
+    let size = extractValueFromText(currentText, "Size");
+    state["width"] = size.split("x")[0];
+    state["height"] = size.split("x")[1];
+
+    localStorage.setItem("state", JSON.stringify(state));
+    document.getElementById("generateLink").click();
+  })
+}
+
+// Function to extract a section of text based on a label
+function extractValueFromText(text, keyword) {
+  const pattern = new RegExp(`${keyword}:\\s*((?:[^,]|\\(.*?\\))+)`);
+  const match = text.match(pattern);
+
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+
+  return null;
+}
 
 
 
@@ -219,7 +271,21 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
 document.getElementById("deleteBtn").addEventListener("click", () => {
   console.log(db);
   console.log("delete:" + currentID);
+  document.getElementById("ImageDetailModal").classList.add("hidden");
   removeFromIndexedDB(currentID);
   //loadImagesFromIndexedDB();
 })
+document.getElementById("reuseBtn").addEventListener("click", () => {
+  ReUse();
+})
+
+document.getElementById("close-modal").addEventListener("click", () => {
+  document.getElementById("ImageDetailModal").classList.add("hidden");
+})
+document.getElementById("close-modal2").addEventListener("click", () => {
+  document.getElementById("ImageDetailModal").classList.add("hidden");
+})
+
+
+
 

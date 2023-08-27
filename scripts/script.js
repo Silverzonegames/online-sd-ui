@@ -193,7 +193,7 @@ function generateImage(isUpscale=false,isUltimate=false,IsSDUpscale=false,isLate
         if(batchSize > 1 && i == 0 && saveToServer){
           CanSave = false;
         }
-        if(i>=(batchSize)){
+        if(i>(batchSize)){
           i++;
           return;
         }
@@ -456,8 +456,8 @@ function RemoveFromPrompt(string){
     promptField.value = promptField.value.replace(",","");
   }
 }
-function AddToPrompt (tag, forceSingleInstance = false) {
-  if (forceSingleInstance == true && IsInPrompt(tag,false)) {
+function AddToPrompt (tag, forceSingleInstance = false,ignoreLoras=false) {
+  if (forceSingleInstance == true && IsInPrompt(tag,false,ignoreLoras)) {
     
   }else{
     if(promptField.value.replaceAll(" ","").length>0){
@@ -468,7 +468,13 @@ function AddToPrompt (tag, forceSingleInstance = false) {
   }
 }
 
-function IsInPrompt(string, exact=false){
+function IsInPrompt(string, exact=false, ignoreLoras=false){
+
+  if(ignoreLoras == true){
+    string = string.replaceAll(/<[^>]*>/g, "");
+  }
+
+
   if(exact == false){
     return promptField.value.includes(string);
   }else{
@@ -657,6 +663,13 @@ imageInput.addEventListener('change', function () {
       UploadImage(reader.result);
     };
     reader.readAsDataURL(file);
+
+    //update outpaintcanvas
+    canvas_uploadedImage = new Image();
+    canvas_uploadedImage.src = URL.createObjectURL(file);
+    canvas_uploadedImage.onload = () => {
+        drawImageOnCanvas();
+    };
   }
 });
 // Event listener for the drop event on the drop area

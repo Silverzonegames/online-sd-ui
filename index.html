@@ -98,6 +98,22 @@
       padding-left: 6px;
       padding-right: 6px;
     }
+
+    .border-gradient-blue {
+      border-image: linear-gradient(45deg, #00ff87, #60efff);
+      border-image-slice: 1;
+    }
+
+    .checkerboard {
+      background-image:
+        /* tint image */
+        linear-gradient(to right, rgba(52, 52, 52, 0.75), rgba(64, 64, 64, 0.75)),
+        /* checkered effect */
+        linear-gradient(to right, black 50%, white 50%),
+        linear-gradient(to bottom, black 50%, white 50%);
+      background-blend-mode: normal, difference, normal;
+      background-size: 2em 2em;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
@@ -113,16 +129,14 @@
       <a id="historyLink" href="easy-auto1111-ui/history/index.html"
         class="text-white z-10 align-middle hover:text-blue-500">History</a>
     </div>
-    <div class="relative">
-      <!-- New URL input field -->
-      <input id="urlInput" type="url"
-        class="px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg"
-        value="http://127.0.0.1:7860" />
-      <!-- Share icon button using Font Awesome -->
-      <button type="button" class="text-white z-10 align-middle">
-        <i class="fas fa-share"></i>
-      </button>
-    </div>
+    <button data-modal-target="settingsModal" data-modal-toggle="settingsModal"
+    class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+    type="button">
+    <i class="fas fa-cog"></i> <!-- Settings Icon -->
+  
+</button>
+
+
   </header>
 
 
@@ -188,9 +202,82 @@
   <!--End Paint Modal-->
 
 
+  <!--Canvas modal-->
+  <!-- Main modal -->
+  <div id="canvasModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-6xl max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <!-- Modal header -->
+        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Outpaint WIP
+          </h3>
+          <button type="button"
+            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="canvasModal">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="p-6 space-y-6">
+
+          <
+
+          <input type="file" id="canvas_imageInput" class="mb-4 bg-gray-700 p-2 rounded">
+          <div class="flex items-center space-x-4 mb-4">
+            <label for="canvas_CanvasRatio">Canvas Ratio:</label>
+            <input type="range" id="canvas_CanvasRatio" class="w-56 bg-gray-700 text-white" min="-1" max="1" step="0.05"
+              value="0">
+            <span class="text-white ml-2 w-64">
+              <input type="number" id="canvas_CanvasWidth" class="bg-transparent text-white w-16" min="512" max="1024"
+                step="32" value="512">
+              <span class="mx-1">x</span>
+              <input type="number" id="canvas_CanvasHeight" class="bg-transparent text-white w-16" min="512" max="1024"
+                step="32" value="512">
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-4 mb-4">
+            <label for="canvas_imageScale">Image Scale:</label>
+            <input type="range" id="canvas_imageScale" class="w-56 bg-gray-700 text-white" min="0.2" max="1" step="0.01"
+              value="0.5">
+            <input type="number" id="canvas_imageScaleValue" class="text-white bg-transparent w-16" min="0.2" max="1"
+              step="0.01" value="0.5">
+          </div>
+
+
+          <div class="relative">
+            <canvas id="canvas_imageCanvas" class="border-2 border-gradient-blue checkerboard" width="800"
+              height="600"></canvas>
+            <div id="canvas_imageWrapper" class="absolute top-0 left-0 pointer-events-none"></div>
+          </div>
+
+          <button id="canvas_exportImage" class="bg-green-500 text-white px-4 py-2 rounded mt-4">Export Canvas
+            Image</button>
+
+        </div>
+        <!-- Modal footer -->
+        <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <button data-modal-hide="canvasModal" type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">I
+            accept</button>
+          <button data-modal-hide="canvasModal" type="button"
+            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Decline</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--End Canvas modal-->
+
+
   <!-- Upscale Modal-->
-
-
   <!-- Modal toggle -->
   <button data-modal-target="defaultModal" data-modal-toggle="defaultModal"
     class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -454,7 +541,8 @@
             <!-- Slider for Scale -->
             <label for="sd-upscale-scale" class="block mt-2" title="Amount to Upscale">
               <span class="mr-2">Scale:</span>
-              <input id="sd-scale-value" type="number" value="2" min="1" max="4" step="0.01" class="w-16 bg-transparent">
+              <input id="sd-scale-value" type="number" value="2" min="1" max="4" step="0.01"
+                class="w-16 bg-transparent">
             </label>
             <input id="sd-upscale-scale" type="range" value="2" min="1" max="4" step="0.01" class="w-full">
 
@@ -467,14 +555,14 @@
             <input id="sd-upscale-denoising-strength" type="range" value="0.25" min="0" max="1" step="0.01"
               class="w-full">
 
-              <!-- Slider for Tile Overlap -->
-              <label for="sd-upscale-tile_overlap" class="block mt-2" title="For SD upscale, how much overlap in pixels should there be between tiles. Tiles overlap so that when they are merged back into one picture, there is no clearly visible seam.">
-                <span class="mr-2">Tile Overlap:</span>
-                <input id="sd-upscale-tile_overlap-value" type="number" value="64" min="0" max="256" step="16"
-                  class="w-16 bg-transparent">
-              </label>
-              <input id="sd-upscale-tile_overlap" type="range" value="64" min="0" max="256" step="16"
-                class="w-full">
+            <!-- Slider for Tile Overlap -->
+            <label for="sd-upscale-tile_overlap" class="block mt-2"
+              title="For SD upscale, how much overlap in pixels should there be between tiles. Tiles overlap so that when they are merged back into one picture, there is no clearly visible seam.">
+              <span class="mr-2">Tile Overlap:</span>
+              <input id="sd-upscale-tile_overlap-value" type="number" value="64" min="0" max="256" step="16"
+                class="w-16 bg-transparent">
+            </label>
+            <input id="sd-upscale-tile_overlap" type="range" value="64" min="0" max="256" step="16" class="w-full">
 
 
             <div class="mb-2">
@@ -556,8 +644,6 @@
   </div>
   </div>
   </div>
-
-
   <!-- End Upscale Modal-->
 
 
@@ -723,7 +809,64 @@
   <!--End FullScreenModal-->
 
 
+  <!--Settings Modal-->
+  <!-- Modal toggle -->
 
+
+  <!-- Main modal -->
+  <div id="settingsModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <!-- Modal header -->
+        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Settings
+          </h3>
+          <button type="button"
+            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="settingsModal">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="p-6 space-y-6">
+          <div class="flex space-x-6">
+              <div class="w-1/2">
+                  <label class="block text-lg font-semibold">Server Type</label>
+                  <select id="serverTypeDropdown"
+                      class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg">
+                      <option value="Automatic1111">Automatic1111</option>
+                      <option value="ComfyUI">ComfyUI TODO</option>
+                      <option value="Horde">AI Horde TODO</option>
+                  </select>
+              </div>
+              <div class="w-1/2">
+                  <label class="block text-lg font-semibold">URL</label>
+                  <div class="relative">
+                      <input id="urlInput" type="url"
+                          class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg"
+                          value="http://127.0.0.1:7860" />
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+      
+        <!-- Modal footer -->
+        <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <button data-modal-hide="settingsModal" type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Settings Modal-->
 
 
 
@@ -774,7 +917,6 @@
 
         <!-- Image buttons -->
         <div id="imgButtons" class="flex justify-center mt-2 space-x-2 bottom-0">
-          <img alt="Image 1" class="w-12 h-12 border border-gray-500 rounded-md cursor-pointer" src="">
         </div>
       </div>
 
@@ -821,8 +963,6 @@
         <textarea id="prompt"
           class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg resize-y">(masterpiece:1.2, best quality),</textarea>
       </div>
-
-
 
       <div class="mb-6">
         <label class="block text-lg font-semibold mb-2">Negative Prompt</label>
@@ -1029,9 +1169,14 @@
                   <input type="range" id="weightSlider" min="0" max="1" step="0.01" value="0.75"
                     class="w-48 px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg" />
                   <p id="imagesizeText">Size: 512x512</p>
+
                   <button data-modal-target="paintModal" data-modal-toggle="paintModal" id="paintBtn"
                     class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded-lg">
-                    <i class="fa-solid fa-paintbrush"></i> Paint
+                    <i class="fa-solid fa-paintbrush"></i> Inpaint
+                  </button>
+                  <button data-modal-target="canvasModal" data-modal-toggle="canvasModal" id="outPaintBtn"
+                    class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded-lg">
+                    <i class="fa-solid fa-paintbrush"></i> Outpaint
                   </button>
                 </div>
               </div>
@@ -1208,9 +1353,13 @@
 
   <script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
   <script src="scripts/variables.js"></script>
+  <script src="/scripts/canvas.js"></script>
   <script src="scripts/networks.js"></script>
   <script src="scripts/script.js"></script>
+  <script src="scripts/saving.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+  <script src="./node_modules/preline/dist/preline.js"></script>
+
 </body>
 
 <style>
