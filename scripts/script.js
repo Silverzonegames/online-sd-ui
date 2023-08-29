@@ -223,8 +223,12 @@ function isNeighboringNumber(number1, number2) {
 
 function handleURLChange() {
   url = urlInput.value
+  
+  SaveState();
 
   if(serverType === ServerType.Automatic1111){
+    getUpscalers();
+    updateStyles();
     GetControlnetModel("inpaint");
     GetDataDir();
     checkStatus();
@@ -232,8 +236,6 @@ function handleURLChange() {
     changeCode(url);
   }else if (serverType === ServerType.ComfyUI){
     RefreshComfy();
-  }else if (serverType === ServerType.Horde){
-
   }
 }
 
@@ -349,8 +351,7 @@ function updateUpscalers(id,useIndexValue=false){
 }
 
 // Call updateStyles() to fetch and populate styles initially
-updateStyles();
-getUpscalers();
+
 
 //#endregion
 
@@ -762,6 +763,9 @@ generateBtn.addEventListener('click', () => {
   }else if (serverType == ServerType.ComfyUI){
     console.log("Generate");
     GenerateComfy();
+  }else if(serverType == ServerType.Horde){
+    console.log("Generate");
+    GenerateHorde();
   }
 })
 downloadBtn.addEventListener("click", Download);
@@ -937,6 +941,5 @@ if (_url) {
 }
 
 
-handleURLChange();
 
 

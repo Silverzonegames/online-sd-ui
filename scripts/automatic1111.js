@@ -270,6 +270,11 @@ function generateImage(isUpscale=false,isUltimate=false,IsSDUpscale=false,isLate
 
 async function checkStatus() {
 
+  if(serverType != ServerType.Automatic1111){
+    return;
+  }
+
+
   offlineBanner.classList.add("hidden")
   connectingBanner.classList.remove("hidden");
 

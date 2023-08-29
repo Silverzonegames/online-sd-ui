@@ -17,7 +17,10 @@ variables = {
     img2imgImage: "",
     img2imgMask: "",
     serverType: ServerType.Automatic1111,
-    url: "http://127.0.0.1:7860"
+    url: "http://127.0.0.1:7860",
+    token: "0000000000",
+    workflow_file: "txt2img",
+    workflow: null,
 }
 function GetCurrentState(){
     variables["prompt"] = promptField.value;
@@ -37,14 +40,22 @@ function GetCurrentState(){
     variables["img2imgImage"] = uploadedImageBase64;
     variables["img2imgMask"] = maskImageBase64;
     variables["serverType"] = serverType;
-    variables["url"] = urlInput.value;
+    variables["token"] = token;
+    variables["url"] = url;
+    variables["workflow_file"] = document.getElementById("workflowDropdown")?.value;
+    variables["workflow"] = workflow;
 }
 
 
 function SaveState() {
+
+    if(!SavingIsPossible)
+        return;
+
     GetCurrentState();
     localStorage.setItem("state", JSON.stringify(variables));
 }
+SavingIsPossible = false;
 
 function LoadState() {
     
@@ -55,9 +66,31 @@ function LoadState() {
 
     //server
     serverType = variables["serverType"];
-    UpdateServer(variables["serverType"]);
+    document.getElementById("serverTypeDropdown").value = variables["serverType"];
+    token = variables["token"];
+    UpdateServer(variables["serverType"], false);
     urlInput.value = variables["url"];
-    url = urlInput.value
+    document.getElementById("tokenInput").value = variables["token"];
+    UpdateHorde();
+
+
+    url = variables["url"];
+    handleURLChange();
+
+
+    //workflow
+    if(document.getElementById("workflowDropdown")) {
+        document.getElementById("workflowDropdown").value = variables["workflow_file"];
+        if(variables["workflow_file"] == "Custom"){
+            workflow_file = "Custom";
+            workflow = variables["workflow"];
+        }else{
+            workflow_file = "workflows/"+variables["workflow_file"]+".json";
+            workflow = null;
+        }
+    }
+
+
 
     //load variables
     promptField.value = variables["prompt"];
@@ -101,6 +134,8 @@ function LoadState() {
     document.getElementById("outputImage").src = variables["generatedImage"];
 
     UpdateLoraDisplays();
+    SavingIsPossible = true;
+
 }
 
 window.addEventListener("beforeunload", SaveState);

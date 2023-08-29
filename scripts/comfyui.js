@@ -1,4 +1,3 @@
-
 let object_info = {}
 
 let workflow_file = "workflows/txt2img.json";
@@ -14,30 +13,30 @@ object_info_loaded = false;
 workflow_loaded = false;
 async function RefreshComfy() {
 
-    inputContainer.innerHTML = "";
 
     try {
         object_info = await FetchInfo("/object_info");
         models = object_info["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0];
         console.log(models);
         offlineBanner.classList.add("hidden");
+        connectingBanner.classList.add("hidden");
 
-        if(workflow == null){
+        if (workflow == null) {
             const workflowResponse = await fetch(workflow_file);
             workflow = await workflowResponse.json();
             console.log(workflow);
         }
+        inputContainer.innerHTML = "";
+        AddInput("workflowDropdown", "dropdown", "Workflow", ["txt2img", "txt2img_vae", "img2img", "img2img_vae", "inpaint","lora", "sdxl", "Custom"]);
 
-        AddInput("workflowDropdown", "dropdown", "Workflow", ["txt2img","txt2img_vae","img2img","img2img_vae","lora","sdxl","Custom"]);
-        
-        if(workflow_file == "Custom"){
+        if (workflow_file == "Custom") {
             document.getElementById("workflowDropdown").value = "Custom";
-        }else{
-            document.getElementById("workflowDropdown").value = workflow_file.split("/")[1].split(".")[0];        
+        } else {
+            document.getElementById("workflowDropdown").value = workflow_file.split("/")[1].split(".")[0];
         }
 
         document.getElementById("workflowDropdown").addEventListener("change", (e) => {
-        
+
             if (e.target.value == "Custom") {
                 workflow_file == "Custom";
                 // Prompt the user to upload a JSON file
@@ -46,7 +45,7 @@ async function RefreshComfy() {
                 fileInput.accept = "application/json";
                 fileInput.addEventListener("change", (event) => {
                     const uploadedFile = event.target.files[0];
-                    
+
                     if (uploadedFile) {
                         const reader = new FileReader();
                         reader.onload = (fileEvent) => {
@@ -60,7 +59,7 @@ async function RefreshComfy() {
                         reader.readAsText(uploadedFile);
                     }
                 });
-                
+
                 fileInput.click(); // Simulate a click on the file input to open the file picker
             } else {
                 workflow_file = "workflows/" + e.target.value + ".json";
@@ -82,7 +81,7 @@ async function RefreshComfy() {
                 const title = node["title"] || "CheckpointLoaderSimple";
                 AddInput(node["id"] + "-ckpt_name", "dropdown", title, models);
             }
-            if(node["type"] === "VAELoader"){
+            if (node["type"] === "VAELoader") {
                 const title = node["title"] || "VAE Loader";
                 AddInput(node["id"], "container", title, object_info["VAELoader"]["input"]["required"]);
             }
@@ -90,10 +89,14 @@ async function RefreshComfy() {
                 const title = node["title"] || "Lora Loader";
                 AddInput(node["id"], "container", title, object_info["LoraLoader"]["input"]["required"]);
             }
-            if(node["type"] === "LoadImage") {
+            if (node["type"] === "LoadImage") {
                 console.log("image");
-                const title = node["title"] || "Load Image";
+                const title = node["title"] || "Image";
                 AddInput(node["id"], "image", title);
+            }
+            if(node["type"] === "LoadImageMask"){
+                const title = node["title"] || "Image Mask";
+                AddInput(node["id"], "mask", title);
             }
         });
 
@@ -110,7 +113,7 @@ async function RefreshComfy() {
                 const title = node["title"] || "EmptyLatentImage";
                 AddInput(node["id"], "container", title, object_info["EmptyLatentImage"]["input"]["required"]);
             }
-            if(node["type"] === "ImageScale"){
+            if (node["type"] === "ImageScale") {
                 const title = node["title"] || "ImageScale";
                 AddInput(node["id"], "container", title, object_info["ImageScale"]["input"]["required"]);
             }
@@ -119,6 +122,7 @@ async function RefreshComfy() {
 
 
     } catch (error) {
+        showMessage(error);
         console.error("An error occurred:", error);
     }
 }
@@ -136,6 +140,7 @@ function queuePrompt(prompt) {
 }
 
 async function getImages(prompt) {
+    
     const promptId = (await queuePrompt(prompt))["prompt_id"];
     const outputImages = {};
 
@@ -199,7 +204,7 @@ async function getImages(prompt) {
             );
 
 
-                addToImageHistory(imageSrc, "ComfyUI");
+            addToImageHistory(imageSrc, "ComfyUI");
 
 
             imageButton.addEventListener("click", () => {
@@ -236,7 +241,7 @@ async function getImage(filename, subfolder, folderType) {
 
 
 function GenerateComfy() {
-
+    serverAddress = url.replace("http://", "").replace("https://", "");
     const prompt = convertWorkflowToApiFormat(workflow);
 
     console.log(JSON.stringify(prompt, null, 2));
@@ -258,28 +263,28 @@ function AddInput(id, type, label, options = null) {
     if (type === "text") {
         const inputWrapper = document.createElement("div");
         inputWrapper.className = "mb-6 border p-4 rounded border-gray-300 dark:border-gray-700";
-    
+
         const inputLabel = document.createElement("label");
         inputLabel.className = "block text-lg font-semibold mb-2";
         inputLabel.textContent = label;
         inputWrapper.appendChild(inputLabel);
-    
+
         const inputElement = document.createElement("textarea");
         inputElement.id = id;
         inputElement.className = "w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg resize-y";
         inputElement.value = options[0];
         inputWrapper.appendChild(inputElement);
-    
+
         inputContainer.appendChild(inputWrapper);
     } else if (type === "dropdown") {
         const dropdownWrapper = document.createElement("div");
         dropdownWrapper.className = "mb-6 border p-4 rounded border-gray-300 dark:border-gray-700";
-    
+
         const dropdownLabel = document.createElement("label");
         dropdownLabel.className = "block text-lg font-semibold mb-2";
         dropdownLabel.textContent = label;
         dropdownWrapper.appendChild(dropdownLabel);
-    
+
         const dropdownElement = document.createElement("select");
         dropdownElement.id = id;
         dropdownElement.className = "w-full p-2 border border-gray-300 dark:border-gray-700 rounded";
@@ -290,7 +295,7 @@ function AddInput(id, type, label, options = null) {
             dropdownElement.appendChild(option);
         }
         dropdownWrapper.appendChild(dropdownElement);
-    
+
         inputContainer.appendChild(dropdownWrapper);
     } else if (type === "container") {
         const containerWrapper = document.createElement("div");
@@ -342,45 +347,49 @@ function AddInput(id, type, label, options = null) {
 
 
                     customLimits = {
-                        steps:100,
-                        cfg:20,
-                        width:2048,
-                        height:2048
+                        steps: 100,
+                        cfg: 20,
+                        width: 2048,
+                        height: 2048,
+                        strength_model: 2,
+                        strength_clip: 2,
                     }
                     customSteps = {
-                        width:64,
-                        height:64,
+                        width: 64,
+                        height: 64,
                     }
                     customMins = {
-                        width:64,
-                        height:64,
+                        width: 64,
+                        height: 64,
+                        strength_model: -1,
+                        strength_clip: -1,
                     }
 
                     const sliderInput = document.createElement("input");
                     sliderInput.type = "range";
                     sliderInput.className = "w-56 bg-gray-700 text-white";
 
-                    if(customMins[optionName]){
+                    if (customMins[optionName]) {
                         sliderInput.min = customMins[optionName];
-                    }else{
+                    } else {
                         sliderInput.min = optionInfo[1].min;
                     }
 
 
-                    if(customLimits[optionName]){
+                    if (customLimits[optionName]) {
                         sliderInput.max = customLimits[optionName];
-                    }else{
+                    } else {
                         sliderInput.max = optionInfo[1].max;
                     }
-                    if(customSteps[optionName]){
+                    if (customSteps[optionName]) {
                         sliderInput.step = customSteps[optionName];
-                    }else{
+                    } else {
                         sliderInput.step = optionInfo[0] === "INT" ? 1 : 0.01;
                     }
                     sliderInput.value = optionInfo[1].default;
 
-                    sliderOptions = ["steps","cfg","denoise","width","height"]
-                    if(sliderOptions.includes(optionName)){
+                    sliderOptions = ["steps", "cfg", "denoise", "width", "height", "strength_model", "strength_clip"]
+                    if (sliderOptions.includes(optionName)) {
                         sliderWrapper.appendChild(sliderInput);
                     }
 
@@ -392,7 +401,7 @@ function AddInput(id, type, label, options = null) {
                     numberInput.max = optionInfo[1].max;
                     numberInput.step = optionInfo[0] === "INT" ? 1 : optionInfo[1].step;
                     numberInput.value = optionInfo[1].default;
-                    if(optionName === "seed"){
+                    if (optionName === "seed") {
                         numberInput.min = -1;
                         numberInput.value = -1;
                     }
@@ -415,7 +424,7 @@ function AddInput(id, type, label, options = null) {
         }
 
         inputContainer.appendChild(containerWrapper);
-    }else if (type === "image") {
+    } else if (type === "image") {
         const imageWrapper = document.createElement("div");
         imageWrapper.className = "mb-6 border p-4 rounded border-gray-300 dark:border-gray-700";
 
@@ -440,7 +449,7 @@ function AddInput(id, type, label, options = null) {
         imagePreview.appendChild(uploadedImage);
 
         const fileNameLabel = document.createElement("div");
-        fileNameLabel.id = id+"-image";
+        fileNameLabel.id = id + "-image";
         fileNameLabel.className = "ml-4 text-white";
         imagePreview.appendChild(fileNameLabel);
 
@@ -458,16 +467,85 @@ function AddInput(id, type, label, options = null) {
             if (this.files && this.files[0]) {
                 uploadedImage.src = URL.createObjectURL(this.files[0]);
                 fileNameLabel.textContent = "Uploading...";
-        
+
                 const formData = new FormData();
                 formData.append("image", this.files[0]);
-        
+
                 try {
                     const response = await fetch(url + "/upload/image", {
                         method: "POST",
                         body: formData,
                     });
-        
+
+                    if (response.ok) {
+                        // Handle successful response if needed
+                        const responseData = await response.json();
+                        console.log("Image uploaded:", responseData);
+                        fileNameLabel.textContent = responseData["name"];
+                    } else {
+                        // Handle error response if needed
+                        console.error("Image upload failed:", response.status, response.statusText);
+                    }
+                } catch (error) {
+                    // Handle fetch error
+                    console.error("Fetch error:", error);
+                }
+            }
+        });
+    }
+    else if (type === "mask") {
+        const imageWrapper = document.createElement("div");
+        imageWrapper.className = "mb-6 border p-4 rounded border-gray-300 dark:border-gray-700";
+
+        const imageLabel = document.createElement("label");
+        imageLabel.className = "block text-lg font-semibold mb-2";
+        imageLabel.textContent = label;
+        imageWrapper.appendChild(imageLabel);
+
+        const imageInput = document.createElement("input");
+        imageInput.type = "file";
+        imageInput.id = id;
+        imageInput.accept = "image/*";
+        imageInput.className = "hidden"; // Hide the actual input
+        imageWrapper.appendChild(imageInput);
+
+        const imagePreview = document.createElement("div");
+        imagePreview.className = "flex items-center mt-2";
+
+        const uploadedImage = document.createElement("img");
+        uploadedImage.id = "uploadedImage";
+        uploadedImage.className = "w-48 h-48 object-cover border border-gray-500 rounded-lg shadow-md cursor-pointer";
+        imagePreview.appendChild(uploadedImage);
+
+        const fileNameLabel = document.createElement("div");
+        fileNameLabel.id = id + "-image";
+        fileNameLabel.className = "ml-4 text-white";
+        imagePreview.appendChild(fileNameLabel);
+
+        imageWrapper.appendChild(imagePreview);
+
+        inputContainer.appendChild(imageWrapper);
+
+        // Open file dialog when the image is clicked
+        uploadedImage.addEventListener("click", function () {
+            imageInput.click();
+        });
+
+        // Update the uploaded image and file name when a file is selected
+        imageInput.addEventListener("change", async function () {
+            if (this.files && this.files[0]) {
+                uploadedImage.src = URL.createObjectURL(this.files[0]);
+                fileNameLabel.textContent = "Uploading...";
+
+                const formData = new FormData();
+                formData.append("image", this.files[0]);
+
+                try {
+                    const response = await fetch(url + "/upload/image", {
+                        method: "POST",
+                        body: formData,
+                    });
+
                     if (response.ok) {
                         // Handle successful response if needed
                         const responseData = await response.json();
@@ -534,12 +612,12 @@ function convertWorkflowToApiFormat(workflow) {
                         if (_node["outputs"]) {
                             for (let i = 0; i < _node["outputs"].length; i++) {
                                 const output = _node["outputs"][i];
-                                if(output["links"]){
+                                if (output["links"]) {
                                     if (output["links"].includes(input.link)) {
                                         //console.log(node["id"], input.name, input.link, " <--> ", _node["id"], output.name, output["links"]);
                                         parentNode = _node["id"].toString();
                                         link = i;
-    
+
                                     }
                                 }
                             }
@@ -552,22 +630,25 @@ function convertWorkflowToApiFormat(workflow) {
             }
             //variable
             else {
-                if(node["type"] === "LoadImage"){
-                    apiNode.inputs["image"] = document.getElementById(node["id"]+"-image").textContent.toString();
+                if (node["type"] === "LoadImage") {
+                    apiNode.inputs["image"] = document.getElementById(node["id"] + "-image").textContent.toString();
+                }else if(node["type"] === "LoadImageMask"){
+                    apiNode.inputs["image"] = document.getElementById(node["id"] + "-image").textContent.toString();
+                    apiNode.inputs["channel"] == "alpha"
                 }
-                else{
+                else {
                     inputID = node["id"] + "-" + inputName;
                     if (document.getElementById(inputID)) {
                         value = document.getElementById(inputID).value;
                         apiNode.inputs[inputName] = value;
-                        if(inputName === "seed" && value == -1){
+                        if (inputName === "seed" && value == -1) {
                             apiNode.inputs[inputName] = getRandomInt(0, 18446744073709552000);
                         }
 
                     } else {
-                        if(inputDef[1]){
+                        if (inputDef[1]) {
                             apiNode.inputs[inputName] = inputDef[1].default;
-                        } 
+                        }
                     }
                 }
 
@@ -584,3 +665,22 @@ function convertWorkflowToApiFormat(workflow) {
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+document.getElementById("nodes-toggle").addEventListener("change", function () {
+
+    const targetIframe = document.getElementById("nodes-iframe");
+
+    setTimeout(1000);
+
+    //open
+    if (this.checked) {
+
+        targetIframe.src = url +"/?workflow=" + JSON.stringify(workflow);
+        console.log(url +"/?workflow=" + JSON.stringify(workflow));
+        targetIframe.classList.remove("hidden");
+
+        
+    } else {
+        targetIframe.classList.add("hidden");
+    }
+});
