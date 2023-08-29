@@ -10,6 +10,16 @@ let horde_models = null;
 const userNameText = document.getElementById("userName");
 const modelDropdown = document.getElementById("model-name");
 
+const progress_container = document.getElementById("progress_container");
+const queue_container = document.getElementById("queue_container");
+const queue_number = document.getElementById("queue_number");
+const progress_bar = document.getElementById("progress_bar");
+const progress_bar_progress = document.getElementById("progress_bar_progress");
+const states_container = document.getElementById("states_container");
+const waitingNumber = document.getElementById("waitingNumber");
+const processingNumber = document.getElementById("processingNumber");
+const finishedNumber = document.getElementById("finishedNumber");
+
 let horde_status = {
     "finished": 0,
     "processing": 0,
@@ -35,7 +45,7 @@ function UpdateHorde() {
 function UpdateUser() {
 
     const headers = {
-        'apikey': url, // Replace with your API key
+        'apikey': token, // Replace with your API key
     };
 
     fetch(`${horde_url}/v2/find_user`, {
@@ -174,7 +184,7 @@ function GenerateHorde() {
     fetch(`${horde_url}/v2/generate/async`, {
         method: 'POST',
         headers: {
-            'apikey': url,
+            'apikey': token,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
@@ -192,8 +202,14 @@ function GenerateHorde() {
 
 }
 
-
+let max_wait_time = 0;
 function checkGenerationStatus() {
+
+    progress_container.classList.remove("hidden");
+    progress_bar.classList.remove("hidden");
+    document.getElementById("outputImage").classList.add("blur");
+    document.getElementById("imgButtons").classList.add("blur");
+
     fetch(`${horde_url}/v2/generate/check/${current_id}`, {
         method: 'GET',
     }).then(response => {
@@ -210,12 +226,38 @@ function checkGenerationStatus() {
             console.log("done");
             OnGenerationFinished();
         } else {
+
+            if(horde_status["wait_time"] > max_wait_time){
+                max_wait_time = horde_status["wait_time"];
+            }
+            let percentage = 100 - (horde_status["wait_time"] / max_wait_time * 100);
+
+            progress_bar_progress.style.width = percentage + "%";
+            progress_bar_progress.textContent = horde_status["wait_time"] + "s";
+
+            if(horde_status["queue_position"] != 0){
+                queue_container.classList.remove("hidden");
+                states_container.classList.add("hidden");
+                queue_number.textContent = horde_status["queue_position"];
+            }else{
+                queue_container.classList.add("hidden");
+                states_container.classList.remove("hidden");
+
+                waitingNumber.textContent = horde_status["waiting"];
+                processingNumber.textContent = horde_status["processing"];
+                finishedNumber.textContent = horde_status["finished"];
+            }
+
             setTimeout(checkGenerationStatus, 1000);
         }
     })
 }
 
 function OnGenerationFinished() {
+
+
+
+
     fetch(`${horde_url}/v2/generate/status/${current_id}`, {
         method: 'GET',
     }).then(response => {
@@ -238,6 +280,12 @@ function OnGenerationFinished() {
             generatedImages.push(imageURL);
         });
         imageDisplay.src = generatedImages[0].toString();
+
+        progress_container.classList.add("hidden");
+        progress_bar.classList.add("hidden");
+        document.getElementById("outputImage").classList.remove("blur");
+        document.getElementById("imgButtons").classList.remove("blur");
+
         updateFullscreenImage(generatedImages[0].toString());
         const imgButtonContainer = document.getElementById("imgButtons");
         imgButtonContainer.innerHTML = "";
@@ -250,7 +298,19 @@ function OnGenerationFinished() {
 
             if (document.getElementById("saveToHistory").checked) {
 
-                addToImageHistory(imageSrc, generations[i]);
+                text = payload.prompt.split("###")[0] +"\n";
+                text += "Negative prompt:"+payload.prompt.split("###")[0]+"\n";
+                text += "Steps:"+payload.params.steps+", ";
+                text += "Size:"+payload.params.width+"x"+payload.params.height+", ";
+                text += "Seed:"+generations[i].seed;
+                text += "Model:"+generations[i].model+", ";
+                text += "Sampler:"+payload.params.sampler_name+", ";
+                text += "CFG scale:"+payload.params.cfg_scale+", ";
+                text += "Worker:"+generations[i]["worker_name"]+", ";
+                text += "Id:"+generations[i]["id"];
+
+
+                addToImageHistory(imageSrc, text);
             }
 
 

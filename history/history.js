@@ -190,7 +190,7 @@ function updateFullscreenImage(image, text, entry,id) {
 
   words = ["Negative prompt", "Steps", "Sampler", "CFG scale", "Seed", "Size", "Model hash",
     "Model", "Denoising strength", "Clip skip", "ENSD", "TI hashes", "Version", "Lora hashes", "Ultimate SD upscale upscaler",
-    "Ultimate SD upscale tile_width", "Ultimate SD upscale tile_height", "Ultimate SD upscale mask_blur", "Ultimate SD upscale padding",
+    "Ultimate SD upscale tile_width", "Ultimate SD upscale tile_height", "Ultimate SD upscale mask_blur", "Ultimate SD upscale padding", "Worker","Id"
   ];
 
   info.innerHTML = boldWords("<strong>Prompt</strong>:" + text, words);
