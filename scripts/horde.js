@@ -114,7 +114,7 @@ function showModelDisplay(_model){
 function addModelToList(modelName) {
     const modelList = document.getElementById('modelList');
     const modelItem = document.createElement('li');
-    modelItem.className = 'cursor-pointer hover:text-blue-500';
+    modelItem.className = 'cursor-pointer hover:text-blue-500 horde_model';
     modelItem.textContent = modelName;
 
     modelItem.addEventListener('click', () => {
@@ -283,5 +283,14 @@ document.getElementById("tokenInput").addEventListener("change", () => {
     UpdateUser();
     SaveState();
 })
-
+document.getElementById("horde_search").addEventListener('input', (e) => {
+    const elements = document.querySelectorAll(".horde_model");
+    elements.forEach(element => {
+        if(element.textContent.toLowerCase().includes(e.target.value.toLowerCase())){
+            element.classList.remove("hidden");
+        }else{
+            element.classList.add("hidden");
+        }
+    });
+});
 
