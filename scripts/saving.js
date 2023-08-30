@@ -21,6 +21,7 @@ variables = {
     token: "0000000000",
     workflow_file: "txt2img",
     workflow: null,
+    favorite_loras : []
 }
 function GetCurrentState(){
     variables["prompt"] = promptField.value;
@@ -44,6 +45,7 @@ function GetCurrentState(){
     variables["url"] = url;
     variables["workflow_file"] = document.getElementById("workflowDropdown")?.value;
     variables["workflow"] = workflow;
+    variables["favorite_loras"] = favorite_loras;
 }
 
 
@@ -111,6 +113,7 @@ function LoadState() {
     batchSizeSlider.value = variables["batch_size"];
 
     selectedStyles = variables["styles"];
+    favorite_loras = variables["favorite_loras"];
 
     document.getElementById("saveToServer").checked = variables["saveToServer"];
     document.getElementById("saveToHistory").checked = variables["saveToHistory"];

@@ -25,6 +25,8 @@ const tokenAmount = document.getElementById("tokenAmount");
 
 let horde_loras = [];
 
+let favorite_loras = [];
+
 let nextPage = null;
 
 let horde_status = {
@@ -39,6 +41,13 @@ let horde_status = {
     "kudos": 0,
     "is_possible": true
 };
+
+let nsfw_level = {
+    None:0,
+    Soft:1,
+    Mature:2,
+    X:3,
+}
 
 current_id = 0;
 
@@ -357,7 +366,7 @@ function OnGenerationFinished() {
     })
 }
 
-
+// Add lora To Active Loras
 function AddLora(name, id) {
     const horde_loraContainer = document.getElementById('horde_loraContainer');
 
@@ -374,11 +383,32 @@ function AddLora(name, id) {
     h1.classList.add('text-xl', 'font-bold', 'mb-2', 'text-white');
     h1.textContent = name;
 
+    const btnDiv = document.createElement('div');
+    btnDiv.classList.add('flex', 'justify-between', 'items-center');
+
+
+    const favoriteBtn = document.createElement('button');
+    favoriteBtn.classList.add( 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    const favoriteIcon = document.createElement('i');
+    favoriteIcon.classList.add('fa-solid', 'fa-heart');
+    favoriteBtn.appendChild(favoriteIcon);
+    btnDiv.appendChild(favoriteBtn);
+    if(isFavorited(id)){
+        favoriteIcon.classList.add('text-rose-600');
+    }else{
+        favoriteIcon.classList.add('text-white');
+    }
+
+    favoriteBtn.addEventListener('click', function () {
+        favorite_lora(id,favoriteIcon);
+    })
+
     const button = document.createElement('button');
-    button.classList.add('bg-red-500', 'hover:bg-red-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    button.classList.add('bg-red-500', 'text-white','hover:bg-red-700', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
     const icon = document.createElement('i');
     icon.classList.add('fa-solid', 'fa-trash-can');
     button.appendChild(icon);
+    btnDiv.appendChild(button);
 
     button.addEventListener('click', function () {
         horde_loraContainer.removeChild(loraDiv);
@@ -409,7 +439,7 @@ function AddLora(name, id) {
 
     // Assemble the elements
     flexDiv.appendChild(h1);
-    flexDiv.appendChild(button);
+    flexDiv.appendChild(btnDiv);
     innerDiv.appendChild(flexDiv);
     innerDiv.appendChild(label);
     innerDiv.appendChild(input);
@@ -441,7 +471,7 @@ document.getElementById("horde_search").addEventListener('input', (e) => {
     });
 });
 
-function horde_addLoraEntry(imageSrc, name, user, id) {
+function horde_addLoraEntry(imageSrc, name, user, id,isBlurred=false) {
     // Create the necessary HTML elements
     const entryDiv = document.createElement('div');
     entryDiv.classList.add('group', 'relative', 'lora');
@@ -459,6 +489,10 @@ function horde_addLoraEntry(imageSrc, name, user, id) {
     image.classList.add(
         'aspect-w-2', 'aspect-h-3', 'object-cover', 'object-center'
     );
+    if(isBlurred){
+        image.classList.add('blur');
+    }
+
     image.onerror = function () {
         image.src = "img/card-no-preview.png";
     }
@@ -501,7 +535,8 @@ function horde_addLoraEntry(imageSrc, name, user, id) {
     // Add click event listener to the nameLink
     infoDiv.addEventListener('click', function (event) {
         event.preventDefault();
-        window.open("https://civitai.com/models/" + id)
+        document.getElementById("civitIframe").src = "https://civitai.com/models/" + id;
+        document.getElementById("civitAIModalToggle").click();
     });
     infoDiv.style.cursor = "pointer";
     infoDiv.setAttribute('data-modal-target', 'loraInfoModal');
@@ -531,12 +566,21 @@ document.getElementById("searchInput").addEventListener('keyup', (e) => {
     if (e.key !== 'Enter') {
         return;
     }
-
-    console.log("Searching for: " + e.target.value);
-
     if (serverType != ServerType.Horde) {
         return;
     }
+    civitaiSearch(e.target.value);
+});
+
+document.getElementById("filterButton").addEventListener('click', () => {
+    civitaiSearch(document.getElementById("searchInput").value);
+})
+
+current_nsfw_level = 0;
+function civitaiSearch(searchTerm) {
+    nextPage = null;
+    console.log("Searching for: " + searchTerm);
+
     const lorasContainer = document.getElementById('lorasContainer')
     lorasContainer.innerHTML = "";
 
@@ -547,26 +591,108 @@ document.getElementById("searchInput").addEventListener('keyup', (e) => {
     lorasContainer.appendChild(searchingElement)
 
     const civitai_nsfw = document.getElementById("civitai_nsfw");
-    let url = `https://civitai.com/api/v1/models?types=LORA&nsfw=${civitai_nsfw.checked}&query=${e.target.value.replaceAll(" ", "%20")}`;
+    const civitai_favorites = document.getElementById("civitai_favorites");
+    const civitai_nsfw_level = document.getElementById("civitai_nsfw_level");
+
+    let nsfw = civitai_nsfw.checked
+
+    let url = `https://civitai.com/api/v1/models?types=LORA&nsfw=${nsfw}&query=${searchTerm.replaceAll(" ", "%20")}`;
+
+    if(civitai_favorites.checked){
+        url = `https://civitai.com/api/v1/models?nsfw=${civitai_nsfw.checked}`
+        favorite_loras.forEach(id => {
+            url += `&ids=${id}`
+        });
+        url += `&query=${searchTerm.replaceAll(" ", "%20")}`
+    }
+
     console.log(url);
     fetch(url)
         .then(response => {
             return response.json();
         }).then(data => {
             lorasContainer.innerHTML = "";
-            showCivitLoras(data);
+            current_nsfw_level= parseInt(civitai_nsfw_level.value);
+            if(!nsfw){
+                current_nsfw_level = 0;
+            }
+            showCivitLoras(data,current_nsfw_level);
         })
-});
+}
 
 
-function showCivitLoras(data) {
+function favorite_lora(id, icon) {
+
+    if(favorite_loras == null){
+        favorite_loras = [];
+    }
+
+    if(favorite_loras.find(lora => lora === id)) {
+        console.log("Removing from favorites");
+        icon.classList.remove("text-rose-600");
+        icon.classList.add("text-white");
+        favorite_loras = favorite_loras.filter(lora => lora !== id);
+    } else {
+        console.log("Adding to favorites");
+        icon.classList.remove("text-white");
+        icon.classList.add("text-rose-600");
+        favorite_loras.push(id);
+    }
+    SaveState();
+}
+
+function isFavorited(id){
+    return favorite_loras.find(lora => lora === id)
+}
+
+function showCivitLoras(data, nsfwLevel) {
     console.log(data);
     data["items"].forEach(lora => {
         let image = lora.modelVersions[0].images[0];
+
+        let _images = [
+            [],
+            [],
+            [],
+            [],
+        ];
+        let isBlurred = false;
         if (image) {
             image = lora.modelVersions[0].images[0].url;
+            lora.modelVersions[0].images.forEach(image => {
+                imageLevel = nsfw_level[image["nsfw"]];
+                console.log(imageLevel, image["nsfw"]);
+                _images[imageLevel].push(image.url);
+            });
+            let foundImage = false;
+            let level = nsfwLevel;
+
+            while (!foundImage){
+                if(_images[level].length > 0){
+                    image = _images[level][0];
+                    foundImage = true;
+                } else if (level == 0){
+                    isBlurred = true;
+                    while(!foundImage){
+                        if(_images[level].length > 0){
+                            image = _images[level][0];
+                            foundImage = true;
+                        }else if(level == 3){
+                            foundImage = true
+                            image=""
+                        }
+                        else{
+                            level++;
+                        }
+
+                    }
+                }
+                else {
+                    level--;
+                }
+            }
         }
-        horde_addLoraEntry(image, lora.name, lora.creator.username, lora.id)
+        horde_addLoraEntry(image, lora.name, lora.creator.username, lora.id, isBlurred)
     });
 
     nextPage = data.metadata.nextPage;
@@ -585,7 +711,7 @@ lorasContainer.addEventListener('scroll', () => {
             fetch(nextPage).then(response => {
                 return response.json();
             }).then(data => {
-                showCivitLoras(data);
+                showCivitLoras(data, current_nsfw_level);
                 loadingContent = false
             })
         }
