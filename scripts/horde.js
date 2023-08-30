@@ -642,6 +642,9 @@ function favorite_lora(id, icon) {
 }
 
 function isFavorited(id){
+    if(favorite_loras == null){
+        return false;
+    }
     return favorite_loras.find(lora => lora === id)
 }
 
