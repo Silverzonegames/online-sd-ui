@@ -134,17 +134,22 @@
 
 
     <div class="flex justify-center">
+      <div class="flex flex-col items-end">
+        <label id="userName" class="mr-4 horde">Anonymous</label>
+        <span id="tokenAmount" class="mr-4 text-sm text-gray-500"></span>
+      </div>
+    
+
       <label for="nodes-toggle"
         class="comfyui mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
         <input type="checkbox" id="nodes-toggle">
         <span class="ml-2">Node View</span>
       </label>
       <label for="loras-toggle"
-      class="automatic1111 horde mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
-      <input type="checkbox" id="loras-toggle">
-      <span class="ml-2">Show Loras</span>
-    </label>
-      <label id="userName" class="mr-4 horde">Anonymous</label>
+        class="automatic1111 horde mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
+        <input type="checkbox" id="loras-toggle">
+        <span class="ml-2">Show Loras</span>
+      </label>
       <button data-modal-target="settingsModal" data-modal-toggle="settingsModal"
         class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         type="button">
@@ -857,7 +862,7 @@
                 class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg">
                 <option value="Automatic1111">Automatic1111</option>
                 <option value="ComfyUI">ComfyUI WIP</option>
-                <option value="Horde">AI Horde TODO</option>
+                <option value="Horde">AI Horde</option>
               </select>
             </div>
             <div class="w-1/2 automatic1111 comfyui">
@@ -957,6 +962,11 @@
   <!-- End Model Modal-->
 
 
+  <!-- Filters Drawer-->
+
+  <!-- End Filters Drawer-->
+
+
   <!--Alert-->
   <div id="alert"
     class="p-4 mb-4 text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800 hidden"
@@ -983,6 +993,28 @@
     </div>
   </div>
 
+  <div class="flex items-center justify-center p-4">
+    <!-- Dropdown menu -->
+    <div id="dropdown" class="z-10 hidden w-56 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+      <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
+        Filters
+      </h6>
+      <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
+        <li class="flex items-center">
+          <input id="civitai_nsfw" type="checkbox" value=""
+            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" />
+  
+          <label for="civitai_nsfw" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            NSFW
+          </label>
+        </li>
+  
+        
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!--Main Body-->
   <div class="flex flex-col md:flex-row md:h-screen w-screen pt-16 md:fixed">
     <!-- Image side... -->
     <div class="w-full md:w-1/2 p-4 md:pl-8 md:pr-4 h-full pb-8">
@@ -996,11 +1028,13 @@
         </button>
       </div>
       <div id="progress_bar" class="hidden w-full mb-1 bg-gray-200 rounded-full dark:bg-gray-700">
-        <div id="progress_bar_progress" class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: 45%"> 12s</div>
+        <div id="progress_bar_progress"
+          class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
+          style="width: 45%"> 12s</div>
       </div>
       <!-- Image max width height max to the screen plus place for image option buttons -->
       <div id="imageDisplay" class="border border-gray-500 p-4 rounded-lg relative">
-        
+
         <img data-modal-target="ImageDetailModal" data-modal-toggle="ImageDetailModal" id="outputImage"
           src="placeholder.png" alt="Generated Image" class="object-contain h-full w-full rounded-md">
         <!-- Overlay div -->
@@ -1084,12 +1118,22 @@
             class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg resize-y">extra fingers,fewer fingers,(low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2),bad composition, inaccurate eyes, extra digit,fewer digits,(extra arms:1.2),easynegative  </textarea>
         </div>
 
-        <div class="container mx-auto mt-10 p-4 automatic1111">
+        <div class="container mx-auto mt-10 p-2 automatic1111 horde">
           <div class="mb-6 border p-4 rounded border-gray-300 dark:border-gray-700">
-            <h2 class="text-2xl font-bold mb-4 text-white">Lora weights</h2>
-            <div class="overflow-y-scroll max-h-60" id="sliderContainer">
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-bold mb-4 text-white">Loras</h2>
+              <h2 id="loraCount" class="horde text-2xl font-bold mb-4 text-white mr-4">0/5</h2>
+            </div>
+            <div class="automatic1111 overflow-y-scroll max-h-60" id="sliderContainer">
               <!-- Lora elements will be added here dynamically -->
             </div>
+            <div class="horde overflow-y-scroll max-h-80" id="horde_loraContainer">
+              <!-- Lora elements will be added here dynamically -->
+ 
+            </div>
+
+
+
           </div>
         </div>
 
@@ -1485,12 +1529,17 @@
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold tracking-tight text-gray-900">Extra Networks</h2>
           <!-- Search bar -->
-          <div class="ml-4">
+          <div class="ml-4 flex">
             <input type="text" id="searchInput"
               class="w-full px-4 py-2 text-gray-900 rounded-lg border border-gray-300 focus:ring focus:ring-blue-300"
               placeholder="Search...">
+            <button data-dropdown-toggle="dropdown" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring focus:ring-blue-300" id="filterButton">
+              <i class="fas fa-filter mr-2"></i>
+            </button>
           </div>
         </div>
+        
+        
 
         <div id="categories">
           <!-- Categories added by script go here-->
@@ -1498,10 +1547,11 @@
 
         <div class="mt-6 overflow-x-auto">
           <div id="lorasContainer"
-            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 max-w-screen pb-96 min-h-160 overflow-y-auto"
+            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 max-w-screen min-h-160 overflow-y-auto"
             style="max-height: 70vh;">
             <!-- Loras added by script go here -->
           </div>
+          
         </div>
       </div>
     </div>

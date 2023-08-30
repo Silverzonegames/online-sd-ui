@@ -19,6 +19,13 @@ const states_container = document.getElementById("states_container");
 const waitingNumber = document.getElementById("waitingNumber");
 const processingNumber = document.getElementById("processingNumber");
 const finishedNumber = document.getElementById("finishedNumber");
+const horde_loraContainer = document.getElementById("horde_loraContainer");
+const loraCount = document.getElementById("loraCount");
+const tokenAmount = document.getElementById("tokenAmount");
+
+let horde_loras = [];
+
+let nextPage = null;
 
 let horde_status = {
     "finished": 0,
@@ -57,6 +64,7 @@ function UpdateUser() {
             console.log(data);
             user = data;
             userNameText.textContent = user.username
+            tokenAmount.textContent = user.kudos
         })
         .catch(error => {
             // Handle errors
@@ -109,13 +117,13 @@ function getHordeModels() {
 }
 
 
-function showModelDisplay(_model){
+function showModelDisplay(_model) {
     model = horde_models[_model];
 
     modelDropdown.value = _model;
 
     img_url = "";
-    if(model.showcases){
+    if (model.showcases) {
         img_url = model.showcases[0];
     }
     updateModelDisplay(model.name, model.homepage, model.jobs, model.style, model.version, model.description, img_url, model.count);
@@ -153,13 +161,18 @@ function updateModelDisplay(name, homepageLink, RequestsAmount, style, versionNu
     version.textContent = versionNumber || "?";
     modelDescription.textContent = description || "";
     modelImage.src = imageSrc;
-    
+
 
     console.log('Model information updated:', {
         name, homepageLink, workersAmount, style, versionNumber, description, imageSrc
     });
 }
 function GenerateHorde() {
+    max_wait_time = 0;
+    progress_container.classList.remove("hidden");
+    document.getElementById("outputImage").classList.add("blur");
+    document.getElementById("imgButtons").classList.add("blur");
+
     payload = {
         "prompt": promptField.value.replaceAll("###", "") + "###" + negativePromptField.value,
         "params": {
@@ -169,12 +182,24 @@ function GenerateHorde() {
             "height": parseInt(height),
             "steps": parseInt(stepsSlider.value),
             "n": parseInt(batchSizeSlider.value),
+            "loras": horde_loras
         },
         "nsfw": document.getElementById("allowNSFW").checked,
         "slow_workers": document.getElementById("slowWorkers").checked,
         "models": [modelDropdown.value],
         "r2": false //use base64 instead of links
     }
+    if (uploadedImageBase64 != "") {
+        payload["source_image"] = uploadedImageBase64;
+        payload["params"]["denoising_strength"] = parseFloat(weightSlider.value);
+
+        if (maskImageBase64 != "") {
+            payload["source_mask"] = maskImageBase64;
+            payload["source_processing"] = "inpainting";
+        }
+    }
+
+
     //add seed if specifed
     if (parseInt(seedDropdown.value) != -1 && seedDropdown.value) {
         payload["params"]["seed"] = seedDropdown.value;
@@ -205,10 +230,8 @@ function GenerateHorde() {
 let max_wait_time = 0;
 function checkGenerationStatus() {
 
-    progress_container.classList.remove("hidden");
     progress_bar.classList.remove("hidden");
-    document.getElementById("outputImage").classList.add("blur");
-    document.getElementById("imgButtons").classList.add("blur");
+
 
     fetch(`${horde_url}/v2/generate/check/${current_id}`, {
         method: 'GET',
@@ -227,7 +250,7 @@ function checkGenerationStatus() {
             OnGenerationFinished();
         } else {
 
-            if(horde_status["wait_time"] > max_wait_time){
+            if (horde_status["wait_time"] > max_wait_time) {
                 max_wait_time = horde_status["wait_time"];
             }
             let percentage = 100 - (horde_status["wait_time"] / max_wait_time * 100);
@@ -235,11 +258,11 @@ function checkGenerationStatus() {
             progress_bar_progress.style.width = percentage + "%";
             progress_bar_progress.textContent = horde_status["wait_time"] + "s";
 
-            if(horde_status["queue_position"] != 0){
+            if (horde_status["queue_position"] != 0) {
                 queue_container.classList.remove("hidden");
                 states_container.classList.add("hidden");
                 queue_number.textContent = horde_status["queue_position"];
-            }else{
+            } else {
                 queue_container.classList.add("hidden");
                 states_container.classList.remove("hidden");
 
@@ -298,16 +321,16 @@ function OnGenerationFinished() {
 
             if (document.getElementById("saveToHistory").checked) {
 
-                text = payload.prompt.split("###")[0] +"\n";
-                text += "Negative prompt:"+payload.prompt.split("###")[0]+"\n";
-                text += "Steps:"+payload.params.steps+", ";
-                text += "Size:"+payload.params.width+"x"+payload.params.height+", ";
-                text += "Seed:"+generations[i].seed;
-                text += "Model:"+generations[i].model+", ";
-                text += "Sampler:"+payload.params.sampler_name+", ";
-                text += "CFG scale:"+payload.params.cfg_scale+", ";
-                text += "Worker:"+generations[i]["worker_name"]+", ";
-                text += "Id:"+generations[i]["id"];
+                text = payload.prompt.split("###")[0] + "\n";
+                text += "Negative prompt:" + payload.prompt.split("###")[1] + "\n";
+                text += "Steps:" + payload.params.steps + ", ";
+                text += "Size:" + payload.params.width + "x" + payload.params.height + ", ";
+                text += "Seed:" + generations[i].seed;
+                text += "Model:" + generations[i].model + ", ";
+                text += "Sampler:" + payload.params.sampler_name + ", ";
+                text += "CFG scale:" + payload.params.cfg_scale + ", ";
+                text += "Worker:" + generations[i]["worker_name"] + ", ";
+                text += "Id:" + generations[i]["id"];
 
 
                 addToImageHistory(imageSrc, text);
@@ -334,6 +357,70 @@ function OnGenerationFinished() {
     })
 }
 
+
+function AddLora(name, id) {
+    const horde_loraContainer = document.getElementById('horde_loraContainer');
+
+    const loraDiv = document.createElement('div');
+    loraDiv.classList.add('border-gray-700', 'border', 'rounded', 'flex', 'items-center', 'p-4');
+
+    const innerDiv = document.createElement('div');
+    innerDiv.classList.add('w-full');
+
+    const flexDiv = document.createElement('div');
+    flexDiv.classList.add('flex', 'justify-between', 'items-center');
+
+    const h1 = document.createElement('h1');
+    h1.classList.add('text-xl', 'font-bold', 'mb-2', 'text-white');
+    h1.textContent = name;
+
+    const button = document.createElement('button');
+    button.classList.add('bg-red-500', 'hover:bg-red-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    const icon = document.createElement('i');
+    icon.classList.add('fa-solid', 'fa-trash-can');
+    button.appendChild(icon);
+
+    button.addEventListener('click', function () {
+        horde_loraContainer.removeChild(loraDiv);
+        horde_loras = horde_loras.filter(lora => lora.name !== id.toString());
+        loraCount.textContent = horde_loras.length + "/5";
+        console.log(horde_loras);
+    })
+
+    const label = document.createElement('label');
+    label.classList.add('text-white', 'block', 'mb-1');
+    label.setAttribute('for', 'strength');
+    label.textContent = 'Strength: 1';
+
+    const input = document.createElement('input');
+    input.setAttribute('type', 'range');
+    input.setAttribute('id', 'lora_strength_' + id);
+    input.setAttribute('name', 'strength');
+    input.classList.add('block', 'w-full', 'mt-1');
+    input.setAttribute('min', '-5');
+    input.setAttribute('max', '5');
+    input.setAttribute('step', '0.05');
+    input.setAttribute('value', '1');
+
+    input.addEventListener('input', function () {
+        label.textContent = 'Strength: ' + input.value;
+        horde_loras.find(lora => lora.name === id.toString()).model = parseFloat(input.value);
+    })
+
+    // Assemble the elements
+    flexDiv.appendChild(h1);
+    flexDiv.appendChild(button);
+    innerDiv.appendChild(flexDiv);
+    innerDiv.appendChild(label);
+    innerDiv.appendChild(input);
+    loraDiv.appendChild(innerDiv);
+
+    horde_loraContainer.appendChild(loraDiv);
+}
+
+
+
+
 document.getElementById("listButton").addEventListener("click", () => {
     document.getElementById("modelModal").classList.remove("hidden");
     showModelDisplay(modelDropdown.value);
@@ -346,94 +433,108 @@ document.getElementById("tokenInput").addEventListener("change", () => {
 document.getElementById("horde_search").addEventListener('input', (e) => {
     const elements = document.querySelectorAll(".horde_model");
     elements.forEach(element => {
-        if(element.textContent.toLowerCase().includes(e.target.value.toLowerCase())){
+        if (element.textContent.toLowerCase().includes(e.target.value.toLowerCase())) {
             element.classList.remove("hidden");
-        }else{
+        } else {
             element.classList.add("hidden");
         }
     });
 });
 
-function horde_addLoraEntry(imageSrc, name, user) {
+function horde_addLoraEntry(imageSrc, name, user, id) {
     // Create the necessary HTML elements
     const entryDiv = document.createElement('div');
     entryDiv.classList.add('group', 'relative', 'lora');
-    entryDiv.id = name;
-  
+    entryDiv.id = id;
+
     const imageDiv = document.createElement('div');
     imageDiv.classList.add(
-      'aspect-h-1', 'aspect-w-1', 'w-full', 'overflow-hidden', 'rounded-md',
-      'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100'
+        'aspect-h-1', 'aspect-w-1', 'w-full', 'overflow-hidden', 'rounded-md',
+        'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100'
     );
-  
+
     const image = document.createElement('img');
     image.src = imageSrc;
     image.alt = 'Lora Thumbnail';
     image.classList.add(
-      'h-full', 'w-full', 'object-cover', 'object-center', 'lg:w-full', 'max-h-768'
+        'aspect-w-2', 'aspect-h-3', 'object-cover', 'object-center'
     );
-    image.onerror = () => {
-      if (!image.src.includes(".preview")) {
-        image.src = image.src.replace(".png", ".preview.png");
-      } else {
+    image.onerror = function () {
         image.src = "img/card-no-preview.png";
-      }
-    };
-  
+    }
+
+
     const infoDiv = document.createElement('div');
     infoDiv.classList.add('mt-4');
-  
+
     const nameHeading = document.createElement('h3');
     nameHeading.classList.add('text-sm', 'text-gray-700');
-  
+
     const nameLink = document.createElement('a');
     nameLink.classList.add("whitespace-normal", "break-words");
-  
+
     const nameSpan = document.createElement('span');
-    //nameSpan.classList.add('absolute', 'inset-0');
-  
+
     const nameText = document.createTextNode(name);
-  
+
     const categoryParagraph = document.createElement('p');
     categoryParagraph.classList.add('mt-1', 'text-sm', 'text-gray-500');
     categoryParagraph.textContent = user;
-  
+
     // Add click event listener to the imageDiv
     imageDiv.addEventListener('click', function (event) {
-      handleLoraEntryClick(name, category);
-      event.preventDefault(); // Prevent default link behavior
+        event.preventDefault();
+
+        if (horde_loras.length >= 5 || horde_loras.find(lora => lora.name === id.toString())) {
+            return;
+        }
+        horde_loras.push({
+            name: id.toString(),
+            model: 1
+        })
+        loraCount.textContent = horde_loras.length + "/5";
+        console.log(horde_loras);
+
+        AddLora(name, id);
     });
-  
+
     // Add click event listener to the nameLink
     infoDiv.addEventListener('click', function (event) {
-      event.preventDefault(); // Prevent default link behavior
-      ShowLoraInfo(name, imageSrc);
+        event.preventDefault();
+        window.open("https://civitai.com/models/" + id)
     });
+    infoDiv.style.cursor = "pointer";
     infoDiv.setAttribute('data-modal-target', 'loraInfoModal');
     infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
-  
+
     // Append the elements to their respective parent elements
     entryDiv.appendChild(imageDiv);
     imageDiv.appendChild(image);
-  
+
     entryDiv.appendChild(infoDiv);
     infoDiv.appendChild(nameHeading);
-  
+
     nameHeading.appendChild(nameLink);
     nameLink.appendChild(nameSpan);
     nameLink.appendChild(nameText);
-  
+
     infoDiv.appendChild(categoryParagraph);
-  
+
     // Append the entry to the container element
     const lorasContainer = document.getElementById('lorasContainer');
     lorasContainer.appendChild(entryDiv);
-  }
+}
 
 
-document.getElementById("searchInput").addEventListener('change', (e) => {
+document.getElementById("searchInput").addEventListener('keyup', (e) => {
 
-    if(serverType != ServerType.Horde){
+    if (e.key !== 'Enter') {
+        return;
+    }
+
+    console.log("Searching for: " + e.target.value);
+
+    if (serverType != ServerType.Horde) {
         return;
     }
     const lorasContainer = document.getElementById('lorasContainer')
@@ -445,17 +546,48 @@ document.getElementById("searchInput").addEventListener('change', (e) => {
     searchingElement.textContent = "Searching..."
     lorasContainer.appendChild(searchingElement)
 
-
-
-    fetch("https://civitai.com/api/v1/models?types=LORA&query="+e.target.value)
+    const civitai_nsfw = document.getElementById("civitai_nsfw");
+    let url = `https://civitai.com/api/v1/models?types=LORA&nsfw=${civitai_nsfw.checked}&query=${e.target.value.replaceAll(" ", "%20")}`;
+    console.log(url);
+    fetch(url)
         .then(response => {
             return response.json();
         }).then(data => {
-            console.log(data);
             lorasContainer.innerHTML = "";
-            data["items"].forEach(lora => {
-                horde_addLoraEntry(lora.modelVersions[0].images[0].url,lora.name,lora.creator.username)
-            });
+            showCivitLoras(data);
         })
-})
+});
 
+
+function showCivitLoras(data) {
+    console.log(data);
+    data["items"].forEach(lora => {
+        let image = lora.modelVersions[0].images[0];
+        if (image) {
+            image = lora.modelVersions[0].images[0].url;
+        }
+        horde_addLoraEntry(image, lora.name, lora.creator.username, lora.id)
+    });
+
+    nextPage = data.metadata.nextPage;
+
+    
+}
+let loadingContent = false
+lorasContainer.addEventListener('scroll', () => {
+    const distanceToBottom = lorasContainer.scrollHeight - (lorasContainer.scrollTop + lorasContainer.clientHeight);
+
+    if (distanceToBottom <= 1000) {
+        if (nextPage != null && !loadingContent) {
+
+            console.log("Loading page ", nextPage);
+            loadingContent = true
+            fetch(nextPage).then(response => {
+                return response.json();
+            }).then(data => {
+                showCivitLoras(data);
+                loadingContent = false
+            })
+        }
+    }
+})
