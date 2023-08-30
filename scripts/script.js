@@ -892,6 +892,12 @@ removeImageButton.addEventListener('click', () => {
   document.getElementById("imageUploadText").classList.remove("hidden");
 })
 searchInput.addEventListener('input', (e) => {
+
+  if(serverType != ServerType.Automatic1111){
+    return;
+}
+
+  
   Search(e.target.value);
 })
 
@@ -940,6 +946,11 @@ if (_url) {
   }
 }
 
-
-
-
+document.getElementById("loras-toggle").addEventListener('change', () => {
+  
+  const loras = document.getElementById("loraViewContainer");
+  if(document.getElementById("loras-toggle").checked){
+    loras.classList.remove("hidden");
+  }else{
+    loras.classList.add("hidden");}
+})

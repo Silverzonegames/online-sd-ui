@@ -354,3 +354,108 @@ document.getElementById("horde_search").addEventListener('input', (e) => {
     });
 });
 
+function horde_addLoraEntry(imageSrc, name, user) {
+    // Create the necessary HTML elements
+    const entryDiv = document.createElement('div');
+    entryDiv.classList.add('group', 'relative', 'lora');
+    entryDiv.id = name;
+  
+    const imageDiv = document.createElement('div');
+    imageDiv.classList.add(
+      'aspect-h-1', 'aspect-w-1', 'w-full', 'overflow-hidden', 'rounded-md',
+      'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100'
+    );
+  
+    const image = document.createElement('img');
+    image.src = imageSrc;
+    image.alt = 'Lora Thumbnail';
+    image.classList.add(
+      'h-full', 'w-full', 'object-cover', 'object-center', 'lg:w-full', 'max-h-768'
+    );
+    image.onerror = () => {
+      if (!image.src.includes(".preview")) {
+        image.src = image.src.replace(".png", ".preview.png");
+      } else {
+        image.src = "img/card-no-preview.png";
+      }
+    };
+  
+    const infoDiv = document.createElement('div');
+    infoDiv.classList.add('mt-4');
+  
+    const nameHeading = document.createElement('h3');
+    nameHeading.classList.add('text-sm', 'text-gray-700');
+  
+    const nameLink = document.createElement('a');
+    nameLink.classList.add("whitespace-normal", "break-words");
+  
+    const nameSpan = document.createElement('span');
+    //nameSpan.classList.add('absolute', 'inset-0');
+  
+    const nameText = document.createTextNode(name);
+  
+    const categoryParagraph = document.createElement('p');
+    categoryParagraph.classList.add('mt-1', 'text-sm', 'text-gray-500');
+    categoryParagraph.textContent = user;
+  
+    // Add click event listener to the imageDiv
+    imageDiv.addEventListener('click', function (event) {
+      handleLoraEntryClick(name, category);
+      event.preventDefault(); // Prevent default link behavior
+    });
+  
+    // Add click event listener to the nameLink
+    infoDiv.addEventListener('click', function (event) {
+      event.preventDefault(); // Prevent default link behavior
+      ShowLoraInfo(name, imageSrc);
+    });
+    infoDiv.setAttribute('data-modal-target', 'loraInfoModal');
+    infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
+  
+    // Append the elements to their respective parent elements
+    entryDiv.appendChild(imageDiv);
+    imageDiv.appendChild(image);
+  
+    entryDiv.appendChild(infoDiv);
+    infoDiv.appendChild(nameHeading);
+  
+    nameHeading.appendChild(nameLink);
+    nameLink.appendChild(nameSpan);
+    nameLink.appendChild(nameText);
+  
+    infoDiv.appendChild(categoryParagraph);
+  
+    // Append the entry to the container element
+    const lorasContainer = document.getElementById('lorasContainer');
+    lorasContainer.appendChild(entryDiv);
+  }
+
+
+document.getElementById("searchInput").addEventListener('change', (e) => {
+
+    if(serverType != ServerType.Horde){
+        return;
+    }
+    const lorasContainer = document.getElementById('lorasContainer')
+    lorasContainer.innerHTML = "";
+
+
+    searchingElement = document.createElement('div')
+    searchingElement.classList.add('block', 'px-4', 'py-2', 'text-gray-600', 'font-bold');
+    searchingElement.textContent = "Searching..."
+    lorasContainer.appendChild(searchingElement)
+
+
+
+    fetch("https://civitai.com/api/v1/models?types=LORA&query="+e.target.value)
+        .then(response => {
+            return response.json();
+        }).then(data => {
+            console.log(data);
+            lorasContainer.innerHTML = "";
+            data["items"].forEach(lora => {
+                horde_addLoraEntry(lora.modelVersions[0].images[0].url,lora.name,lora.creator.username)
+            });
+        })
+})
+

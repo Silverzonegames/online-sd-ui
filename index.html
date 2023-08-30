@@ -139,7 +139,12 @@
         <input type="checkbox" id="nodes-toggle">
         <span class="ml-2">Node View</span>
       </label>
-      <label id="userName" class="mr-4">Anonymous</label>
+      <label for="loras-toggle"
+      class="automatic1111 horde mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
+      <input type="checkbox" id="loras-toggle">
+      <span class="ml-2">Show Loras</span>
+    </label>
+      <label id="userName" class="mr-4 horde">Anonymous</label>
       <button data-modal-target="settingsModal" data-modal-toggle="settingsModal"
         class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         type="button">
@@ -1474,7 +1479,7 @@
 
 
     <!-- Loras -->
-    <div class="w-full md:w-1/2 bg-white max-h-screen automatic1111">
+    <div id="loraViewContainer" class="w-full md:w-1/2 bg-white max-h-screen automatic1111">
       <div class="mx-auto px-4 py-8 sm:px-6 sm:py-12">
 
         <div class="flex items-center justify-between mb-6">
