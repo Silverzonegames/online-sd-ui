@@ -326,6 +326,24 @@ function OnGenerationFinished() {
         });
         if(generatedImages[0]){
             imageDisplay.src = generatedImages[0].toString();
+            if ('Notification' in window) {
+                Notification.requestPermission()
+                    .then(permission => {
+                        if (permission === 'granted') {
+                            const notificationOptions = {
+                                body: 'Click to view your images',
+                                icon: generatedImages[0].toString() // URL of the notification icon
+                            };
+        
+                            const notification = new Notification('Generation Finished!', notificationOptions);
+                            
+                            notification.onclick = () => {
+                                // Handle click event when user clicks on the notification
+                                // You can redirect to a specific page or perform an action here
+                            };
+                        }
+                    });
+            }
             updateFullscreenImage(generatedImages[0].toString());
 
         }

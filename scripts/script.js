@@ -943,3 +943,10 @@ document.getElementById("loras-toggle").addEventListener('change', () => {
   }else{
     loras.classList.add("hidden");}
 })
+
+if ('Notification' in window) {
+  Notification.requestPermission()
+      .then(permission => {
+
+      });
+}
