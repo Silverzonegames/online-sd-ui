@@ -508,7 +508,7 @@ document.getElementById("horde_search").addEventListener('input', (e) => {
     });
 });
 
-function horde_addLoraEntry(imageSrc, name, user, id,isBlurred=false,tokens=[]) {
+function horde_addLoraEntry(imageSrc, name, user, id,Blurred=null,tokens=[]) {
     // Create the necessary HTML elements
     const entryDiv = document.createElement('div');
     entryDiv.classList.add('group', 'relative', 'lora');
@@ -526,8 +526,8 @@ function horde_addLoraEntry(imageSrc, name, user, id,isBlurred=false,tokens=[]) 
     image.classList.add(
         'aspect-w-2', 'aspect-h-3', 'object-cover', 'object-center'
     );
-    if(isBlurred){
-        image.classList.add('blur');
+    if(Blurred){
+        image.classList.add(Blurred);
     }
 
     image.onerror = function () {
@@ -573,6 +573,7 @@ function horde_addLoraEntry(imageSrc, name, user, id,isBlurred=false,tokens=[]) 
     infoDiv.addEventListener('click', function (event) {
         event.preventDefault();
         document.getElementById("civitIframe").src = "https://civitai.com/models/" + id;
+        document.getElementById("civitModalLink").href = "https://civitai.com/models/" + id;
         document.getElementById("civitAIModalToggle").click();
     });
     infoDiv.style.cursor = "pointer";
@@ -633,10 +634,10 @@ function civitaiSearch(searchTerm) {
 
     let nsfw = civitai_nsfw.checked
 
-    let url = `https://civitai.com/api/v1/models?types=LORA&nsfw=${nsfw}&query=${searchTerm.replaceAll(" ", "%20")}`;
+    let url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&nsfw=${nsfw}&query=${searchTerm.replaceAll(" ", "%20")}`;
 
     if(civitai_favorites.checked){
-        url = `https://civitai.com/api/v1/models?nsfw=${civitai_nsfw.checked}`
+        url = `https://civitai.com/api/v1/models?primaryFileOnly=true&nsfw=${civitai_nsfw.checked}`
         favorite_loras.forEach(id => {
             url += `&ids=${id}`
         });
@@ -685,6 +686,13 @@ function isFavorited(id){
     return favorite_loras.find(lora => lora === id)
 }
 
+let blur_level={
+    0: null,
+    1: "blur",
+    2: "blur-md",
+    3: "blur-lg",
+}
+
 function showCivitLoras(data, nsfwLevel) {
     console.log(data);
     data["items"].forEach(lora => {
@@ -696,7 +704,7 @@ function showCivitLoras(data, nsfwLevel) {
             [],
             [],
         ];
-        let isBlurred = false;
+        let isBlurred = null;
         if (image) {
             image = lora.modelVersions[0].images[0].url;
             lora.modelVersions[0].images.forEach(image => {
@@ -712,10 +720,11 @@ function showCivitLoras(data, nsfwLevel) {
                     image = _images[level][0];
                     foundImage = true;
                 } else if (level == 0){
-                    isBlurred = true;
                     while(!foundImage){
                         if(_images[level].length > 0){
                             image = _images[level][0];
+                            isBlurred = blur_level[level-nsfwLevel];
+                            
                             foundImage = true;
                         }else if(level == 3){
                             foundImage = true
@@ -745,7 +754,7 @@ let loadingContent = false
 lorasContainer.addEventListener('scroll', () => {
     const distanceToBottom = lorasContainer.scrollHeight - (lorasContainer.scrollTop + lorasContainer.clientHeight);
 
-    if (distanceToBottom <= 1000) {
+    if (distanceToBottom <= 2000) {
         if (nextPage != null && !loadingContent) {
 
             console.log("Loading page ", nextPage);

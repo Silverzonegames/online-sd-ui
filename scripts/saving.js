@@ -16,13 +16,15 @@ variables = {
     generatedImages: [],
     img2imgImage: "",
     img2imgMask: "",
-    serverType: ServerType.Automatic1111,
+    serverType: ServerType.Horde,
     url: "http://127.0.0.1:7860",
     token: "0000000000",
     workflow_file: "txt2img",
     workflow: null,
     favorite_loras : [],
+    current_loras : [],
     model:"stable_diffusion"
+
 }
 function GetCurrentState(){
     variables["prompt"] = promptField.value;
@@ -47,6 +49,7 @@ function GetCurrentState(){
     variables["workflow_file"] = document.getElementById("workflowDropdown")?.value;
     variables["workflow"] = workflow;
     variables["favorite_loras"] = favorite_loras;
+    variables["current_loras"] = horde_loras;
     variables["model"] = document.getElementById("model-name")?.value;
 }
 
@@ -139,6 +142,24 @@ function LoadState() {
     document.getElementById("outputImage").src = variables["generatedImage"];
 
     UpdateLoraDisplays();
+
+    horde_loras = variables["current_loras"];
+
+    let ids = ""
+
+    horde_loras.forEach(lora => {
+        ids += "&ids="+lora.name;
+    });
+
+    if(horde_loras.length > 0){
+        fetch("https://civitai.com/api/v1/models?primaryFileOnly=true"+ids).then(response => response.json()).then(data => {
+            data.items.forEach(lora => {
+                AddLora(lora.name, lora.id, lora.modelVersions[0].trainedWords);
+            });
+        })
+    }
+
+
     SavingIsPossible = true;
 
 }
