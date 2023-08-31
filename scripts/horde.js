@@ -56,6 +56,7 @@ generations = [];
 function UpdateHorde() {
     UpdateUser();
     getHordeModels();
+    civitaiSearch("");
 }
 
 function UpdateUser() {
@@ -440,23 +441,22 @@ function AddLora(name, id, tokens=[]) {
 
     const tokenLabel = document.createElement('label');
     const tokenDiv = document.createElement('div');
-    if(tokens.length > 0){
+    
+    if (tokens.length > 0) {
         tokenLabel.classList.add('text-white', 'block', 'mb-1');
         tokenLabel.textContent = 'Activation Tokens: ';
-        tokenDiv.classList.add('flex', 'items-center');
-        // const tokenLabel = document.createElement('label');
-        // tokenLabel.classList.add('text-white', 'block', 'mb-1');
-        // tokenLabel.textContent = 'Activation Tokens: ';
-        // tokenDiv.appendChild(tokenLabel);
+        tokenDiv.classList.add('flex', 'flex-wrap', 'items-center');  // Adding 'flex-wrap' class for wrapping tokens
+    
         tokens.forEach(token => {
             let tokenBlock = document.createElement('code');
-            tokenBlock.classList.add('text-white', 'block', 'mb-1');
+            tokenBlock.classList.add('text-white', 'block', 'mb-1', 'mr-2');  // Adding 'mr-2' class for margin between tokens
             tokenBlock.textContent = token;
             tokenDiv.appendChild(tokenBlock);
         });
-
+    
         AddCodeBlockButtons(tokenDiv);
     }
+    
 
     // Assemble the elements
     flexDiv.appendChild(h1);
