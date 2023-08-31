@@ -30,6 +30,7 @@ const paintButton = document.getElementById("paintBtn");
 
 const removeImageButton = document.getElementById("removeImageButton");
 
+const generateBtn = document.getElementById('generateBtn');
 
 
 let selectedStyles = [];
