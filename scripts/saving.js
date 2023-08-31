@@ -21,7 +21,8 @@ variables = {
     token: "0000000000",
     workflow_file: "txt2img",
     workflow: null,
-    favorite_loras : []
+    favorite_loras : [],
+    model:"stable_diffusion"
 }
 function GetCurrentState(){
     variables["prompt"] = promptField.value;
@@ -46,6 +47,7 @@ function GetCurrentState(){
     variables["workflow_file"] = document.getElementById("workflowDropdown")?.value;
     variables["workflow"] = workflow;
     variables["favorite_loras"] = favorite_loras;
+    variables["model"] = document.getElementById("model-name")?.value;
 }
 
 

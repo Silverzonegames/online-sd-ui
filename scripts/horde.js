@@ -117,6 +117,7 @@ function getHordeModels() {
                 Object.keys(horde_models).forEach(key => {
                     modelDropdown.innerHTML += `<option value="${key}">${key} (${horde_models[key].count})</option>`;
                 })
+                modelDropdown.value = variables["model"];
             })
         })
         .catch(error => {
