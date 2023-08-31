@@ -450,7 +450,10 @@ function AddLora(name, id, tokens=[]) {
 
     input.addEventListener('input', function () {
         label.textContent = 'Strength: ' + input.value;
-        horde_loras.find(lora => lora.name === id.toString()).model = parseFloat(input.value);
+        let _lora = horde_loras.find(lora => lora.name === id.toString());
+
+        _lora.model = parseFloat(input.value);
+        _lora.clip = parseFloat(input.value);
     })
 
     const tokenLabel = document.createElement('label');
@@ -508,49 +511,67 @@ document.getElementById("horde_search").addEventListener('input', (e) => {
     });
 });
 
-function horde_addLoraEntry(imageSrc, name, user, id,Blurred=null,tokens=[]) {
+function horde_addLoraEntry(imageSrc, name, user, id, Blurred = null, tokens = []) {
     // Create the necessary HTML elements
     const entryDiv = document.createElement('div');
     entryDiv.classList.add('group', 'relative', 'lora');
     entryDiv.id = id;
 
+    const contentDiv = document.createElement('div');
+    contentDiv.classList.add('bg-white', 'border', 'border-gray-200', 'rounded-lg', 'shadow', 'dark:bg-gray-800', 'dark:border-gray-700');
+
     const imageDiv = document.createElement('div');
     imageDiv.classList.add(
-        'aspect-h-1', 'aspect-w-1', 'w-full', 'overflow-hidden', 'rounded-md',
-        'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100'
+        'overflow-hidden', 'rounded-t-lg'
     );
 
     const image = document.createElement('img');
     image.src = imageSrc;
     image.alt = 'Lora Thumbnail';
-    image.classList.add(
-        'aspect-w-2', 'aspect-h-3', 'object-cover', 'object-center'
-    );
-    if(Blurred){
+    image.classList.add('object-cover', 'object-center', 'w-full','aspect-[2/3]');
+
+    if (Blurred) {
         image.classList.add(Blurred);
+        imageDiv.addEventListener('mouseover', function () {
+            if (document.getElementById("unBlurOnHover").checked) {
+                image.classList.remove(Blurred);
+            }
+        });
+        imageDiv.addEventListener('mouseout', function () {
+            image.classList.add(Blurred);
+        });
     }
 
     image.onerror = function () {
         image.src = "img/card-no-preview.png";
-    }
-
+    };
 
     const infoDiv = document.createElement('div');
     infoDiv.classList.add('mt-4');
+    infoDiv.style.cursor = "pointer";
+    infoDiv.setAttribute('data-modal-target', 'loraInfoModal');
+    infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
 
     const nameHeading = document.createElement('h3');
     nameHeading.classList.add('text-sm', 'text-gray-700');
 
     const nameLink = document.createElement('a');
-    nameLink.classList.add("whitespace-normal", "break-words");
-
-    const nameSpan = document.createElement('span');
+    nameLink.classList.add("mb-2", "text-xl", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words","max-h-4", "overflow-hidden");
 
     const nameText = document.createTextNode(name);
+    nameLink.appendChild(nameText);
 
-    const categoryParagraph = document.createElement('p');
-    categoryParagraph.classList.add('mt-1', 'text-sm', 'text-gray-500');
-    categoryParagraph.textContent = user;
+    const userFlexDiv = document.createElement('div');
+    userFlexDiv.classList.add('flex', 'm-2');
+
+    const avatarImage = document.createElement('img');
+    avatarImage.classList.add('w-6', 'h-6', 'rounded-full');
+    avatarImage.src = user.image;
+    avatarImage.alt = "Rounded avatar";
+
+    const userParagraph = document.createElement('p');
+    userParagraph.classList.add('mb-3', 'my-auto', 'ml-2', 'font-normal', 'text-gray-700', 'dark:text-gray-400');
+    userParagraph.textContent = user.username;
 
     // Add click event listener to the imageDiv
     imageDiv.addEventListener('click', function (event) {
@@ -561,12 +582,13 @@ function horde_addLoraEntry(imageSrc, name, user, id,Blurred=null,tokens=[]) {
         }
         horde_loras.push({
             name: id.toString(),
+            clip: 1,
             model: 1
-        })
+        });
         loraCount.textContent = horde_loras.length + "/5";
         console.log(horde_loras);
 
-        AddLora(name, id,tokens);
+        AddLora(name, id, tokens);
     });
 
     // Add click event listener to the nameLink
@@ -576,22 +598,20 @@ function horde_addLoraEntry(imageSrc, name, user, id,Blurred=null,tokens=[]) {
         document.getElementById("civitModalLink").href = "https://civitai.com/models/" + id;
         document.getElementById("civitAIModalToggle").click();
     });
-    infoDiv.style.cursor = "pointer";
-    infoDiv.setAttribute('data-modal-target', 'loraInfoModal');
-    infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
 
     // Append the elements to their respective parent elements
-    entryDiv.appendChild(imageDiv);
+    contentDiv.appendChild(imageDiv);
     imageDiv.appendChild(image);
 
-    entryDiv.appendChild(infoDiv);
+    contentDiv.appendChild(infoDiv);
     infoDiv.appendChild(nameHeading);
-
     nameHeading.appendChild(nameLink);
-    nameLink.appendChild(nameSpan);
-    nameLink.appendChild(nameText);
 
-    infoDiv.appendChild(categoryParagraph);
+    infoDiv.appendChild(userFlexDiv);
+    userFlexDiv.appendChild(avatarImage);
+    userFlexDiv.appendChild(userParagraph);
+
+    entryDiv.appendChild(contentDiv);
 
     // Append the entry to the container element
     const lorasContainer = document.getElementById('lorasContainer');
@@ -637,7 +657,7 @@ function civitaiSearch(searchTerm) {
     let url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&nsfw=${nsfw}&query=${searchTerm.replaceAll(" ", "%20")}`;
 
     if(civitai_favorites.checked){
-        url = `https://civitai.com/api/v1/models?primaryFileOnly=true&nsfw=${civitai_nsfw.checked}`
+        url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&nsfw=${civitai_nsfw.checked}`
         favorite_loras.forEach(id => {
             url += `&ids=${id}`
         });
@@ -716,12 +736,22 @@ function showCivitLoras(data, nsfwLevel) {
 
             while (!foundImage){
                 if(_images[level].length > 0){
-                    image = _images[level][0];
+
+                    if(document.getElementById("civitRandomImage").checked){
+                        image = _images[level][Math.floor(Math.random() * _images[level].length)];
+                    }else{
+                        image = _images[level][0];
+                    }
+
                     foundImage = true;
                 } else if (level == 0){
                     while(!foundImage){
                         if(_images[level].length > 0){
-                            image = _images[level][0];
+                            if(document.getElementById("civitRandomImage").checked){
+                                image = _images[level][Math.floor(Math.random() * _images[level].length)];
+                            }else{
+                                image = _images[level][0];
+                            }
                             isBlurred = blur_level[level-nsfwLevel];
                             
                             foundImage = true;
@@ -742,7 +772,7 @@ function showCivitLoras(data, nsfwLevel) {
         }
         tokens = lora.modelVersions[0].trainedWords;
 
-        horde_addLoraEntry(image, lora.name, lora.creator.username, lora.id, isBlurred,tokens)
+        horde_addLoraEntry(image, lora.name, lora.creator, lora.id, isBlurred,tokens)
     });
 
     nextPage = data.metadata.nextPage;

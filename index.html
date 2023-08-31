@@ -855,6 +855,7 @@
         </div>
         <!-- Modal body -->
         <div class="p-6 space-y-6">
+          <!--Server-->
           <div class="flex space-x-6">
             <div class="w-1/2">
               <label class="block text-lg font-semibold">Server Type</label>
@@ -882,7 +883,20 @@
               </div>
             </div>
           </div>
-
+          <label class="relative inline-flex items-center cursor-pointer dark">
+            <input id="unBlurOnHover" type="checkbox" value="" class="sr-only peer">
+            <div
+              class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
+            </div>
+            <span class="ml-3 text-sm font-medium  text-gray-300">Unblur Blurred Images On Hover</span>
+          </label>
+          <label class="relative inline-flex items-center cursor-pointer dark">
+            <input id="civitRandomImage" type="checkbox" value="" class="sr-only peer">
+            <div
+              class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
+            </div>
+            <span title="Idk why I added this" class="ml-3 text-sm font-medium  text-gray-300">Select Random Image From CivitAi</span>
+          </label>
 
           <!-- Modal footer -->
           <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
@@ -996,8 +1010,7 @@
         </div>
         <!-- Modal body -->
         <div class="space-y-6 h-full overflow-y-hidden">
-          <iframe id="civitIframe" class="w-full h-[90vh] mt-[-4.5rem]"
-            ></iframe>
+          <iframe id="civitIframe" class="w-full h-[90vh] mt-[-4.5rem]"></iframe>
         </div>
       </div>
     </div>
@@ -1061,8 +1074,7 @@
           <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">
             NSFW Level:
           </label>
-          <select 
-            id="civitai_nsfw_level"
+          <select id="civitai_nsfw_level"
             class="ml-1 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2">
             <option value="0">None</option>
             <option value="1">Soft</option>
@@ -1092,9 +1104,9 @@
           Generate
         </button>
         <button id="cancelBtn"
-        class="ml-2 hidden bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-lg">
-        Cancel
-      </button>
+          class="ml-2 hidden bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-lg">
+          Cancel
+        </button>
       </div>
       <div id="progress_bar" class="hidden w-full mb-1 bg-gray-200 rounded-full dark:bg-gray-700">
         <div id="progress_bar_progress"
@@ -1592,11 +1604,11 @@
 
 
     <!-- Loras -->
-    <div id="loraViewContainer" class="w-full md:w-1/2 bg-white max-h-screen automatic1111">
-      <div class="mx-auto px-4 py-8 sm:px-6 sm:py-12">
+    <div id="loraViewContainer" class="w-full md:w-1/2 bg-gray-900  max-h-full automatic1111">
+      <div class="mx-auto px-4 py-8 sm:px-6 sm:py-12 h-full max-h-screen">
 
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold tracking-tight text-gray-900">Extra Networks</h2>
+          <h2 class="text-2xl font-bold tracking-tight text-white">Extra Networks</h2>
           <!-- Search bar -->
           <div class="ml-4 flex">
             <input type="text" id="searchInput"
@@ -1615,14 +1627,53 @@
         <div id="categories">
           <!-- Categories added by script go here-->
         </div>
+        <div id="tags">
 
-        <div class="mt-6 overflow-x-auto">
+          <span
+            class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded  border-blue-400">Default</span>
+          <span
+            class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded  border-gray-500">Dark</span>
+
+        </div>
+
+
+        <div class="mt-6 overflow-x-auto hidden">
+          <div id="" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10  overflow-y-auto" style="max-height: 70vh;">
+
+
+            <div
+              class="group relative lora bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
+              id="5477">
+              <div
+                class=" overflow-hidden rounded-t-lg bg-gray-200 group-hover:opacity-75 lg:h-100">
+                <img
+                  src="https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/fa691f6a-40b3-43a3-ead4-764634715a00/width=450/56936.jpeg"
+                  alt="Lora Thumbnail" class="object-cover object-center aspect-2/3">
+              </div>
+              <div class="mt-4" style="cursor: pointer;" data-modal-target="loraInfoModal"
+                data-modal-toggle="loraInfoModal">
+                <h3 class="text-sm text-gray-700"><a
+                    class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-normal break-words"><span></span>Lucy
+                    (Cyberpunk Edgerunners) LoRA</a></h3>
+                <div class="flex m-2">
+                  <img class="w-10 h-10 rounded-full"
+                    src="https://cdn.discordapp.com/avatars/180327464155742208/59254be18ccd627daf138d053327485d.png"
+                    alt="Rounded avatar">
+                  <p class="mb-3 my-auto ml-2 font-normal text-gray-700 dark:text-gray-400 ">Lykon</p>
+                </div>
+              </div>
+            </div>
+
+
+
+          </div>
+        </div>
+        <div class="mt-6 overflow-x-auto h-full">
           <div id="lorasContainer"
-            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 max-w-screen min-h-160 overflow-y-auto"
-            style="max-height: 70vh;">
+            class="md:h-full mb-16 pb-32 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-4 max-w-screen overflow-y-auto"
+            >
             <!-- Loras added by script go here -->
           </div>
-
         </div>
       </div>
     </div>

@@ -23,8 +23,8 @@ variables = {
     workflow: null,
     favorite_loras : [],
     current_loras : [],
-    model:"stable_diffusion"
-
+    model:"stable_diffusion",
+    inputs: [],
 }
 function GetCurrentState(){
     variables["prompt"] = promptField.value;
@@ -51,8 +51,40 @@ function GetCurrentState(){
     variables["favorite_loras"] = favorite_loras;
     variables["current_loras"] = horde_loras;
     variables["model"] = document.getElementById("model-name")?.value;
+    
+    variables["inputs"] = [];
+    InputsToSave.forEach(input => {
+        const element = document.getElementById(input.id);
+        let value;
+    
+        if (input.type === "checked") {
+            value = element.checked;
+        } else {
+            value = element.value;
+        }
+    
+        variables["inputs"].push({
+            id: input.id,
+            type: input.type,
+            value: value
+        });
+    });
 }
 
+const InputsToSave = [
+    //settings
+    {id:"unBlurOnHover", type:"checked"},
+    {id:"civitRandomImage", type:"checked"},
+    //ui
+    {id:"loras-toggle", type:"checked"},
+    //horde
+    {id:"allowNSFW", type:"checked"},
+    {id:"slowWorkers", type:"checked"},
+    //filters
+    {id:"civitai_nsfw", type:"checked"},
+    {id:"civitai_favorites", type:"checked"},
+    {id:"civitai_nsfw_level", type:"value"},
+]
 
 function SaveState() {
 
@@ -142,6 +174,23 @@ function LoadState() {
     document.getElementById("outputImage").src = variables["generatedImage"];
 
     UpdateLoraDisplays();
+
+    variables["inputs"].forEach(input => {
+        const element = document.getElementById(input.id);
+
+        if(input.type == "checked"){
+            element.checked = input.value;
+        }else{
+            element.value = input.value;
+        }
+        var event = new Event('change');
+        element.dispatchEvent(event);
+        event = new Event('input');
+        element.dispatchEvent(event);
+
+
+    })
+
 
     horde_loras = variables["current_loras"];
 
