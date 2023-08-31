@@ -367,7 +367,7 @@ function OnGenerationFinished() {
 }
 
 // Add lora To Active Loras
-function AddLora(name, id) {
+function AddLora(name, id, tokens=[]) {
     const horde_loraContainer = document.getElementById('horde_loraContainer');
 
     const loraDiv = document.createElement('div');
@@ -437,12 +437,34 @@ function AddLora(name, id) {
         horde_loras.find(lora => lora.name === id.toString()).model = parseFloat(input.value);
     })
 
+    const tokenLabel = document.createElement('label');
+    const tokenDiv = document.createElement('div');
+    if(tokens.length > 0){
+        tokenLabel.classList.add('text-white', 'block', 'mb-1');
+        tokenLabel.textContent = 'Activation Tokens: ';
+        tokenDiv.classList.add('flex', 'items-center');
+        // const tokenLabel = document.createElement('label');
+        // tokenLabel.classList.add('text-white', 'block', 'mb-1');
+        // tokenLabel.textContent = 'Activation Tokens: ';
+        // tokenDiv.appendChild(tokenLabel);
+        tokens.forEach(token => {
+            let tokenBlock = document.createElement('code');
+            tokenBlock.classList.add('text-white', 'block', 'mb-1');
+            tokenBlock.textContent = token;
+            tokenDiv.appendChild(tokenBlock);
+        });
+
+        AddCodeBlockButtons(tokenDiv);
+    }
+
     // Assemble the elements
     flexDiv.appendChild(h1);
     flexDiv.appendChild(btnDiv);
     innerDiv.appendChild(flexDiv);
     innerDiv.appendChild(label);
     innerDiv.appendChild(input);
+    innerDiv.appendChild(tokenLabel);
+    innerDiv.appendChild(tokenDiv);
     loraDiv.appendChild(innerDiv);
 
     horde_loraContainer.appendChild(loraDiv);
@@ -471,7 +493,7 @@ document.getElementById("horde_search").addEventListener('input', (e) => {
     });
 });
 
-function horde_addLoraEntry(imageSrc, name, user, id,isBlurred=false) {
+function horde_addLoraEntry(imageSrc, name, user, id,isBlurred=false,tokens=[]) {
     // Create the necessary HTML elements
     const entryDiv = document.createElement('div');
     entryDiv.classList.add('group', 'relative', 'lora');
@@ -529,7 +551,7 @@ function horde_addLoraEntry(imageSrc, name, user, id,isBlurred=false) {
         loraCount.textContent = horde_loras.length + "/5";
         console.log(horde_loras);
 
-        AddLora(name, id);
+        AddLora(name, id,tokens);
     });
 
     // Add click event listener to the nameLink
@@ -692,7 +714,9 @@ function showCivitLoras(data, nsfwLevel) {
                 }
             }
         }
-        horde_addLoraEntry(image, lora.name, lora.creator.username, lora.id, isBlurred)
+        tokens = lora.modelVersions[0].trainedWords;
+
+        horde_addLoraEntry(image, lora.name, lora.creator.username, lora.id, isBlurred,tokens)
     });
 
     nextPage = data.metadata.nextPage;
