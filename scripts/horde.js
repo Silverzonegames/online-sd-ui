@@ -625,7 +625,7 @@ function civitaiSearch(searchTerm) {
 
     searchingElement = document.createElement('div')
     searchingElement.classList.add('block', 'px-4', 'py-2', 'text-gray-600', 'font-bold');
-    searchingElement.textContent = "Searching..."
+    searchingElement.textContent = "Fetching..."
     lorasContainer.appendChild(searchingElement)
 
     const civitai_nsfw = document.getElementById("civitai_nsfw");
@@ -709,7 +709,6 @@ function showCivitLoras(data, nsfwLevel) {
             image = lora.modelVersions[0].images[0].url;
             lora.modelVersions[0].images.forEach(image => {
                 imageLevel = nsfw_level[image["nsfw"]];
-                console.log(imageLevel, image["nsfw"]);
                 _images[imageLevel].push(image.url);
             });
             let foundImage = false;
@@ -757,11 +756,16 @@ lorasContainer.addEventListener('scroll', () => {
     if (distanceToBottom <= 2000) {
         if (nextPage != null && !loadingContent) {
 
+            const fetchingText = document.createElement('p');
+            fetchingText.classList.add('block', 'px-4', 'py-2', 'text-gray-600', 'font-bold');
+            fetchingText.textContent = "Fetching..."
+            lorasContainer.appendChild(fetchingText)
             console.log("Loading page ", nextPage);
             loadingContent = true
             fetch(nextPage).then(response => {
                 return response.json();
             }).then(data => {
+                fetchingText.remove()   
                 showCivitLoras(data, current_nsfw_level);
                 loadingContent = false
             })
