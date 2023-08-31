@@ -1,13 +1,3 @@
-// Select the aspect ratio slider element
-//const aspectRatioSlider = document.getElementById("aspectRatioSlider");
-//const aspectText = document.getElementById("arText");
-
-
-
-
-
-
-
 function createIndexedDB() {
   return new Promise((resolve, reject) => {
     const request = window.indexedDB.open("ImageDB", 1);
@@ -754,7 +744,6 @@ const cfgSlider = document.getElementById("scale-slider");
 const cfgValue = document.getElementById("scale-value");
 
 // Event listener for generate button
-const generateBtn = document.getElementById('generateBtn');
 generateBtn.addEventListener('click', () => {
 
   

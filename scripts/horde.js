@@ -22,6 +22,7 @@ const finishedNumber = document.getElementById("finishedNumber");
 const horde_loraContainer = document.getElementById("horde_loraContainer");
 const loraCount = document.getElementById("loraCount");
 const tokenAmount = document.getElementById("tokenAmount");
+const cancelBtn = document.getElementById("cancelBtn");
 
 let horde_loras = [];
 
@@ -59,6 +60,8 @@ function UpdateHorde() {
 }
 
 function UpdateUser() {
+
+
 
     const headers = {
         'apikey': token, // Replace with your API key
@@ -177,8 +180,11 @@ function updateModelDisplay(name, homepageLink, RequestsAmount, style, versionNu
     });
 }
 function GenerateHorde() {
+    
     max_wait_time = 0;
     progress_container.classList.remove("hidden");
+    generateBtn.classList.add("hidden");
+    cancelBtn.classList.remove("hidden");
     document.getElementById("outputImage").classList.add("blur");
     document.getElementById("imgButtons").classList.add("blur");
 
@@ -191,13 +197,17 @@ function GenerateHorde() {
             "height": parseInt(height),
             "steps": parseInt(stepsSlider.value),
             "n": parseInt(batchSizeSlider.value),
-            "loras": horde_loras
         },
         "nsfw": document.getElementById("allowNSFW").checked,
         "slow_workers": document.getElementById("slowWorkers").checked,
         "models": [modelDropdown.value],
         "r2": false //use base64 instead of links
     }
+
+    if(horde_loras.length > 0){
+        payload["params"]["loras"] = horde_loras;
+    }
+
     if (uploadedImageBase64 != "") {
         payload["source_image"] = uploadedImageBase64;
         payload["params"]["denoising_strength"] = parseFloat(weightSlider.value);
@@ -273,12 +283,12 @@ function checkGenerationStatus() {
                 queue_number.textContent = horde_status["queue_position"];
             } else {
                 queue_container.classList.add("hidden");
-                states_container.classList.remove("hidden");
-
-                waitingNumber.textContent = horde_status["waiting"];
-                processingNumber.textContent = horde_status["processing"];
-                finishedNumber.textContent = horde_status["finished"];
             }
+            states_container.classList.remove("hidden");
+
+            waitingNumber.textContent = horde_status["waiting"];
+            processingNumber.textContent = horde_status["processing"];
+            finishedNumber.textContent = horde_status["finished"];
 
             setTimeout(checkGenerationStatus, 1000);
         }
@@ -287,7 +297,8 @@ function checkGenerationStatus() {
 
 function OnGenerationFinished() {
 
-
+    generateBtn.classList.remove("hidden");
+    cancelBtn.classList.add("hidden");
 
 
     fetch(`${horde_url}/v2/generate/status/${current_id}`, {
@@ -311,14 +322,17 @@ function OnGenerationFinished() {
             const imageURL = `data:image/png;base64, ${generation["img"]}`;
             generatedImages.push(imageURL);
         });
-        imageDisplay.src = generatedImages[0].toString();
+        if(generatedImages[0]){
+            imageDisplay.src = generatedImages[0].toString();
+            updateFullscreenImage(generatedImages[0].toString());
+
+        }
 
         progress_container.classList.add("hidden");
         progress_bar.classList.add("hidden");
         document.getElementById("outputImage").classList.remove("blur");
         document.getElementById("imgButtons").classList.remove("blur");
 
-        updateFullscreenImage(generatedImages[0].toString());
         const imgButtonContainer = document.getElementById("imgButtons");
         imgButtonContainer.innerHTML = "";
 
@@ -719,4 +733,21 @@ lorasContainer.addEventListener('scroll', () => {
             })
         }
     }
+})
+cancelBtn.addEventListener('click', () => {
+    fetch(horde_url + "/v2/generate/status/" + current_id, {
+        method: 'DELETE'
+    })
+        .then(response => {
+            if (response.ok) {
+                // Handle success
+                console.log("cancel request was successful.");
+            } else {
+                // Handle errors
+                console.error("Cancel request was not successful.");
+            }
+        })
+        .catch(error => {
+            console.error("An error occurred:", error);
+        });
 })
