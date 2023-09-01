@@ -30,6 +30,8 @@ let favorite_loras = [];
 
 let nextPage = null;
 
+let tags = []
+
 let horde_status = {
     "finished": 0,
     "processing": 0,
@@ -57,6 +59,7 @@ generations = [];
 function UpdateHorde() {
     UpdateUser();
     getHordeModels();
+    getTags();
     civitaiSearch("");
 }
 
@@ -87,6 +90,7 @@ function UpdateUser() {
 }
 
 function getHordeModels() {
+
     fetch(`${horde_url}/v2/status/models`, {
         method: 'GET',
     }).then(response => response.json())
@@ -130,6 +134,20 @@ function getHordeModels() {
         })
 }
 
+function getTags() {
+    fetch("https://civitai.com/api/v1/tags").then(response => response.json()).then(data => {
+        tags = data.items;
+        console.log(tags);
+        tags.forEach(tag => {
+            const tagSpan = document.createElement("span");
+            tagSpan.textContent = tag.name;
+            tagSpan.classList.add("bg-blue-100", "text-blue-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-blue-900", "dark:text-blue-300");
+            document.getElementById("tags").appendChild(tagSpan);
+        });
+    })
+    
+
+}
 
 function showModelDisplay(_model) {
     model = horde_models[_model];
@@ -669,13 +687,15 @@ function civitaiSearch(searchTerm) {
     const civitai_nsfw = document.getElementById("civitai_nsfw");
     const civitai_favorites = document.getElementById("civitai_favorites");
     const civitai_nsfw_level = document.getElementById("civitai_nsfw_level");
+    const civitai_sort = document.getElementById("civitai_sort");
+    const civitai_period = document.getElementById("civitai_period");
 
     let nsfw = civitai_nsfw.checked
 
-    let url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&nsfw=${nsfw}&query=${searchTerm.replaceAll(" ", "%20")}`;
+    let url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&query=${searchTerm.replaceAll(" ", "%20")}`;
 
     if(civitai_favorites.checked){
-        url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&nsfw=${civitai_nsfw.checked}`
+        url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}`
         favorite_loras.forEach(id => {
             url += `&ids=${id}`
         });

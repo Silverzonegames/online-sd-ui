@@ -84,6 +84,8 @@ const InputsToSave = [
     {id:"civitai_nsfw", type:"checked"},
     {id:"civitai_favorites", type:"checked"},
     {id:"civitai_nsfw_level", type:"value"},
+    {id:"civitai_sort", type:"value"},
+    {id:"civitai_period",type:"value"},
 ]
 
 function SaveState() {
@@ -175,21 +177,6 @@ function LoadState() {
 
     UpdateLoraDisplays();
 
-    variables["inputs"].forEach(input => {
-        const element = document.getElementById(input.id);
-
-        if(input.type == "checked"){
-            element.checked = input.value;
-        }else{
-            element.value = input.value;
-        }
-        var event = new Event('change');
-        element.dispatchEvent(event);
-        event = new Event('input');
-        element.dispatchEvent(event);
-
-
-    })
 
 
     horde_loras = variables["current_loras"];
@@ -208,6 +195,21 @@ function LoadState() {
         })
     }
 
+    variables["inputs"].forEach(input => {
+        const element = document.getElementById(input.id);
+
+        if(input.type == "checked"){
+            element.checked = input.value;
+        }else{
+            element.value = input.value;
+        }
+        var event = new Event('change');
+        element.dispatchEvent(event);
+        event = new Event('input');
+        element.dispatchEvent(event);
+
+
+    })
 
     SavingIsPossible = true;
 
