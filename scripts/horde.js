@@ -657,6 +657,8 @@ function horde_addLoraEntry(imageSrc, name, user, id, Blurred = null, tokens = [
 
 document.getElementById("searchInput").addEventListener('keyup', (e) => {
 
+
+
     if (e.key !== 'Enter') {
         return;
     }
@@ -672,6 +674,12 @@ document.getElementById("filterButton").addEventListener('click', () => {
 
 current_nsfw_level = 0;
 function civitaiSearch(searchTerm) {
+
+    if(serverType != ServerType.Horde){
+        return;
+    }
+
+
     nextPage = null;
     console.log("Searching for: " + searchTerm);
 

@@ -1,5 +1,13 @@
+
+let lorasHandled = false;
 function HandleLoras() {
   
+
+  if(lorasHandled){
+    return;
+  }
+  lorasHandled = true;
+
   const container = document.getElementById("lorasContainer");
   container.innerHTML = "";
   while (container.firstChild) {
@@ -7,7 +15,7 @@ function HandleLoras() {
   }
   categories = ["All"];
 
-  let apis = ["/sdapi/v1/hypernetworks","/sdapi/v1/loras"];
+  let apis = ["/sdapi/v1/loras","/sdapi/v1/hypernetworks"];
 
   for (let i = 0; i < apis.length; i++) {
     let isHyperNetwork = apis[i].includes("hypernetworks");
@@ -122,7 +130,7 @@ function addLoraEntry(imageSrc, name, category) {
   
     const imageDiv = document.createElement('div');
     imageDiv.classList.add(
-      'aspect-h-1', 'aspect-w-1', 'w-full', 'overflow-hidden', 'rounded-md',
+      'aspect-h-1', 'aspect-w-1', 'w-full',"aspect-[2/3]", 'overflow-hidden', 'rounded-md',
       'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100'
     );
   
@@ -147,7 +155,7 @@ function addLoraEntry(imageSrc, name, category) {
     nameHeading.classList.add('text-sm', 'text-gray-700');
   
     const nameLink = document.createElement('a');
-    nameLink.classList.add("whitespace-normal", "break-words");
+    nameLink.classList.add("mb-2", "text-lg", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words","max-h-4", "overflow-hidden");
   
     const nameSpan = document.createElement('span');
     //nameSpan.classList.add('absolute', 'inset-0');
