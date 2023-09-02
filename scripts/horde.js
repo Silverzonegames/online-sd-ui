@@ -30,6 +30,7 @@ let favorite_loras = [];
 
 let nextPage = null;
 
+let current_tag = "";
 let tags = []
 
 let horde_status = {
@@ -133,7 +134,7 @@ function getHordeModels() {
             console.error('Error:', error);
         })
 }
-
+let all_tag_elemnts = [];
 function getTags() {
     fetch("https://civitai.com/api/v1/tags").then(response => response.json()).then(data => {
         tags = data.items;
@@ -141,7 +142,41 @@ function getTags() {
         tags.forEach(tag => {
             const tagSpan = document.createElement("span");
             tagSpan.textContent = tag.name;
-            tagSpan.classList.add("bg-blue-100", "text-blue-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-blue-900", "dark:text-blue-300");
+
+            //make text not selectable
+            tagSpan.classList.add("select-none");
+
+            if(current_tag == tag.name){
+                tagSpan.classList.add("horde","bg-blue-100", "text-blue-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-blue-900", "dark:text-blue-300");
+            }else{
+                tagSpan.classList.add("horde","bg-gray-100", "text-gray-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-gray-700", "dark:text-gray-300");
+            }
+            tagSpan.style.cursor = "pointer";
+            tagSpan.addEventListener("click", () => {
+                if(current_tag == tag.name){
+                    current_tag = "";
+                    all_tag_elemnts.forEach(tag => {
+                        tag.classList.remove("horde","bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
+                        tag.classList.add("horde","bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
+                    });
+                    //change style
+                    tagSpan.classList.remove("bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
+                    tagSpan.classList.add("bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
+
+                }else{
+                    current_tag = tag.name;
+                    all_tag_elemnts.forEach(tag => {
+                        tag.classList.remove("horde","bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
+                        tag.classList.add("horde","bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
+                    });
+                    //change style
+                    tagSpan.classList.remove("bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
+                    tagSpan.classList.add("bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
+                }
+                civitaiSearch(document.getElementById("searchInput").value);
+            });
+
+            all_tag_elemnts.push(tagSpan);
             document.getElementById("tags").appendChild(tagSpan);
         });
     })
@@ -700,13 +735,14 @@ function civitaiSearch(searchTerm) {
 
     let nsfw = civitai_nsfw.checked
 
-    let url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&query=${searchTerm.replaceAll(" ", "%20")}`;
+    let url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}&query=${searchTerm.replaceAll(" ", "%20")}`;
 
     if(civitai_favorites.checked){
-        url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}`
+        url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}`
         favorite_loras.forEach(id => {
             url += `&ids=${id}`
         });
+
         url += `&query=${searchTerm.replaceAll(" ", "%20")}`
     }
 

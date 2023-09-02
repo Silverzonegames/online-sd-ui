@@ -431,7 +431,7 @@
                   <div class="mb-2">
                     <label for="ultimate-upscale-upscaler_index" class="block">Upscaler</label>
                     <select id="ultimate-upscale-upscaler_index"
-                      class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                      class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                       <option value="0">None</option>
                       <option value="1">Lanczos</option>
                       <!-- Include other upscaler options -->
@@ -441,7 +441,7 @@
                   <div class="ml-2">
                     <label for="ultimate-upscale-redraw_mode" class="block">Type</label>
                     <select id="ultimate-upscale-redraw_mode"
-                      class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                      class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                       <option value="0">Linear</option>
                       <option value="1">Chess</option>
                       <!-- Include other type options -->
@@ -456,7 +456,7 @@
                 <div class="mb-2 w-80">
                   <label for="ultimate-upscale-seams_fix_type" class="block">Seams Fix Type</label>
                   <select id="ultimate-upscale-seams_fix_type"
-                    class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                    class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                     <option value="0">None</option>
                     <option value="1">Band pass</option>
                     <option value="2">Half tile offset pass</option>
@@ -597,7 +597,7 @@
             <div class="mb-2">
               <label for="sd-upscale-upscaler_index" class="block">Upscaler</label>
               <select id="sd-upscale-upscaler_index"
-                class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 <option value="0">None</option>
                 <option value="1">Lanczos</option>
                 <!-- Include other upscaler options -->
@@ -870,7 +870,7 @@
             <div class="w-1/2">
               <label class="block text-lg font-semibold">Server Type</label>
               <select id="serverTypeDropdown"
-                class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg">
+                class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 <option value="Automatic1111">Automatic1111</option>
                 <option value="ComfyUI">ComfyUI WIP</option>
                 <option value="Horde">AI Horde</option>
@@ -880,7 +880,7 @@
               <label class="block text-lg font-semibold">URL</label>
               <div class="relative">
                 <input id="urlInput" type="url"
-                  class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg"
+                  class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   value="http://127.0.0.1:7860" />
               </div>
             </div>
@@ -888,26 +888,33 @@
               <label class="block text-lg font-semibold">Token</label>
               <div class="relative">
                 <input id="tokenInput"
-                  class="w-full px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg"
+                  class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   value="0000000000" />
               </div>
             </div>
           </div>
-          <label class="relative inline-flex items-center cursor-pointer dark">
-            <input id="unBlurOnHover" type="checkbox" value="" class="sr-only peer">
-            <div
-              class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
-            </div>
-            <span class="ml-3 text-sm font-medium  text-gray-300">Unblur Blurred Images On Hover</span>
-          </label>
-          <label class="relative inline-flex items-center cursor-pointer dark">
-            <input id="civitRandomImage" type="checkbox" value="" class="sr-only peer">
-            <div
-              class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
-            </div>
-            <span title="Idk why I added this" class="ml-3 text-sm font-medium  text-gray-300">Select Random Image From
-              CivitAi</span>
-          </label>
+
+          <div class="flex flex-col">
+            <label class="relative inline-flex items-center cursor-pointer dark mb-4 horde">
+              <input id="unBlurOnHover" type="checkbox" value="" class="sr-only peer">
+              <div
+                class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
+              </div>
+              <span class="ml-3 text-sm font-medium  text-gray-300">Unblur Blurred Images On Hover</span>
+            </label>
+            <label class="relative inline-flex items-center cursor-pointer dark mb-4 horde" >
+              <input id="civitRandomImage" type="checkbox" value="" class="sr-only peer">
+              <div
+                class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
+              </div>
+              <span title="Idk why I added this" class="ml-3 text-sm font-medium  text-gray-300">Select Random Image From
+                CivitAi</span>
+            </label>
+
+
+
+          </div>
+
 
           <!-- Modal footer -->
           <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
@@ -1091,6 +1098,7 @@
             <option>Highest Rated</option>
             <option>Most Downloaded</option>
             <option>Newest</option>
+            
           </select>
         </li>
         <li class="flex items-center">
@@ -1107,6 +1115,7 @@
           </select>
         </li>
 
+
         <!-- Add the new NSFW level selection here -->
         <li class="flex items-center">
           <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -1119,6 +1128,12 @@
             <option value="2">Mature</option>
             <option value="3">X</option>
           </select>
+        </li>
+        <li>
+          <!--Rating-->
+
+
+
         </li>
       </ul>
       <button id="filterButton"
@@ -1191,11 +1206,11 @@
           <i class="fas fa-download mr-2"></i> Download
         </button>
         <button id="useImageBtn"
-          class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
+          class="automatic1111 horde border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
           <i class="fa-regular fa-image"></i> Use Image
         </button>
         <button data-modal-target="defaultModal" data-modal-toggle="defaultModal"
-          class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
+          class="automatic1111 border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
           <i class="fa-solid fa-arrow-up"></i> Upscale
         </button>
       </div>
@@ -1304,7 +1319,7 @@
 
               <div class="mb-4 flex horde">
                 <label class="block mr-2 text-gray-500 dark:text-gray-400" for="sampling-method">Model:</label>
-                <select id="model-name" class="w-72 p-2 border border-gray-300 dark:border-gray-700 rounded">
+                <select id="model-name" class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                   <option value="stable_diffusion">stable diffusion</option>
                 </select>
                 <!-- List Button-->
@@ -1321,7 +1336,7 @@
                 <div class="mr-4">
                   <label class="block mb-2 text-gray-500 dark:text-gray-400" for="sampling-method">Sampling
                     method:</label>
-                  <select id="sampling-method" class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded">
+                  <select id="sampling-method" class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                     <option value="Euler a">Euler a</option>
                     <option value="Euler">Euler</option>
                     <option value="LMS">LMS</option>
@@ -1369,11 +1384,24 @@
 
               <div class="flex mb-4">
                 <!-- Second Row: Seed number input -->
-                <div class="mr-4">
-                  <label class="block mb-2 text-gray-500 dark:text-gray-400" for="seed-input">Seed:</label>
-                  <input type="number" id="seed-input"
-                    class="w-32 p-2 border border-gray-300 dark:border-gray-700 rounded" min="-1">
+
+                <div>
+                  <div class="mr-4">
+                    <label class="block mb-2 text-gray-500 dark:text-gray-400" for="seed-input">Seed:</label>
+                    <input type="number" id="seed-input"
+                      class="w-32 p-2 border border-gray-300 dark:border-gray-700 rounded" min="-1">
+                  </div>
+                  <!--Randomize Button-->
+                  <button id="randomizeBtn"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-2 mt-1 rounded"
+                      onclick="document.getElementById('seed-input').value = -1"
+                    >
+
+                    <i class="fa-solid fa-shuffle"></i>
+                  
+
                 </div>
+
 
                 <!-- Resolution slider -->
                 <div class="mr-4">
@@ -1391,12 +1419,26 @@
 
                 <!-- Batch size slider -->
                 <div>
-                  <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
-                    for="batch-size-slider">Batch Size: 1</label>
-                  <input type="range" id="batchSizeSlider"
-                    class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                    min="1" max="4" step="1" value="1">
+                  
+                  <!--Batch Count Slider-->
+                  <div class="automatic1111">
+                    <label id="batchCountValue" class=" block mb-2 text-gray-500 dark:text-gray-400 "
+                      for="batch-count-slider">Batch Count: 1</label>
+                    <input type="range" id="batchCountSlider"
+                      class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                      min="1" max="10" step="1" value="1">
+                  </div>
+
+
+                  <div>
+                    <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
+                      for="batch-size-slider">Batch Size: 1</label>
+                    <input type="range" id="batchSizeSlider"
+                      class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                      min="1" max="4" step="1" value="1">
+                  </div>
                 </div>
+
               </div>
 
               <!-- Horde Options-->
@@ -1662,10 +1704,10 @@
 
 
 
-        <div id="categories">
+        <div id="categories" class="automatic1111">
           <!-- Categories added by script go here-->
         </div>
-        <div id="tags" class="overflow-x-auto h-6 flex overflow-y-hidden no-scrollbar"
+        <div id="tags" class="horde overflow-x-auto h-6 flex overflow-y-hidden no-scrollbar mb-4"
           style="white-space: nowrap; width: 100%">
           <!-- Add your content here -->
         </div>

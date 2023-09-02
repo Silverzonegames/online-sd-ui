@@ -11,6 +11,7 @@ serverTypeDropdown.addEventListener("change", (e) => {
 
 function UpdateServer(serverType, changeURL = true) {
     if (serverType === ServerType.Automatic1111) {
+        
         ToggleElements(".comfyui", false)
         ToggleElements(".horde", false)
         ToggleElements(".automatic1111", true)
@@ -18,6 +19,7 @@ function UpdateServer(serverType, changeURL = true) {
             urlInput.value = "http://127.0.0.1:7860"
             url = urlInput.value
         }
+        batchSizeSlider.max = 4;
     } else if (serverType === ServerType.ComfyUI) {
         ToggleElements(".automatic1111", false)
         ToggleElements(".horde", false)
@@ -38,7 +40,7 @@ function UpdateServer(serverType, changeURL = true) {
         Horde();
         offlineBanner.classList.add("hidden")
         connectingBanner.classList.add("hidden")
-
+        batchSizeSlider.max = 10;
     }
     handleURLChange();
 }

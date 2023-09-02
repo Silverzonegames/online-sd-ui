@@ -8,6 +8,9 @@ const heightText = document.getElementById("heightText");
 const batchSizeSlider = document.getElementById('batchSizeSlider');
 const batchSizeValue = document.getElementById('batchSizeValue');
 
+const batchCountSlider = document.getElementById('batchCountSlider');
+const batchCountValue = document.getElementById('batchCountValue');
+
 const downloadBtn = document.getElementById("downloadBtn");
 
 const promptField = document.getElementById('prompt');

@@ -1,3 +1,6 @@
+
+let samplers = []
+
 // Image generation function
 function generateImage(isUpscale=false,isUltimate=false,IsSDUpscale=false,isLatent=false) {
 
@@ -300,4 +303,46 @@ async function checkStatus() {
   }
   connectingBanner.classList.add("hidden");
 
+}
+function getUpscalers(){
+  fetch(url + '/sdapi/v1/upscalers')
+  .then(response => response.json())
+  .then(data => {
+    upscalers = [];
+
+    data.forEach((upscaler) => {
+      upscalers.push(upscaler.name);
+    });      
+    console.log("Found upscalers:", upscalers);
+    updateUpscalers("ultimate-upscale-upscaler_index",true);
+    updateUpscalers("sd-upscale-upscaler_index")
+
+  }).catch(error => {
+    console.error("Error fetching upscalers:", error);
+  });
+}
+function getSamplers() {
+  fetch(url + '/sdapi/v1/samplers')
+    .then(response => response.json())
+    .then(data => {
+      samplers = [];
+
+      data.forEach((sampler) => {
+        samplers.push(sampler.name);
+      });
+      console.log("Found samplers:", samplers);
+      
+      const samplerDropdown = document.getElementById("sampling-method");
+      samplerDropdown.innerHTML = "";
+      samplers.forEach((sampler) => {
+        const option = document.createElement("option");
+        option.value = sampler;
+        option.text = sampler;
+        samplerDropdown.appendChild(option);
+      });
+
+
+    }).catch(error => {
+      console.error("Error fetching samplers:", error);
+    });
 }

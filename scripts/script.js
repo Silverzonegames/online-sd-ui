@@ -217,8 +217,9 @@ function handleURLChange() {
   SaveState();
 
   if(serverType === ServerType.Automatic1111){
-    getUpscalers();
+    getSamplers();
     updateStyles();
+    getUpscalers();
     GetControlnetModel("inpaint");
     GetDataDir();
     checkStatus();
@@ -307,23 +308,7 @@ function updateStyles() {
     });
 }
 let upscalers = [];
-function getUpscalers(){
-  fetch(url + '/sdapi/v1/upscalers')
-  .then(response => response.json())
-  .then(data => {
-    upscalers = [];
 
-    data.forEach((upscaler) => {
-      upscalers.push(upscaler.name);
-    });      
-    console.log("Found upscalers:", upscalers);
-    updateUpscalers("ultimate-upscale-upscaler_index",true);
-    updateUpscalers("sd-upscale-upscaler_index")
-
-  }).catch(error => {
-    console.error("Error fetching upscalers:", error);
-  });
-}
 
 function updateUpscalers(id,useIndexValue=false){
   const upscalerDropdown = document.getElementById(id);
