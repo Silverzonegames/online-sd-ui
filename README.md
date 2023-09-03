@@ -1,1 +1,1 @@
-# Easy Ui for Automatic1111
+# Online UI For Stable Diffusion
