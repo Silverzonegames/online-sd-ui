@@ -21,7 +21,7 @@ const urlInput = document.getElementById("urlInput");
 const offlineBanner = document.getElementById("offlineBanner");
 const connectingBanner = document.getElementById("connectingBanner");
 
-const lorasContainer = document.getElementById('lorasContainer');
+const lorasContainer = document.getElementById('civitaiContainer');
 
 const weightSlider = document.getElementById("weightSlider");
 

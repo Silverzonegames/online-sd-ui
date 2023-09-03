@@ -26,12 +26,9 @@ const cancelBtn = document.getElementById("cancelBtn");
 
 let horde_loras = [];
 
-let favorite_loras = [];
 
-let nextPage = null;
 
-let current_tag = "";
-let tags = []
+
 
 let horde_status = {
     "finished": 0,
@@ -60,7 +57,7 @@ generations = [];
 function UpdateHorde() {
     UpdateUser();
     getHordeModels();
-    getTags();
+    
     civitaiSearch("");
 }
 
@@ -134,55 +131,7 @@ function getHordeModels() {
             console.error('Error:', error);
         })
 }
-let all_tag_elemnts = [];
-function getTags() {
-    fetch("https://civitai.com/api/v1/tags").then(response => response.json()).then(data => {
-        tags = data.items;
-        console.log(tags);
-        tags.forEach(tag => {
-            const tagSpan = document.createElement("span");
-            tagSpan.textContent = tag.name;
 
-            //make text not selectable
-            tagSpan.classList.add("select-none");
-
-            if(current_tag == tag.name){
-                tagSpan.classList.add("horde","bg-blue-100", "text-blue-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-blue-900", "dark:text-blue-300");
-            }else{
-                tagSpan.classList.add("horde","bg-gray-100", "text-gray-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-gray-700", "dark:text-gray-300");
-            }
-            tagSpan.style.cursor = "pointer";
-            tagSpan.addEventListener("click", () => {
-                if(current_tag == tag.name){
-                    current_tag = "";
-                    all_tag_elemnts.forEach(tag => {
-                        tag.classList.remove("horde","bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
-                        tag.classList.add("horde","bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
-                    });
-                    //change style
-                    tagSpan.classList.remove("bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
-                    tagSpan.classList.add("bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
-
-                }else{
-                    current_tag = tag.name;
-                    all_tag_elemnts.forEach(tag => {
-                        tag.classList.remove("horde","bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
-                        tag.classList.add("horde","bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
-                    });
-                    //change style
-                    tagSpan.classList.remove("bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
-                    tagSpan.classList.add("bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
-                }
-                civitaiSearch(document.getElementById("searchInput").value);
-            });
-
-            all_tag_elemnts.push(tagSpan);
-            document.getElementById("tags").appendChild(tagSpan);
-        });
-    })
-    
-
-}
 
 function showModelDisplay(_model) {
     model = horde_models[_model];
@@ -454,7 +403,7 @@ function OnGenerationFinished() {
 }
 
 // Add lora To Active Loras
-function AddLora(name, id, tokens=[]) {
+function horde_AddLora(name, id, tokens=[]) {
     const horde_loraContainer = document.getElementById('horde_loraContainer');
 
     const loraDiv = document.createElement('div');
@@ -582,308 +531,12 @@ document.getElementById("horde_search").addEventListener('input', (e) => {
     });
 });
 
-function horde_addLoraEntry(imageSrc, name, user, id, Blurred = null, tokens = []) {
-    // Create the necessary HTML elements
-    const entryDiv = document.createElement('div');
-    entryDiv.classList.add('group', 'relative', 'lora');
-    entryDiv.id = id;
-
-    const contentDiv = document.createElement('div');
-    contentDiv.classList.add('bg-white', 'border', 'border-gray-200', 'rounded-lg', 'shadow', 'dark:bg-gray-800', 'dark:border-gray-700');
-
-    const imageDiv = document.createElement('div');
-    imageDiv.classList.add(
-        'overflow-hidden', 'rounded-t-lg'
-    );
-
-    const image = document.createElement('img');
-    image.src = imageSrc;
-    image.alt = 'Lora Thumbnail';
-    image.classList.add('object-cover', 'object-center', 'w-full','aspect-[2/3]');
-
-    if (Blurred) {
-        image.classList.add(Blurred);
-        imageDiv.addEventListener('mouseover', function () {
-            if (document.getElementById("unBlurOnHover").checked) {
-                image.classList.remove(Blurred);
-            }
-        });
-        imageDiv.addEventListener('mouseout', function () {
-            image.classList.add(Blurred);
-        });
-    }
-
-    image.onerror = function () {
-        image.src = "img/card-no-preview.png";
-    };
-
-    const infoDiv = document.createElement('div');
-    infoDiv.classList.add('mt-4');
-    infoDiv.style.cursor = "pointer";
-    infoDiv.setAttribute('data-modal-target', 'loraInfoModal');
-    infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
-
-    const nameHeading = document.createElement('h3');
-    nameHeading.classList.add('text-sm', 'text-gray-700');
-
-    const nameLink = document.createElement('a');
-    nameLink.classList.add("mb-2", "text-xl", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words","max-h-4", "overflow-hidden");
-
-    const nameText = document.createTextNode(name);
-    nameLink.appendChild(nameText);
-
-    const userFlexDiv = document.createElement('div');
-    userFlexDiv.classList.add('flex', 'm-2');
-
-    const avatarImage = document.createElement('img');
-    avatarImage.classList.add('w-6', 'h-6', 'rounded-full');
-    avatarImage.src = user.image;
-    avatarImage.alt = "Rounded avatar";
-
-    const userParagraph = document.createElement('p');
-    userParagraph.classList.add('mb-3', 'my-auto', 'ml-2', 'font-normal', 'text-gray-700', 'dark:text-gray-400');
-    userParagraph.textContent = user.username;
-
-    // Add click event listener to the imageDiv
-    imageDiv.addEventListener('click', function (event) {
-        event.preventDefault();
-
-        if (horde_loras.length >= 5 || horde_loras.find(lora => lora.name === id.toString())) {
-            return;
-        }
-        horde_loras.push({
-            name: id.toString(),
-            clip: 1,
-            model: 1
-        });
-        loraCount.textContent = horde_loras.length + "/5";
-        console.log(horde_loras);
-
-        AddLora(name, id, tokens);
-    });
-
-    // Add click event listener to the nameLink
-    infoDiv.addEventListener('click', function (event) {
-        event.preventDefault();
-        document.getElementById("civitIframe").src = "https://civitai.com/models/" + id;
-        document.getElementById("civitModalLink").href = "https://civitai.com/models/" + id;
-        document.getElementById("civitAIModalToggle").click();
-    });
-
-    // Append the elements to their respective parent elements
-    contentDiv.appendChild(imageDiv);
-    imageDiv.appendChild(image);
-
-    contentDiv.appendChild(infoDiv);
-    infoDiv.appendChild(nameHeading);
-    nameHeading.appendChild(nameLink);
-
-    infoDiv.appendChild(userFlexDiv);
-    userFlexDiv.appendChild(avatarImage);
-    userFlexDiv.appendChild(userParagraph);
-
-    entryDiv.appendChild(contentDiv);
-
-    // Append the entry to the container element
-    const lorasContainer = document.getElementById('lorasContainer');
-    lorasContainer.appendChild(entryDiv);
-}
-
-
-document.getElementById("searchInput").addEventListener('keyup', (e) => {
 
 
 
-    if (e.key !== 'Enter') {
-        return;
-    }
-    if (serverType != ServerType.Horde) {
-        return;
-    }
-    civitaiSearch(e.target.value);
-});
-
-document.getElementById("filterButton").addEventListener('click', () => {
-    civitaiSearch(document.getElementById("searchInput").value);
-})
-
-current_nsfw_level = 0;
-function civitaiSearch(searchTerm) {
-
-    if(serverType != ServerType.Horde){
-        return;
-    }
 
 
-    nextPage = null;
-    console.log("Searching for: " + searchTerm);
 
-    const lorasContainer = document.getElementById('lorasContainer')
-    lorasContainer.innerHTML = "";
-
-
-    searchingElement = document.createElement('div')
-    searchingElement.classList.add('block', 'px-4', 'py-2', 'text-gray-600', 'font-bold');
-    searchingElement.textContent = "Fetching..."
-    lorasContainer.appendChild(searchingElement)
-
-    const civitai_nsfw = document.getElementById("civitai_nsfw");
-    const civitai_favorites = document.getElementById("civitai_favorites");
-    const civitai_nsfw_level = document.getElementById("civitai_nsfw_level");
-    const civitai_sort = document.getElementById("civitai_sort");
-    const civitai_period = document.getElementById("civitai_period");
-
-    let nsfw = civitai_nsfw.checked
-
-    let url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}&query=${searchTerm.replaceAll(" ", "%20")}`;
-
-    if(civitai_favorites.checked){
-        url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}`
-        favorite_loras.forEach(id => {
-            url += `&ids=${id}`
-        });
-
-        url += `&query=${searchTerm.replaceAll(" ", "%20")}`
-    }
-
-    console.log(url);
-    fetch(url)
-        .then(response => {
-            return response.json();
-        }).then(data => {
-            lorasContainer.innerHTML = "";
-            current_nsfw_level= parseInt(civitai_nsfw_level.value);
-            if(!nsfw){
-                current_nsfw_level = 0;
-            }
-            showCivitLoras(data,current_nsfw_level);
-        })
-}
-
-
-function favorite_lora(id, icon) {
-
-    if(favorite_loras == null){
-        favorite_loras = [];
-    }
-
-    if(favorite_loras.find(lora => lora === id)) {
-        console.log("Removing from favorites");
-        icon.classList.remove("text-rose-600");
-        icon.classList.add("text-white");
-        favorite_loras = favorite_loras.filter(lora => lora !== id);
-    } else {
-        console.log("Adding to favorites");
-        icon.classList.remove("text-white");
-        icon.classList.add("text-rose-600");
-        favorite_loras.push(id);
-    }
-    SaveState();
-}
-
-function isFavorited(id){
-    if(favorite_loras == null){
-        return false;
-    }
-    return favorite_loras.find(lora => lora === id)
-}
-
-let blur_level={
-    0: null,
-    1: "blur",
-    2: "blur-md",
-    3: "blur-lg",
-}
-
-function showCivitLoras(data, nsfwLevel) {
-    console.log(data);
-    data["items"].forEach(lora => {
-        let image = lora.modelVersions[0].images[0];
-
-        let _images = [
-            [],
-            [],
-            [],
-            [],
-        ];
-        let isBlurred = null;
-        if (image) {
-            image = lora.modelVersions[0].images[0].url;
-            lora.modelVersions[0].images.forEach(image => {
-                imageLevel = nsfw_level[image["nsfw"]];
-                _images[imageLevel].push(image.url);
-            });
-            let foundImage = false;
-            let level = nsfwLevel;
-
-            while (!foundImage){
-                if(_images[level].length > 0){
-
-                    if(document.getElementById("civitRandomImage").checked){
-                        image = _images[level][Math.floor(Math.random() * _images[level].length)];
-                    }else{
-                        image = _images[level][0];
-                    }
-
-                    foundImage = true;
-                } else if (level == 0){
-                    while(!foundImage){
-                        if(_images[level].length > 0){
-                            if(document.getElementById("civitRandomImage").checked){
-                                image = _images[level][Math.floor(Math.random() * _images[level].length)];
-                            }else{
-                                image = _images[level][0];
-                            }
-                            isBlurred = blur_level[level-nsfwLevel];
-                            
-                            foundImage = true;
-                        }else if(level == 3){
-                            foundImage = true
-                            image=""
-                        }
-                        else{
-                            level++;
-                        }
-
-                    }
-                }
-                else {
-                    level--;
-                }
-            }
-        }
-        tokens = lora.modelVersions[0].trainedWords;
-
-        horde_addLoraEntry(image, lora.name, lora.creator, lora.id, isBlurred,tokens)
-    });
-
-    nextPage = data.metadata.nextPage;
-
-    
-}
-let loadingContent = false
-lorasContainer.addEventListener('scroll', () => {
-    const distanceToBottom = lorasContainer.scrollHeight - (lorasContainer.scrollTop + lorasContainer.clientHeight);
-
-    if (distanceToBottom <= 2000) {
-        if (nextPage != null && !loadingContent) {
-
-            const fetchingText = document.createElement('p');
-            fetchingText.classList.add('block', 'px-4', 'py-2', 'text-gray-600', 'font-bold');
-            fetchingText.textContent = "Fetching..."
-            lorasContainer.appendChild(fetchingText)
-            console.log("Loading page ", nextPage);
-            loadingContent = true
-            fetch(nextPage).then(response => {
-                return response.json();
-            }).then(data => {
-                fetchingText.remove()   
-                showCivitLoras(data, current_nsfw_level);
-                loadingContent = false
-            })
-        }
-    }
-})
 cancelBtn.addEventListener('click', () => {
     fetch(horde_url + "/v2/generate/status/" + current_id, {
         method: 'DELETE'

@@ -128,18 +128,19 @@ function addLoraEntry(imageSrc, name, category) {
     entryDiv.classList.add('group', 'relative', 'lora');
     entryDiv.id = name;
   
+    const contentDiv = document.createElement('div');
+    contentDiv.classList.add('bg-white', 'border', 'border-gray-200', 'rounded-lg', 'shadow', 'dark:bg-gray-800', 'dark:border-gray-700');
+
     const imageDiv = document.createElement('div');
     imageDiv.classList.add(
-      'aspect-h-1', 'aspect-w-1', 'w-full',"aspect-[2/3]", 'overflow-hidden', 'rounded-md',
-      'bg-gray-200', 'lg:aspect-none', 'group-hover:opacity-75', 'lg:h-100'
+        'overflow-hidden', 'rounded-t-lg'
     );
-  
+
     const image = document.createElement('img');
     image.src = imageSrc;
     image.alt = 'Lora Thumbnail';
-    image.classList.add(
-      'h-full', 'w-full', 'object-cover', 'object-center', 'lg:w-full', 'max-h-768'
-    );
+    image.classList.add('object-cover', 'object-center', 'w-full','aspect-[2/3]');
+
     image.onerror = () => {
       if (!image.src.includes(".preview")) {
         image.src = image.src.replace(".png", ".preview.png");
@@ -150,20 +151,21 @@ function addLoraEntry(imageSrc, name, category) {
   
     const infoDiv = document.createElement('div');
     infoDiv.classList.add('mt-4');
+    infoDiv.style.cursor = "pointer";
   
     const nameHeading = document.createElement('h3');
     nameHeading.classList.add('text-sm', 'text-gray-700');
   
     const nameLink = document.createElement('a');
-    nameLink.classList.add("mb-2", "text-lg", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words","max-h-4", "overflow-hidden");
-  
+    nameLink.classList.add("mb-2", "text-xl", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words","max-h-4", "overflow-hidden");
+
     const nameSpan = document.createElement('span');
     //nameSpan.classList.add('absolute', 'inset-0');
   
     const nameText = document.createTextNode(name);
   
     const categoryParagraph = document.createElement('p');
-    categoryParagraph.classList.add('mt-1', 'text-sm', 'text-gray-500');
+    categoryParagraph.classList.add('mt-1','ml-2', 'text-sm', 'text-gray-500');
     categoryParagraph.textContent = category.replaceAll("\\", "/");
   
     // Add click event listener to the imageDiv
@@ -181,10 +183,10 @@ function addLoraEntry(imageSrc, name, category) {
     infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
   
     // Append the elements to their respective parent elements
-    entryDiv.appendChild(imageDiv);
+    contentDiv.appendChild(imageDiv);
     imageDiv.appendChild(image);
   
-    entryDiv.appendChild(infoDiv);
+    contentDiv.appendChild(infoDiv);
     infoDiv.appendChild(nameHeading);
   
     nameHeading.appendChild(nameLink);
@@ -192,6 +194,8 @@ function addLoraEntry(imageSrc, name, category) {
     nameLink.appendChild(nameText);
   
     infoDiv.appendChild(categoryParagraph);
+
+    entryDiv.appendChild(contentDiv);
   
     // Append the entry to the container element
     const lorasContainer = document.getElementById('lorasContainer');
@@ -768,7 +772,7 @@ function addLoraEntry(imageSrc, name, category) {
       loraName = loraName.replaceAll(" ", "");
       loraName = loraName.replaceAll("_", "");
       loraName = loraName.replaceAll("-", "");
-  
+      
   
       if (loraName.includes(_searchTerm) || element.id.toLowerCase().includes(searchTerm.toLowerCase()) || getLoraByName(element.id).category.toLowerCase().includes(searchTerm.toLowerCase())) {
         element.classList.remove("hidden");

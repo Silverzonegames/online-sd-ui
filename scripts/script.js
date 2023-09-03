@@ -673,9 +673,11 @@ function changeCode(newCode) {
   // window.history.replaceState({}, '', currentURL);
 }
 
-function showMessage(message, duration = 5000) {
+function showMessage(message, duration = 5000,type="Error") {
   const targetEl = document.getElementById('errorMessage');
   targetEl.innerText = message;
+
+  document.getElementById("errorType").textContent = type;
 
   const alertEl = document.getElementById('alert');
   alertEl.classList.remove('hidden');

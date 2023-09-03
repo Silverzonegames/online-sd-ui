@@ -20,6 +20,10 @@ function UpdateServer(serverType, changeURL = true) {
             url = urlInput.value
         }
         batchSizeSlider.max = 4;
+        lorasHandled = false;
+        HandleLoras();
+
+
     } else if (serverType === ServerType.ComfyUI) {
         ToggleElements(".automatic1111", false)
         ToggleElements(".horde", false)
@@ -42,6 +46,7 @@ function UpdateServer(serverType, changeURL = true) {
         connectingBanner.classList.add("hidden")
         batchSizeSlider.max = 10;
     }
+    updateCivitAi();
     handleURLChange();
 }
 
@@ -82,5 +87,6 @@ function Horde() {
         option.text = samplers[i];
         dropdown.appendChild(option);
     }
+    civitaiSearch("");
     
 }

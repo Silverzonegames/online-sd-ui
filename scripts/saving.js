@@ -75,6 +75,7 @@ const InputsToSave = [
     //settings
     {id:"unBlurOnHover", type:"checked"},
     {id:"civitRandomImage", type:"checked"},
+    {id:"allowCivitai",typeof:"checked"},
     //ui
     {id:"loras-toggle", type:"checked"},
     //horde
@@ -188,11 +189,15 @@ function LoadState() {
     });
 
     if(horde_loras.length > 0){
-        fetch("https://civitai.com/api/v1/models?primaryFileOnly=true"+ids).then(response => response.json()).then(data => {
-            data.items.forEach(lora => {
-                AddLora(lora.name, lora.id, lora.modelVersions[0].trainedWords);
-            });
-        })
+
+        if(serverType == ServerType.Horde){
+            fetch("https://civitai.com/api/v1/models?primaryFileOnly=true"+ids).then(response => response.json()).then(data => {
+                data.items.forEach(lora => {
+                    AddLora(lora.name, lora.id, lora.modelVersions[0].trainedWords);
+                });
+            })
+        }
+
     }
 
     variables["inputs"].forEach(input => {
