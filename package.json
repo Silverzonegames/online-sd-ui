@@ -1,4 +1,9 @@
 {
+  "name": "online-sd-ui",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tailwindcss build ./src/styles.css -o ./dist/styles.css"
+  },
   "devDependencies": {
     "tailwindcss": "^3.3.2"
   },
@@ -6,5 +11,16 @@
     "@preline/overlay": "^1.4.0",
     "exif-js": "^2.3.0",
     "preline": "^1.9.0"
-  }
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Slimerplanet",
+    "email": "eppuku@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Luukas Paukkonen",
+      "email": "luukasp@silverzonegames.com"
+    }
+  ]
 }
