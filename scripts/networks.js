@@ -101,14 +101,9 @@ function HandleLoras() {
           addLoraEntry(path, name, "");
         }
 
-
-
-
-        // Do something with the data
-        console.log("Path:", path);
-        console.log("Category:", folder);
       });
       UpdateAllLoraConfigs();
+      UpdateLoraDisplays();
       console.log(apis[i]+": "+ loras);
     })
     .catch(error => {

@@ -498,6 +498,13 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
                     option.value = i;
                     download_version.appendChild(option);
                 }
+                download_version.addEventListener('change', (e) => {
+                    showDownloadThumbnails(data.modelVersions[e.target.value].images);
+                });
+
+                //show thumbnails
+                showDownloadThumbnails(data.modelVersions[0].images);
+
                 loraDownloadModalToggle.click();
             }
             
@@ -532,6 +539,61 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     lorasContainer.appendChild(entryDiv);
 }
 
+
+// <!-- Selected thumbnail-->
+// <img id="download_thumbnail" src="img/card-no-preview.png" alt="Thumbnail"
+//   class="h-full aspect-[2/3] rounded-lg border-2 border-green-400  bg-gray-100">
+// <!--Unselected Thumbnail-->
+// <img id="download_thumbnail" src="img/card-no-preview.png" alt="Thumbnail"
+//   class="h-full aspect-[2/3] rounded-lg border border-gray-300 bg-gray-100">
+
+const download_thumbnail_container = document.getElementById("download_thumbnail_container");
+let selected_thumbnail = 0;
+
+function showDownloadThumbnails(images) {
+    download_thumbnail_container.innerHTML = "";
+    first_image = true;
+    let j = 0;
+    images.forEach(image => {
+        const imageElement = document.createElement("img");
+        imageElement.src = image.url;
+        imageElement.alt = "Thumbnail";
+        imageElement.dataset.id = j;
+        // Apply CSS classes to the image element
+        imageElement.classList.add(
+            "h-full",
+            "aspect-[2/3]", // Maintain 2/3 aspect ratio
+            "object-cover", // Crop the image
+            "rounded-lg",
+            "border",
+            "border-gray-300",
+            "bg-gray-100",
+            "cursor-pointer"
+        );
+        if(first_image){
+            imageElement.classList.remove("border", "border-gray-300");
+            imageElement.classList.add("border-4", "border-green-400");
+            first_image = false;
+            selected_thumbnail = j;
+            console.log("Selected",selected_thumbnail);
+        }
+        imageElement.addEventListener("click", (e) => {
+
+            selected_thumbnail = parseInt(e.target.dataset.id);
+            console.log("Selected",selected_thumbnail);
+
+            download_thumbnail_container.childNodes.forEach(image => {
+                image.classList.remove("border-4", "border-green-400");
+                image.classList.add("border", "border-gray-300");
+            });
+            e.target.classList.remove("border", "border-gray-300");
+            e.target.classList.add("border-4", "border-green-400");
+        });
+        j++;
+        download_thumbnail_container.appendChild(imageElement);
+    });
+}
+
 function getFolders(showMessage=true){
 
     if(automatic1111_model_dirs != null){
@@ -562,7 +624,7 @@ document.getElementById("civitai_downloadBtn").addEventListener('click', () => {
     console.log("Downloading",id,version,folder);
 
     document.getElementById("civitai_downloadBtn").textContent = "Downloading...";
-    fetch(url+"/civitai/download/?id="+id+"&subfolder="+folder+"&version="+version,{
+    fetch(url+"/civitai/download/?id="+id+"&subfolder="+folder+"&version="+version+"&image="+selected_thumbnail,{
         method: 'POST',
     }).then(response => response.json()).then(data => {
         console.log("Download",data);
@@ -577,7 +639,8 @@ document.getElementById("civitai_downloadBtn").addEventListener('click', () => {
             }).then(response => response.json()).then(_data => {
                 lorasHandled = false;
                 HandleLoras();
-                handleLoraEntryClick(data.filename.replace(".safetensors",""));
+                AddToPrompt("<lora:"+ data["filename"] +":1>", true)
+                civitaiSearch(document.getElementById("searchInput").value);
                 document.getElementById("loraDownloadModalClose").click();
             });
         }
