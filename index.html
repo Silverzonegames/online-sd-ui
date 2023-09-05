@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
 
-  <title>Stable Diffusion Image Generator</title>
+  <title>Online SD UI</title>
   <style>
     /* Additional Custom Styles can be added here */
     /* Adjust the text color of the textarea */
@@ -135,7 +135,7 @@
 </head>
 
 <body>
-  <header class="py-4 px-8 bg-gray-800 flex justify-between items-center w-full h-16 z-50 fixed mt-0">
+  <header class="py-4 px-8 bg-gray-800 flex justify-between items-center w-full md:h-16 z-50 md:fixed mt-0">
     <div class="relative flex items-center">
       <h1 class="text-2xl font-bold mr-4">Stable Diffusion</h1>
       <!-- History link -->
@@ -315,7 +315,7 @@
   <!-- Upscale Modal-->
   <!-- Modal toggle -->
   <button data-modal-target="defaultModal" data-modal-toggle="defaultModal"
-    class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+    class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 hidden"
     type="button">
     Toggle modal
   </button>
@@ -1220,7 +1220,7 @@
   <!-- End Filters Drawer-->
 
   <!--Main Body-->
-  <div class="flex flex-col md:flex-row md:h-[calc(100%)] md:max-h-screen mb-32 w-screen md:fixed">
+  <div class="flex flex-col md:flex-row md:h-[calc(100%)] md:max-h-screen mb-32 w-screen md:fixed mt-8">
     <!-- Image side... -->
     <div class="w-full md:w-full p-4 md:pl-8 md:pr-4 h-full pb-8">
       <!-- Content goes here -->
@@ -1300,7 +1300,7 @@
       <div class="automatic1111 horde">
 
         <div class="flex">
-          <label class="block text-lg font-semibold mb-2">Prompt</label>
+          <label class="block text-lg font-semibold mb-2 ">Prompt</label>
 
           <!-- Styles DropDown -->
           <div class="relative ml-auto">
@@ -1318,7 +1318,7 @@
 
         <div class="mb-6">
           <textarea id="prompt"
-            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">(masterpiece:1.2, best quality),</textarea>
+            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 autocomplete">(masterpiece:1.2, best quality),</textarea>
         </div>
 
         <div class="mb-6">
@@ -1407,9 +1407,9 @@
               </div>
 
               <!-- Options Here -->
-              <div class="flex mb-4">
+              <div class="md:flex mb-4">
                 <!-- First row: Sampling method Dropdown -->
-                <div class="mr-4">
+                <div class="mr-4 ">
                   <label class="block mb-2 text-gray-500 dark:text-gray-400" for="sampling-method">Sampling
                     method:</label>
                   <select id="sampling-method"
@@ -1451,7 +1451,7 @@
 
                 <!-- Slider (1-30) -->
                 <div>
-                  <label id="scale-value" class="block mb-2 text-gray-500 dark:text-gray-400" for="scale-slider">CFG
+                  <label id="cfg-value" class="block mb-2 text-gray-500 dark:text-gray-400">CFG
                     Scale: 7</label>
                   <input type="range" id="scale-slider"
                     class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
@@ -1459,7 +1459,7 @@
                 </div>
               </div>
 
-              <div class="flex mb-4">
+              <div class="md:flex mb-4">
                 <!-- Second Row: Seed number input -->
 
                 <div>
@@ -1478,41 +1478,43 @@
 
                 </div>
 
-
-                <!-- Resolution slider -->
-                <div class="mr-4">
-                  <label id="widthText" class="block mb-2 text-gray-500 dark:text-gray-400" for="width-slider">Width:
-                    512</label>
-                  <input type="range" id="width-slider"
-                    class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                    min="128" max="1024" step="64" value="512">
-                  <label id="heightText" class="block mb-2 text-gray-500 dark:text-gray-400" for="height-slider">Height:
-                    512</label>
-                  <input type="range" id="height-slider"
-                    class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                    min="128" max="1024" step="64" value="512">
-                </div>
-
-                <!-- Batch size slider -->
-                <div>
-
-                  <!--Batch Count Slider-->
-                  <div class="automatic1111">
-                    <label id="batchCountValue" class=" block mb-2 text-gray-500 dark:text-gray-400 "
-                      for="batch-count-slider">Batch Count: 1</label>
-                    <input type="range" id="batchCountSlider"
-                      class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                      min="1" max="10" step="1" value="1">
+                <div class="flex">
+                  <!-- Resolution slider -->
+                  <div class="mr-4">
+                    <label id="widthText" class="block mb-2 text-gray-500 dark:text-gray-400" for="width-slider">Width:
+                      512</label>
+                    <input type="range" id="width-slider"
+                      class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                      min="128" max="1024" step="64" value="512">
+                    <label id="heightText" class="block mb-2 text-gray-500 dark:text-gray-400" for="height-slider">Height:
+                      512</label>
+                    <input type="range" id="height-slider"
+                      class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                      min="128" max="1024" step="64" value="512">
                   </div>
-
-
+  
+                  <!-- Batch size slider -->
                   <div>
-                    <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
-                      for="batch-size-slider">Batch Size: 1</label>
-                    <input type="range" id="batchSizeSlider"
-                      class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                      min="1" max="4" step="1" value="1">
+  
+                    <!--Batch Count Slider-->
+                    <div class="automatic1111">
+                      <label id="batchCountValue" class=" block mb-2 text-gray-500 dark:text-gray-400 "
+                        for="batch-count-slider">Batch Count: 1</label>
+                      <input type="range" id="batchCountSlider"
+                        class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                        min="1" max="10" step="1" value="1">
+                    </div>
+  
+  
+                    <div>
+                      <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
+                        for="batch-size-slider">Batch Size: 1</label>
+                      <input type="range" id="batchSizeSlider"
+                        class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
+                        min="1" max="4" step="1" value="1">
+                    </div>
                   </div>
+
                 </div>
 
               </div>
@@ -1858,6 +1860,7 @@
   <script src="scripts/script.js"></script>
   <script src="scripts/ServerManager.js"></script>
   <script src="scripts/saving.js"></script>
+<script src="scripts/autocomplete.js"></script>
 </body>
 
 <style>

@@ -1,5 +1,6 @@
 
 let samplers = []
+let current_image = 0;
 
 // Image generation function
 function generateImage(isUpscale=false,isUltimate=false,IsSDUpscale=false,isLatent=false) {
@@ -174,6 +175,7 @@ function generateImage(isUpscale=false,isUltimate=false,IsSDUpscale=false,isLate
         console.log("Finished generating " + generatedImages.length + " images");
         console.log(generatedImages);
         imageDisplay.src = generatedImages[0].toString();
+        current_image = 0;
         updateFullscreenImage(generatedImages[0].toString());
   
         const imgButtonContainer = document.getElementById("imgButtons");
@@ -230,6 +232,7 @@ function generateImage(isUpscale=false,isUltimate=false,IsSDUpscale=false,isLate
   
           // Add click event listener to the image button
           imageButton.addEventListener('click', () => {
+            current_image = index;
             imageDisplay.src = imageSrc;
             updateFullscreenImage(imageSrc);
           });

@@ -78,6 +78,7 @@ const InputsToSave = [
     {id:"allowCivitai",typeof:"checked"},
     //ui
     {id:"loras-toggle", type:"checked"},
+    {id:"saveToServer", type:"checked"},
     //horde
     {id:"allowNSFW", type:"checked"},
     {id:"slowWorkers", type:"checked"},
@@ -98,6 +99,16 @@ function SaveState() {
     localStorage.setItem("state", JSON.stringify(variables));
 }
 SavingIsPossible = false;
+
+document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 's') {
+      // Prevent the Save dialog to open
+      e.preventDefault();
+      // Place your code here
+      SaveState();
+    }
+  });
+
 
 function LoadState() {
     

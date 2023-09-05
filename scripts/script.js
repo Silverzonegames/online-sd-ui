@@ -273,6 +273,11 @@ function addStyleToDropdown(styleName) {
     label.innerHTML = `
           <input type="checkbox" value="${styleName}"> ${styleName}
         `;
+
+    if(selectedStyles.includes(styleName)){
+      label.querySelector("input").checked = true;
+    }
+      
     dropdown.appendChild(label);
   }
 }
@@ -282,13 +287,17 @@ function updateStyles() {
   fetch(url + '/sdapi/v1/prompt-styles')
     .then(response => response.json())
     .then(data => {
+
+      //clear styles dropdown
+      dropdown.innerHTML = "";  
+
       data.forEach(style => {
         addStyleToDropdown(style.name);
       });
 
       // After adding styles, attach event listeners to the checkboxes
       const styleCheckboxes = document.querySelectorAll('#stylesDropdown input[type="checkbox"]');
-      selectedStyles = [];
+      
 
       styleCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
@@ -301,8 +310,6 @@ function updateStyles() {
             }
           }
 
-          // You can perform any action with the selectedStyles array here.
-          console.log('Selected Styles:', selectedStyles);
         });
       });
     });
@@ -728,7 +735,7 @@ heightSlider.addEventListener('input', () => {
 const stepsSlider = document.getElementById("steps-slider");
 const stepsValue = document.getElementById("steps-value");
 const cfgSlider = document.getElementById("scale-slider");
-const cfgValue = document.getElementById("scale-value");
+const cfgValue = document.getElementById("cfg-value");
 
 // Event listener for generate button
 generateBtn.addEventListener('click', () => {
@@ -754,9 +761,11 @@ stepsSlider.addEventListener('input', () => {
   // Update the steps value label
   stepsValue.textContent = "Steps: " + stepsSlider.value;
 })
-cfgSlider.addEventListener('input', () => {
+cfgSlider.addEventListener('input', (e) => {
+
+  console.log(e.target.value);
   // Update the steps value label
-  cfgValue.textContent = "CFG Scale: " + cfgSlider.value;
+  cfgValue.textContent = "CFG Scale: " + e.target.value;
 })
 document.getElementById("pixels-slider").addEventListener('input', () => {
   document.getElementById("pixels-slider-value").textContent = document.getElementById("pixels-slider").value;
@@ -937,3 +946,32 @@ if ('Notification' in window) {
 
       });
 }
+//on arrow key press
+window.addEventListener('keydown', function(e) {
+
+  if(generatedImages.length == 0){
+    return;
+  }
+
+
+  //check that the user is not typing in a text field
+  if (e.target.nodeName != 'INPUT' && e.target.nodeName != 'TEXTAREA') {
+    switch (e.keyCode) {
+      case 37: //left arrow key
+        
+        current_image--;
+        if(current_image < 0){
+          current_image = generatedImages.length-1;
+        }
+        document.getElementById("outputImage").src = generatedImages[current_image];
+        break;
+      case 39: //right arrow key
+        current_image++;
+        if(current_image >= generatedImages.length){
+          current_image = 0;
+        }
+        document.getElementById("outputImage").src = generatedImages[current_image];
+        break;
+    }
+  }
+});

@@ -515,8 +515,8 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     // Add click event listener to the nameLink
     infoDiv.addEventListener('click', function (event) {
         event.preventDefault();
-        document.getElementById("civitIframe").src = "https://civitai.com/models/" + id;
-        document.getElementById("civitModalLink").href = "https://civitai.com/models/" + id;
+        document.getElementById("civitIframe").src = "https://civitai.com/models/" + data.id;
+        document.getElementById("civitModalLink").href = "https://civitai.com/models/" + data.id;
         document.getElementById("civitAIModalToggle").click();
     });
 
