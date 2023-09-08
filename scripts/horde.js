@@ -189,8 +189,8 @@ function GenerateHorde() {
     progress_container.classList.remove("hidden");
     generateBtn.classList.add("hidden");
     cancelBtn.classList.remove("hidden");
-    document.getElementById("outputImage").classList.add("blur");
-    document.getElementById("imgButtons").classList.add("blur");
+    //document.getElementById("outputImage").classList.add("blur");
+    //document.getElementById("imgButtons").classList.add("blur");
 
     payload = {
         "prompt": promptField.value.replaceAll("###", "") + "###" + negativePromptField.value,
@@ -352,8 +352,8 @@ function OnGenerationFinished() {
 
         progress_container.classList.add("hidden");
         progress_bar.classList.add("hidden");
-        document.getElementById("outputImage").classList.remove("blur");
-        document.getElementById("imgButtons").classList.remove("blur");
+        //document.getElementById("outputImage").classList.remove("blur");
+        //document.getElementById("imgButtons").classList.remove("blur");
 
         const imgButtonContainer = document.getElementById("imgButtons");
         imgButtonContainer.innerHTML = "";

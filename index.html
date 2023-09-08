@@ -650,24 +650,55 @@
               class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
           </div>
 
+          <!-- Esrgan Upscale -->
+          <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="esrgan-upscale" role="tabpanel"
+            aria-labelledby="esrgan-upscale-tab">
+              <!-- Slider for Scale -->
+              <label for="esrgan-scale" class="block mt-2" title="Amount to Upscale">
+                <span class="mr-2">Scale:</span>
+                <input id="esrgan-scale-value" type="number" value="4" min="1" max="8" step="0.05"
+                  class="w-16 bg-transparent">
+              </label>
+              <input id="esrgan-scale" type="range" value="4" min="1" max="8" step="0.05" class="w-full">
+              
+              <div class="mb-2">
+                <label for="esrgan-upscale-upscaler_index" class="block">Upscaler</label>
+                <select id="esrgan-upscale-upscaler_index"
+                  class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                  <option value="0">None</option>
+                  <option value="1">Lanczos</option>
+                  <!-- Include other upscaler options -->
+                </select>
+              </div>
+
+              <button id="esrgan-upscale-btn" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
+              class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
+
+            </div>
+
+          <script>
+            esrgan_scale = document.getElementById("esrgan-scale")
+            esrgan_scale_value = document.getElementById("esrgan-scale-value")
+
+            esrgan_scale.addEventListener("input", () => {
+              esrgan_scale_value.value = esrgan_scale.value;
+            });
+            esrgan_scale_value.addEventListener("input", () => {
+              esrgan_scale.value = esrgan_scale_value.value;
+            });
+
+          </script>
+
+          <!-- Latent Upscale -->
+          <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="latent-upscale" role="tabpanel"
+            aria-labelledby="latent-upscale-tab">
+            <p class="text-sm text-gray-500 dark:text-gray-400">This is some placeholder content for the <strong
+                class="font-medium text-gray-800 dark:text-white">Latent Upscale</strong> tab's associated content.
+              Clicking another tab will toggle the visibility of this one for the next. The tab JavaScript swaps classes
+              to control the content visibility and styling.</p>
+          </div>
         </div>
 
-        <!-- Esrgan Upscale -->
-        <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="esrgan-upscale" role="tabpanel"
-          aria-labelledby="esrgan-upscale-tab">
-          <p class="text-sm text-gray-500 dark:text-gray-400">This is some placeholder content for the <strong
-              class="font-medium text-gray-800 dark:text-white">ESRGAN Upscale</strong> tab's associated content.
-            Clicking another tab will toggle the visibility of this one for the next. The tab JavaScript swaps classes
-            to control the content visibility and styling.</p>
-        </div>
-        <!-- Latent Upscale -->
-        <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="latent-upscale" role="tabpanel"
-          aria-labelledby="latent-upscale-tab">
-          <p class="text-sm text-gray-500 dark:text-gray-400">This is some placeholder content for the <strong
-              class="font-medium text-gray-800 dark:text-white">Latent Upscale</strong> tab's associated content.
-            Clicking another tab will toggle the visibility of this one for the next. The tab JavaScript swaps classes
-            to control the content visibility and styling.</p>
-        </div>
       </div>
 
 
@@ -1248,7 +1279,7 @@
           src="placeholder.png" alt="Generated Image" class="object-contain h-full w-full rounded-md">
         <!-- Overlay div -->
         <div id="progress_container"
-          class="hidden absolute inset-0 flex flex-col items-center justify-center text-white bg-black bg-opacity-75  rounded-md">
+          class="hidden absolute inset-0 flex flex-col items-center justify-center text-white bg-black bg-opacity-75  rounded-md backdrop-blur-sm">
           <div id="queue_container" class="hidden">
             <div id="queue_number" class="text-6xl font-bold">42</div>
             <div class="mt-2 text-lg">In Queue...</div>
