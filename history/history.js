@@ -26,6 +26,7 @@ function createIndexedDB() {
   });
 }
 let imagesList = [];
+let favorite_images = [];
 let entries = [];
 let db = null;
 
@@ -285,7 +286,35 @@ document.getElementById("close-modal").addEventListener("click", () => {
 document.getElementById("close-modal2").addEventListener("click", () => {
   document.getElementById("ImageDetailModal").classList.add("hidden");
 })
+// on ESC
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    document.getElementById("ImageDetailModal").classList.add("hidden");
+  }
+});
+// On Left/Right
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") {
+    if (currentID > 0) {
+      currentID--;
+      updateFullscreenImage(imagesList[currentID].imageUrl, imagesList[currentID].text, imagesList[currentID],currentID);
+    }
+  }
+  if (e.key === "ArrowRight") {
+    if (currentID < imagesList.length - 1) {
+      currentID++;
+      updateFullscreenImage(imagesList[currentID].imageUrl, imagesList[currentID].text, imagesList[currentID],currentID);
+    }
+  }
+});
 
+//onclick
+window.addEventListener("click", (e) => {
+  //log what was clicked
+  console.log(e.target);
 
-
-
+  //if it is not the modal or a child of the modal, close it
+  if (e.target === document.getElementById("ImageDetailModal")) {
+    document.getElementById("ImageDetailModal").classList.add("hidden");
+  }
+});
