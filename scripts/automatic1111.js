@@ -218,6 +218,7 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
     .then(data => {
 
       isGenerating = false;
+      progress_bar.classList.add("hidden");
       clearInterval(progressInterval);
       document.getElementById("outputImage").classList.remove("blur-sm");
 
