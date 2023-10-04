@@ -66,7 +66,7 @@ function UpdateUser() {
 
 
     const headers = {
-        'apikey': token, // Replace with your API key
+        'apikey': token, 
     };
 
     fetch(`${horde_url}/v2/find_user`, {
@@ -77,6 +77,13 @@ function UpdateUser() {
             // Handle the data returned from the API
             console.log(data);
             user = data;
+
+            if (data.username == null) {
+                token = "0000000000";
+                UpdateUser();
+                return;
+            }
+
             userNameText.textContent = user.username
             tokenAmount.textContent = user.kudos
         })

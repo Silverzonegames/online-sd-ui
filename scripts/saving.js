@@ -186,6 +186,7 @@ function LoadState() {
 
 
     document.getElementById("outputImage").src = variables["generatedImage"];
+    updateFullscreenImage(variables["generatedImage"]);
 
     UpdateLoraDisplays();
 

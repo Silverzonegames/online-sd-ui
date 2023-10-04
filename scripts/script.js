@@ -51,6 +51,31 @@ function base64toBlob(base64Data) {
   return new Blob([uint8Array], { type: "image/png" }); // Change the type accordingly for different image formats
 }
 
+function readEXIFMetadataFromBase64(base64String) {
+
+  base64String = base64String.split(",")[1];
+
+  return new Promise((resolve, reject) => {
+    // Convert the base64 string to a binary blob
+    const binary = atob(base64String);
+    const array = [];
+    for (let i = 0; i < binary.length; i++) {
+      array.push(binary.charCodeAt(i));
+    }
+    const byteArray = new Uint8Array(array);
+
+    // Use exif-js to read the metadata
+    EXIF.getData(byteArray, function () {
+      const exifData = EXIF.getAllTags(this);
+      resolve(exifData);
+    });
+
+    // Handle errors, if any
+    EXIF.getTag(this, "Error", function (error) {
+      reject(error);
+    });
+  });
+}
 
 
 function updateFullscreenImage(base64) {
@@ -64,38 +89,25 @@ function updateFullscreenImage(base64) {
   document.getElementById("fullscreenImage").src = `${base64}`;
   const info = document.getElementById("fullscreenInfo");
 
-  const payload = {
-    "image": base64.replace("data:image/png;base64,", ""),
-  }
 
-  fetch(url + "/sdapi/v1/png-info", {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  }).then(response => {
-    if (!response.ok) {
-      showMessage(response.error);
-      throw new Error('Request failed');
-    }
-    return response.json();
-  }).then(data => {
-    console.log(data)
 
-    if(data["info"] == "" || data["info"] == null) {
-      info.innerHTML = "No Info";
-      return;
-    }
 
-    words = ["Negative prompt", "Hires steps", "Steps", "Sampler", "CFG scale", "Seed", "Size", "Model hash", 
-    "Model", "Denoising strength", "Clip skip", "ENSD", "TI hashes", "Version", "Lora hashes","Ultimate SD upscale upscaler",
-    "Ultimate SD upscale tile_width","Ultimate SD upscale tile_height","Ultimate SD upscale mask_blur","Ultimate SD upscale padding",
-    "Hires upscale","Hires upscaler",
-  ];
 
-    info.innerHTML = boldWords("<strong>Prompt</strong>:" + data["info"], words);
+  readEXIFMetadataFromBase64(base64)
+  .then((exifData) => {
+    console.log("EXIF Metadata:", exifData);
+  })
+  .catch((error) => {
+    console.error("Error reading EXIF metadata:", error);
   });
+
+    
+
+
+
+
+
+
 
 }
 
@@ -218,6 +230,8 @@ function handleURLChange() {
 
   if(serverType === ServerType.Automatic1111){
     getSamplers();
+    getCheckpoints()
+    getAllInstalled();
     updateStyles();
     getUpscalers();
     GetControlnetModel("inpaint");
@@ -594,6 +608,55 @@ function addLoraSliders(loraNames) {
   loraNames.forEach((loraName) => {
     const weight = GetLoraWeight(loraName);
 
+
+    const loraDiv = document.createElement('div');
+    loraDiv.classList.add('border-gray-700', 'border', 'rounded', 'flex', 'items-center', 'p-4');
+
+    const innerDiv = document.createElement('div');
+    innerDiv.classList.add('w-full');
+
+    const flexDiv = document.createElement('div');
+    flexDiv.classList.add('flex', 'justify-between', 'items-center');
+
+    const h1 = document.createElement('h1');
+    h1.classList.add('text-xl', 'font-bold', 'mb-2', 'text-white');
+    h1.textContent = loraName;
+
+    const btnDiv = document.createElement('div');
+    btnDiv.classList.add('flex', 'justify-between', 'items-center');
+
+    // Create a button to delete the Lora
+    const button = document.createElement('button');
+    button.classList.add("delete-button", 'bg-red-500', 'text-white','hover:bg-red-700', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    const icon = document.createElement('i');
+    icon.classList.add('fa-solid', 'fa-trash-can');
+    button.appendChild(icon);
+    button.dataset.name = loraName;
+    btnDiv.appendChild(button);
+
+
+    const label = document.createElement('label');
+    label.classList.add('text-white', 'block', 'mb-1');
+    label.setAttribute('for', 'strength');
+    label.textContent = 'Strength: '+weight;
+
+    const input = document.createElement('input');
+    input.setAttribute('type', 'range');
+    //input.setAttribute('id', 'lora_strength_' + id);
+    input.setAttribute('name', 'strength');
+    input.classList.add('block', 'w-full', 'mt-1');
+    input.setAttribute('min', '-5');
+    input.setAttribute('max', '5');
+    input.setAttribute('step', '0.05');
+    input.setAttribute('value', weight);
+    input.addEventListener('input', function () {
+      const formattedValue = formatSliderValue(parseFloat(this.value));
+      label.textContent = 'Strength: '+formattedValue;
+      ChangeLoraWeight(loraName, this.value);
+    });
+    
+
+
     const div = document.createElement('div');
     div.className = 'flex items-center justify-between mb-4';
     div.innerHTML = `
@@ -646,7 +709,9 @@ const name = 'Lora Name';
 const category = 'Lora Category';
 
 
-
+function getCivitInfoByFilename(name) {
+  return installed_models.find(model => model.filename === name)
+}
 
 
 

@@ -35,7 +35,7 @@
   </button>
 
   <div id="ImageDetailModal"
-    class="hs-overlay w-full h-full fixed top-0 left-0 z-[100] overflow-x-hidden overflow-y-auto dark hidden">
+    class="hs-overlay w-full h-full fixed top-0 left-0 z-[100] overflow-x-hidden overflow-y-hidden dark hidden">
     <div
       class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 sm:max-w-6xl sm:w-full m-3 sm:mx-auto h-[calc(100%-1rem)]">
       <div
@@ -71,21 +71,23 @@
 
 
         <div class="flex justify-start items-center gap-x-2 py-3 px-4 border-t border-gray-700">
-          <button id="reuseBtn" type="button" title="Send Parameters of the image to the generate tab"
-            class="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md  font-medium bg-blue-700 text-white hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800 transition-all text-sm dark:bg-blue-600 dark:hover:bg-blue-700">
-            Reuse Parameters
-          </button>
-          <!-- Favorite Btn with fontawesome star icon-->
-          
-          <!--Delete Button-->
-          <button id="deleteBtn" type="button"
-            class="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md  font-medium bg-red-700 text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-800 transition-all text-sm dark:bg-red-600 dark:hover:bg-red-700">
-            Delete
-          </button>
-          <button type="button" id="close-modal"
-            class="hs-dropdown-toggle py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md  font-medium bg-gray-700 text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 transition-all text-sm dark:bg-gray-600 dark:hover:bg-gray-700">
-            Close
-          </button>
+  <!-- Reuse Parameters Button -->
+  <button id="reuseBtn" type="button"
+    class="px-4 py-2 rounded-md font-medium bg-blue-700 text-white hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800 transition-all text-sm dark:bg-blue-600 dark:hover:bg-blue-700">
+    Reuse Parameters
+  </button>
+
+  <!-- Delete Button -->
+  <button id="deleteBtn" type="button"
+    class="px-4 py-2 rounded-md font-medium bg-red-700 text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-800 transition-all text-sm dark:bg-red-600 dark:hover:bg-red-700">
+    Delete
+  </button>
+
+  <!-- Close Button -->
+  <button type="button" id="close-modal"
+    class="px-4 py-2 rounded-md font-medium bg-gray-700 text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 transition-all text-sm dark:bg-gray-600 dark:hover:bg-gray-700">
+    Close
+  </button>
         </div>
       </div>
     </div>

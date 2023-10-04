@@ -2,6 +2,11 @@
 let samplers = []
 let current_image = 0;
 
+let all_models = [];
+let all_checkpoints = [];
+let AOptions = {};
+
+
 // Image generation function
 function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = false, isLatent = false) {
 
@@ -439,6 +444,78 @@ function getSamplers() {
       console.error("Error fetching samplers:", error);
     });
 }
+function getCheckpoints(){
+
+  const selector = document.getElementById("checkpoint-selector");
+
+  fetch(url + '/sdapi/v1/sd-models').then(response => response.json()).then(data => {
+    all_checkpoints = data;
+
+    fetch(url+"/sdapi/v1/options").then(response => response.json()).then(_data => {
+      AOptions = _data;
+      selector.innerHTML = "";
+      all_checkpoints.forEach((checkpoint) => {
+        const option = document.createElement("option");
+        option.value = checkpoint.title;
+        option.text = checkpoint.model_name;
+        selector.appendChild(option);
+      });
+      selector.value = AOptions["sd_model_checkpoint"];
+    }).catch(error => {
+      console.error("Error fetching options:" + error);
+    });
+
+
+
+    if(!isLocalhost(url)){
+      selector.disabled = true;
+    }else{
+      selector.disabled = false;
+    }
+
+  }).catch(error => {
+    showMessage(error.message);
+    all_checkpoints = [];
+  });
+}
+
+
+function getAllInstalled(){
+  fetch(url+"civitai/all-installed").then(response => response.json()).then(data => {
+    all_models = data;
+  }).catch(error => {
+    all_models = [];
+  });
+}
+
+
+document.getElementById("checkpoint-selector").addEventListener("change", (e) => {
+  if (confirm("Are you sure you want to Change Model?")){
+    let _options = {}
+    _options["sd_model_checkpoint"] = e.target.value;
+
+    //post new options to server
+    fetch(url+"/sdapi/v1/options", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(_options)
+    }).then(response => {
+      if (!response.ok) {
+        showMessage(response.error);
+        throw new Error('Request failed');
+      }
+      return response.json();
+    }).then(data => {
+      getCheckpoints();
+      showMessage("Model Loaded!",300,"success");
+    }).catch(error => {
+      console.error('Error:', error);
+    });
+  }
+});
+
 document.getElementById("esrgan-upscale-btn").addEventListener("click", () => {
 
   const payload = {

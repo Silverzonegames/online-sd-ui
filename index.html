@@ -154,6 +154,9 @@
         <label id="userName" class="mr-4 horde">Anonymous</label>
         <span id="tokenAmount" class="horde mr-4 text-sm text-gray-500"></span>
       </div>
+      <!--Model Dropdown-->
+
+      
 
       <label for="nodes-toggle"
         class="comfyui mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
@@ -1423,10 +1426,11 @@
 
             <div class="p-5 border border-b-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
 
-              <div class="mb-4 flex horde">
+              <!--Horde Model Selector-->
+              <div class="mb-4 flex horde ">
                 <label class="block mr-2 text-gray-500 dark:text-gray-400" for="sampling-method">Model:</label>
                 <select id="model-name"
-                  class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                  class="w-80 bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                   <option value="stable_diffusion">stable diffusion</option>
                 </select>
                 <!-- List Button-->
@@ -1436,6 +1440,23 @@
                   <i class="fa-solid fa-list"></i>
                 </button>
               </div>
+
+              <!--A1111 Model Selector-->
+              <div class="mb-4 flex automatic1111">
+                <label class="block mr-2 text-gray-500 dark:text-gray-400" for="sampling-method">Model:</label>
+                <select id="checkpoint-selector"
+                  
+                  class="w-80 bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                </select>
+                <!--
+                <button id="listButton"
+                  class="ml-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+                  data-modal-target="modelModal" data-modal-toggle="modelModal">
+                  <i class="fa-solid fa-list"></i>
+                </button>
+                 -->
+              </div>
+
 
               <!-- Options Here -->
               <div class="md:flex mb-4">
@@ -1882,6 +1903,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
   <script src="scripts/variables.js"></script>
   <script src="scripts/automatic1111.js"></script>
   <script src="scripts/comfyui.js"></script>
