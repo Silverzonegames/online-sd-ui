@@ -56,6 +56,7 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
   const batchSize = parseInt(batchSizeSlider.value);
   const saveToServer = document.getElementById("saveToServer").checked
 
+
   let payload = {
     "prompt": document.getElementById('prompt').value,
     "negative_prompt": document.getElementById('negativePrompt').value,
@@ -69,8 +70,14 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
     "seed": parseInt(seedDropdown.value),
     "save_images": saveToServer,
     "do_not_save_grid": true,
-    "do_not_save_samples": true
+    "do_not_save_samples": true,
   };
+  var controlnet = GetControlNet();
+
+  payload["alwayson_scripts"] = {
+    "controlnet": controlnet,
+  }
+
   if (img2img) {
     payload["init_images"] = [uploadedImageBase64];
     payload["denoising_strength"] = parseFloat(weightSlider.value);
@@ -181,7 +188,7 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
 
     if (data.current_image != null) {
       outputImage.src = "data:image/png;base64, " + data.current_image;
-      outputImage.classList.add("blur-sm");
+      
     }
 
     if (progress >= 1) {
@@ -220,7 +227,7 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
       isGenerating = false;
       progress_bar.classList.add("hidden");
       clearInterval(progressInterval);
-      document.getElementById("outputImage").classList.remove("blur-sm");
+      
 
 
       if (isUpscale) {
@@ -445,8 +452,19 @@ function getSamplers() {
       console.error("Error fetching samplers:", error);
     });
 }
-function getCheckpoints(){
 
+function getOptions() {
+  const selector = document.getElementById("checkpoint-selector");
+  fetch(url+"/sdapi/v1/options").then(response => response.json()).then(_data => {
+    AOptions = _data;
+    selector.value = AOptions["sd_model_checkpoint"];
+  }).catch(error => {
+    console.error("Error fetching options:" + error);
+  });
+}
+
+function getCheckpoints(){
+  getOptions();
   const selector = document.getElementById("checkpoint-selector");
 
   fetch(url + '/sdapi/v1/sd-models').then(response => response.json()).then(data => {
@@ -454,19 +472,18 @@ function getCheckpoints(){
 
     fetch(url+"/sdapi/v1/options").then(response => response.json()).then(_data => {
       AOptions = _data;
-      selector.innerHTML = "";
-      all_checkpoints.forEach((checkpoint) => {
-        const option = document.createElement("option");
-        option.value = checkpoint.title;
-        option.text = checkpoint.model_name;
-        selector.appendChild(option);
-      });
       selector.value = AOptions["sd_model_checkpoint"];
     }).catch(error => {
       console.error("Error fetching options:" + error);
     });
 
-
+    selector.innerHTML = "";
+    all_checkpoints.forEach((checkpoint) => {
+      const option = document.createElement("option");
+      option.value = checkpoint.title;
+      option.text = checkpoint.model_name;
+      selector.appendChild(option);
+    });
 
     if(!isLocalhost(url)){
       selector.disabled = true;

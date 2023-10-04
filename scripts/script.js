@@ -238,6 +238,7 @@ function handleURLChange() {
     GetDataDir();
     checkStatus();
     HandleLoras();
+    ControlNetInit()
     changeCode(url);
   }else if (serverType === ServerType.ComfyUI){
     RefreshComfy();
@@ -739,11 +740,9 @@ function isLocalhost(url) {
   const hostname = new URL(url).hostname;
   return /^localhost|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^\[::1\]$/.test(hostname);
 }
-function changeCode(newCode) {
-  // const currentURL = new URL(window.location.href);
-  // currentURL.searchParams.set(newCode);
-  // window.history.replaceState({}, '', currentURL);
-}
+
+
+
 
 function showMessage(message, duration = 5000,type="Error") {
   const targetEl = document.getElementById('errorMessage');

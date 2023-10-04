@@ -398,7 +398,7 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     const image = document.createElement('img');
     image.src = imageSrc;
     image.alt = 'Lora Thumbnail';
-    image.classList.add('object-cover', 'object-center', 'w-full','aspect-[2/3]');
+    image.classList.add('object-cover', 'object-center', 'w-full','aspect-[2/3]',"transition-all", "duration-300");
 
     if (Blurred) {
         image.classList.add(Blurred);

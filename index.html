@@ -156,7 +156,7 @@
       </div>
       <!--Model Dropdown-->
 
-      
+
 
       <label for="nodes-toggle"
         class="comfyui mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
@@ -267,7 +267,7 @@
         <!-- Modal body -->
         <div class="p-6 space-y-6">
 
-          < <input type="file" id="canvas_imageInput" class="mb-4 bg-gray-700 p-2 rounded">
+          <input type="file" id="canvas_imageInput" class="mb-4 bg-gray-700 p-2 rounded">
             <div class="flex items-center space-x-4 mb-4">
               <label for="canvas_CanvasRatio">Canvas Ratio:</label>
               <input type="range" id="canvas_CanvasRatio" class="w-56 bg-gray-700 text-white" min="-1" max="1"
@@ -656,28 +656,28 @@
           <!-- Esrgan Upscale -->
           <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="esrgan-upscale" role="tabpanel"
             aria-labelledby="esrgan-upscale-tab">
-              <!-- Slider for Scale -->
-              <label for="esrgan-scale" class="block mt-2" title="Amount to Upscale">
-                <span class="mr-2">Scale:</span>
-                <input id="esrgan-scale-value" type="number" value="4" min="1" max="8" step="0.05"
-                  class="w-16 bg-transparent">
-              </label>
-              <input id="esrgan-scale" type="range" value="4" min="1" max="8" step="0.05" class="w-full">
-              
-              <div class="mb-2">
-                <label for="esrgan-upscale-upscaler_index" class="block">Upscaler</label>
-                <select id="esrgan-upscale-upscaler_index"
-                  class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                  <option value="0">None</option>
-                  <option value="1">Lanczos</option>
-                  <!-- Include other upscaler options -->
-                </select>
-              </div>
+            <!-- Slider for Scale -->
+            <label for="esrgan-scale" class="block mt-2" title="Amount to Upscale">
+              <span class="mr-2">Scale:</span>
+              <input id="esrgan-scale-value" type="number" value="4" min="1" max="8" step="0.05"
+                class="w-16 bg-transparent">
+            </label>
+            <input id="esrgan-scale" type="range" value="4" min="1" max="8" step="0.05" class="w-full">
 
-              <button id="esrgan-upscale-btn" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
+            <div class="mb-2">
+              <label for="esrgan-upscale-upscaler_index" class="block">Upscaler</label>
+              <select id="esrgan-upscale-upscaler_index"
+                class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                <option value="0">None</option>
+                <option value="1">Lanczos</option>
+                <!-- Include other upscaler options -->
+              </select>
+            </div>
+
+            <button id="esrgan-upscale-btn" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
               class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
 
-            </div>
+          </div>
 
           <script>
             esrgan_scale = document.getElementById("esrgan-scale")
@@ -1108,7 +1108,7 @@
           <span class="sr-only">Close modal</span>
         </button>
         <div class="px-6 py-6 lg:px-8">
-          <h3  id="download_name" class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Model Name</h3>
+          <h3 id="download_name" class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Model Name</h3>
           <div class="space-y-6">
             <div>
               <label for="download_folder"
@@ -1128,14 +1128,14 @@
             </div>
             <!--Thumbnail Selector-->
             <div>
-              <label  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thumbnail</label>
+              <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thumbnail</label>
               <!--Change Direction to horizontal instead of vertical-->
               <div id="download_thumbnail_container" class="h-44 overflow-x-auto flex overflow-y-clip space-x-2 pb-6">
-                
+
 
               </div>
             </div>
-            
+
             <button id="civitai_downloadBtn"
               class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Download</button>
           </div>
@@ -1445,7 +1445,6 @@
               <div class="mb-4 flex automatic1111">
                 <label class="block mr-2 text-gray-500 dark:text-gray-400" for="sampling-method">Model:</label>
                 <select id="checkpoint-selector"
-                  
                   class="w-80 bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 </select>
                 <!--
@@ -1538,16 +1537,17 @@
                     <input type="range" id="width-slider"
                       class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
                       min="128" max="1024" step="64" value="512">
-                    <label id="heightText" class="block mb-2 text-gray-500 dark:text-gray-400" for="height-slider">Height:
+                    <label id="heightText" class="block mb-2 text-gray-500 dark:text-gray-400"
+                      for="height-slider">Height:
                       512</label>
                     <input type="range" id="height-slider"
                       class="w-48 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
                       min="128" max="1024" step="64" value="512">
                   </div>
-  
+
                   <!-- Batch size slider -->
                   <div>
-  
+
                     <!--Batch Count Slider-->
                     <div class="automatic1111">
                       <label id="batchCountValue" class=" block mb-2 text-gray-500 dark:text-gray-400 "
@@ -1556,8 +1556,8 @@
                         class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
                         min="1" max="10" step="1" value="1">
                     </div>
-  
-  
+
+
                     <div>
                       <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
                         for="batch-size-slider">Batch Size: 1</label>
@@ -1621,7 +1621,7 @@
           </div>
           <h2 id="accordion-open-heading-3">
             <button type="button"
-              class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
               data-accordion-target="#accordion-open-body-3" aria-expanded="false"
               aria-controls="accordion-open-body-3">
               <span class="flex items-center"><svg class="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20"
@@ -1678,29 +1678,7 @@
                 </div>
               </div>
 
-              <!-- Nested accordion -->
-              <div id="accordion-controlnet" data-accordion="collapse" class="hidden">
-                <h2 id="accordion-controlnet-heading-1">
-                  <button type="button"
-                    class="flex items-center justify-between w-full p-5 rounded-t-xl font-medium text-left text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    data-accordion-target="#accordion-controlnet-body-1" aria-expanded="false"
-                    aria-controls="accordion-controlnet-body-1">
-                    <span>Controlnet</span>
-                    <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 5 5 1 1 5" />
-                    </svg>
-                  </button>
-                </h2>
-                <div id="accordion-controlnet-body-1" class="hidden" aria-labelledby="accordion-controlnet-heading-1">
-                  <div class="p-5 border border-gray-200 dark:border-gray-700">
-                    <p class="text-gray-500 dark:text-gray-400">The main difference is that the core components from
-                      Flowbite are open source under the MIT license, whereas Tailwind UI is a paid product.</p>
-                  </div>
-                </div>
-              </div>
-              <!-- End: Nested accordion -->
+
 
               <!-- Nested accordion -->
               <div id="accordion-inpainting-options" data-accordion="collapse" class="hidden">
@@ -1801,7 +1779,51 @@
               <!-- End: Nested accordion -->
             </div>
           </div>
+
+          <h2 id="accordion-collapse-heading-2">
+            <button type="button"
+              class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border  border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              data-accordion-target="#accordion-collapse-body-2" aria-expanded="false"
+              aria-controls="accordion-collapse-body-2">
+              <span>Controlnet <span class="text-green-400" id="ControlnetActiveText">0 Active</span></span>
+              <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5 5 1 1 5" />
+              </svg>
+            </button>
+          </h2>
+          <div id="accordion-collapse-body-2" class="hidden" aria-labelledby="accordion-collapse-heading-2">
+            <div class="p-2 border  border-gray-200 dark:border-gray-800">
+              <!--Enable Btn-->
+              <div class="h-10 flex justify-between">
+                <div class="justify-center py-2 bg-gray-700 w-full mr-2 pl-2 rounded">
+                  <label class="relative inline-flex items-center mb-5 cursor-pointer">
+                    <input type="checkbox" value="" class="sr-only peer" id="Controlnet-enable">
+                    <div
+                      class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                    </div>
+                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Controlnet</span>
+                  </label>
+
+                </div>
+                <button class="bg-gray-500 w-10 h-10 rounded" id="addControlnetBtn">
+                  <i class="fa-solid fa-plus text-white"></i>
+                </button>
+              </div>
+
+
+              <div id="ControlnetContainer">
+
+              </div>
+
+
+
+            </div>
+          </div>
+
         </div>
+
 
         <div class="h-16"></div>
       </div>
@@ -1910,11 +1932,12 @@
   <script src="scripts/horde.js"></script>
   <script src="scripts/civitai.js"></script>
   <script src="scripts/networks.js"></script>
+  <script src="scripts/Controlnet.js"></script>
   <script src="scripts/script.js"></script>
   <script src="scripts/ServerManager.js"></script>
   <script src="scripts/saving.js"></script>
-<script src="scripts/edit-attention.js"></script>
-<script src="scripts/edit-order.js"></script>
+  <script src="scripts/edit-attention.js"></script>
+  <script src="scripts/edit-order.js"></script>
 </body>
 
 <style>

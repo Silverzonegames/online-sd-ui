@@ -57,10 +57,10 @@ generations = [];
 function UpdateHorde() {
     UpdateUser();
     getHordeModels();
-    
     civitaiSearch("");
 }
 
+// Update the user information
 function UpdateUser() {
 
 
@@ -78,6 +78,7 @@ function UpdateUser() {
             console.log(data);
             user = data;
 
+            //use default token if invalid
             if (data.username == null) {
                 token = "0000000000";
                 UpdateUser();
