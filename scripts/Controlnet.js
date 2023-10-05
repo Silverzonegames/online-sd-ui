@@ -555,26 +555,31 @@ function updateControlNetAmountText(){
 }
 function GetControlNet(){
 
+
+
     var args = [];
 
-    ControlNetUnits.forEach(unit => {
-        if(unit?.enabled){
-            let arg = {}
-            if (unit.image == null || unit.image == "" || unit.image == "loading.gif"){
-                arg["input_image"] = unit.initImage.replace("data:image/png;base64,","");
-                arg["module"] = unit.module;
-            }else{
-                arg["input_image"] = unit.Image.replace("data:image/png;base64,","")
+    if (ControlnetEnable.checked) {
+        ControlNetUnits.forEach(unit => {
+            if(unit?.enabled){
+                let arg = {}
+                if (unit.image == null || unit.image == "" || unit.image == "loading.gif"){
+                    arg["input_image"] = unit.initImage.replace("data:image/png;base64,","");
+                    arg["module"] = unit.module;
+                }else{
+                    arg["input_image"] = unit.Image.replace("data:image/png;base64,","")
+                }
+                arg["model"] = unit.model;
+                arg["weight"] = parseFloat(unit.weight);
+                arg["guidance_start"] = parseFloat(unit.guidance_start);
+                arg["guidance_end"] = parseFloat(unit.guidance_end);
+                arg["control_mode"] = parseInt(unit.control_mode);
+                arg["resize_mode"] = parseInt(unit.resize_mode);
+                args.push(arg);
             }
-            arg["model"] = unit.model;
-            arg["weight"] = parseFloat(unit.weight);
-            arg["guidance_start"] = parseFloat(unit.guidance_start);
-            arg["guidance_end"] = parseFloat(unit.guidance_end);
-            arg["control_mode"] = parseInt(unit.control_mode);
-            arg["resize_mode"] = parseInt(unit.resize_mode);
-            args.push(arg);
-        }
-    });
+        });
+    }
+
     var controlnet = {
         "args": args,
     }
