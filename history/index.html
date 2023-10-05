@@ -109,26 +109,34 @@
       </div>
     </div>
 
-    <div id="SelectionHeader" class="flex items-center justify-between mb-6 rounded-lg bg-gray-900 shadow-lg py-2 hidden fixed top-32 w-64">
-      <div class="flex">
-        <button id="cancelSeletionBtn" class="w-8 text-white" title="Cancel Selection">
-          <i class="fa-solid fa-x"></i>
-        </button>
-        <label id="selectionText">1 Selected</label>
-      </div>
-      <div class="flex mr-2">
-        <!--Download Btn-->
-        <button id="downloadSelectedBtn" class="w-8 text-green-500" title="Download Selected Images">
-          <i class="fa-solid fa-download"></i>
+    <div id="SelectionHeader" class=" mb-6 rounded-lg bg-gray-900 shadow-lg py-2 hidden fixed top-32 w-64 h-10">
 
-        <!--Favorite Btn-->
-        <button id="favoriteSelectedBtn" class="w-8 text-yellow-500 hidden" title="Favorite Selected Images">
-          <i class="fa-solid fa-star"></i>
-
-        <button id="deleteSelectedBtn" class="w-8 text-red-500" title="Delete Selected Images">
-          <i class="fa-solid fa-trash"></i>
-        </button>
+      <div class="flex items-center justify-between">
+        <div class="flex">
+          <button id="cancelSeletionBtn" class="w-8 text-white" title="Cancel Selection">
+            <i class="fa-solid fa-x"></i>
+          </button>
+          <label id="selectionText">1 Selected</label>
+        </div>
+        <div class="flex mr-2">
+          <!--Download Btn-->
+          <button id="downloadSelectedBtn" class="w-8 text-green-500" title="Download Selected Images">
+            <i class="fa-solid fa-download"></i>
+  
+          <!--Favorite Btn-->
+          <button id="favoriteSelectedBtn" class="w-8 text-yellow-500 hidden" title="Favorite Selected Images">
+            <i class="fa-solid fa-star"></i>
+  
+          <button id="deleteSelectedBtn" class="w-8 text-red-500" title="Delete Selected Images">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        
       </div>
+      <div id="DownloadProgressBar" class="w-full bg-gray-200 rounded-full h-1.5 mb-4 dark:bg-gray-700 mt-0.5 hidden">
+        <div id="DownloadProgress" class="bg-blue-600 h-1.5 rounded-full dark:bg-blue-500" style="width: 0%"></div>
+      </div>
+
     </div>
 
 

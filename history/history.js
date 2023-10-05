@@ -57,10 +57,10 @@ async function loadImagesFromIndexedDB() {
 
         entries.push({ id });
 
-        imagesList.push({ imageUrl, text, id }); // Store both the image URL and text in the imagesList array
+        imagesList.push({ imageUrl, text, id, imageBlob }); // Store both the image URL and text in the imagesList array
         cursor.continue();
       } else {
-        console.log(imagesList);
+        console.log(entries);
         imagesList = imagesList.filter((entry) => entry !== undefined); // Filter out undefined entries
 
         imagesList = imagesList.reverse();
@@ -72,7 +72,7 @@ async function loadImagesFromIndexedDB() {
     console.error("Error while loading images from IndexedDB:", error);
   }
 }
-async function removeFromIndexedDB(_id,isIndex=true, refresh=true) {
+async function removeFromIndexedDB(_id, isIndex = true, refresh = true) {
   try {
     if (!db) {
       db = await createIndexedDB();
@@ -80,16 +80,16 @@ async function removeFromIndexedDB(_id,isIndex=true, refresh=true) {
       const transaction = db.transaction(["images"], "readwrite");
 
       var id
-      if (isIndex){
+      if (isIndex) {
         console.log("Delete " + _id + "->" + entries[id].id)
         id = entries[_id].id;
-      }else{
+      } else {
         id = _id;
       }
 
       const store = transaction.objectStore("images").delete(id);
 
-      if(refresh){
+      if (refresh) {
         loadImagesFromIndexedDB();
       }
 
@@ -421,7 +421,7 @@ document.getElementById("downloadSelectedBtn").addEventListener("click", () => {
   var links = []
 
   selectedImages.forEach(imageID => {
-    links.push(getImageEntryById(imageID).imageUrl)
+    links.push(getImageEntryById(imageID).imageBlob)
   });
   console.log(links);
 
@@ -429,6 +429,10 @@ document.getElementById("downloadSelectedBtn").addEventListener("click", () => {
 });
 
 document.getElementById("deleteSelectedBtn").addEventListener("click", () => {
+
+  if (confirm("Are you sure you want to delete " + selectedImages.length + " images?") == false)
+    return;
+
   document.getElementById("ImageDetailModal").classList.add("hidden");
 
   selectedImages.forEach(image => {
@@ -444,17 +448,32 @@ async function downloadZip(links) {
   const zip = new JSZip();
 
 
+
+  const progressBar = document.getElementById("DownloadProgressBar");
+  const Progress = document.getElementById("DownloadProgress");
+
+  // Set up a progress callback
+
+
+  progressBar.classList.remove("hidden");
+
+  const total = links.length;
+
   // Fetch and add each image to the zip file
   for (let i = 0; i < links.length; i++) {
-    const response = await fetch(links[i]);
-    const blob = await response.blob();
-    zip.file(`image_${i + 1}.png`, blob);
+    zip.file(`image_${i + 1}.png`, links[i]);
   }
 
   // Generate the zip file
-  zip.generateAsync({ type: 'blob' }).then((content) => {
+  zip.generateAsync({ type: 'blob' }, (metadata) => {
+    if (metadata.percent) {
+      console.log(`Progression: ${metadata.percent.toFixed(2)}%`);
+      Progress.style.width = `${metadata.percent}%`;
+    }
+  }).then((content) => {
     // Save and trigger the download
     saveAs(content, 'images.zip');
+    progressBar.classList.add("hidden");
   });
 }
 
