@@ -13,7 +13,6 @@ variables = {
     saveToServer:false,
     saveToHistory:true,
     generatedImage: "/placeholder.png",
-    generatedImages: [],
     img2imgImage: "",
     img2imgMask: "",
     serverType: ServerType.Horde,
@@ -40,7 +39,6 @@ function GetCurrentState(){
     variables["saveToServer"] = document.getElementById("saveToServer").checked;
     variables["saveToHistory"] = document.getElementById("saveToHistory").checked;
     variables["generatedImage"] = document.getElementById("outputImage").src;
-    variables["generatedImages"] = generatedImages;
     variables["img2imgImage"] = uploadedImageBase64;
     variables["img2imgMask"] = maskImageBase64;
     variables["serverType"] = serverType;
@@ -97,6 +95,7 @@ function SaveState() {
 
     GetCurrentState();
     localStorage.setItem("state", JSON.stringify(variables));
+    console.log("Saved")
 }
 SavingIsPossible = false;
 
@@ -105,6 +104,7 @@ document.addEventListener('keydown', e => {
       // Prevent the Save dialog to open
       e.preventDefault();
       // Place your code here
+      SavingIsPossible = true;
       SaveState();
     }
   });
