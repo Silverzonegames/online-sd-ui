@@ -7,6 +7,7 @@
   <title>Image History</title>
   <!-- Link to Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/9685c3d611.js" crossorigin="anonymous"></script>
   <style>
     /* Add dark theme styles here */
     body.dark {
@@ -20,7 +21,7 @@
 
   <header class="py-4 px-8 bg-gray-800 flex justify-between items-center w-full h-16 z-50 mt-0">
     <div class="relative flex items-center">
-      <h1 class="text-2xl font-bold mr-4">Stable Diffusion Image Generator</h1>
+      <h1 class="text-2xl font-bold mr-4">Stable Diffusion</h1>
       <!-- Generate link -->
       <a id="generateLink" href="/" class="text-white align-middle hover:text-blue-500">Generate</a>
     </div>
@@ -108,7 +109,27 @@
       </div>
     </div>
 
+    <div id="SelectionHeader" class="flex items-center justify-between mb-6 rounded-lg bg-gray-900 shadow-lg py-2 hidden fixed top-32 w-64">
+      <div class="flex">
+        <button id="cancelSeletionBtn" class="w-8 text-white" title="Cancel Selection">
+          <i class="fa-solid fa-x"></i>
+        </button>
+        <label id="selectionText">1 Selected</label>
+      </div>
+      <div class="flex mr-2">
+        <!--Download Btn-->
+        <button id="downloadSelectedBtn" class="w-8 text-green-500" title="Download Selected Images">
+          <i class="fa-solid fa-download"></i>
 
+        <!--Favorite Btn-->
+        <button id="favoriteSelectedBtn" class="w-8 text-yellow-500 hidden" title="Favorite Selected Images">
+          <i class="fa-solid fa-star"></i>
+
+        <button id="deleteSelectedBtn" class="w-8 text-red-500" title="Delete Selected Images">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
 
 
     <div id="imageContainer" class="flex flex-row gap-4">
@@ -123,6 +144,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
   <script src="./node_modules/preline/dist/preline.js"></script>
   <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.0/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
 </body>
 
 </html>

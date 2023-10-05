@@ -1,6 +1,6 @@
-_path = window.location.toString( );
+_path = window.location.toString();
 console.log(_path);
-document.getElementById("generateLink").href = _path.replace("/history/","");
+document.getElementById("generateLink").href = _path.replace("/history/", "");
 
 function createIndexedDB() {
   return new Promise((resolve, reject) => {
@@ -29,6 +29,7 @@ let imagesList = [];
 let favorite_images = [];
 let entries = [];
 let db = null;
+let selectedImages = [];
 
 async function loadImagesFromIndexedDB() {
   try {
@@ -45,18 +46,18 @@ async function loadImagesFromIndexedDB() {
       if (cursor) {
         console.log(cursor.value.imageUrl);
         const imageBlob = cursor.value.imageBlob;
-        
+
         const imageUrl = URL.createObjectURL(imageBlob);
-        
+
         const text = cursor.value.text; // Get the associated text from the stored object
 
         const timestamp = cursor.value.timestamp;
 
         const id = cursor.primaryKey
 
-        entries.push({ id});        
+        entries.push({ id });
 
-        imagesList.push({ imageUrl, text }); // Store both the image URL and text in the imagesList array
+        imagesList.push({ imageUrl, text, id }); // Store both the image URL and text in the imagesList array
         cursor.continue();
       } else {
         console.log(imagesList);
@@ -71,17 +72,26 @@ async function loadImagesFromIndexedDB() {
     console.error("Error while loading images from IndexedDB:", error);
   }
 }
-async function removeFromIndexedDB(id) {
+async function removeFromIndexedDB(_id,isIndex=true, refresh=true) {
   try {
     if (!db) {
       db = await createIndexedDB();
-    }else {
+    } else {
       const transaction = db.transaction(["images"], "readwrite");
-      console.log("Delete "+ id +"->" + entries[id].id)
-      const store = transaction.objectStore("images").delete(entries[id].id);
 
-      // Reload images from IndexedDB after deletion and updating the object store
-      await loadImagesFromIndexedDB();
+      var id
+      if (isIndex){
+        console.log("Delete " + _id + "->" + entries[id].id)
+        id = entries[_id].id;
+      }else{
+        id = _id;
+      }
+
+      const store = transaction.objectStore("images").delete(id);
+
+      if(refresh){
+        loadImagesFromIndexedDB();
+      }
 
 
     }
@@ -118,7 +128,7 @@ function UpdateImagePlacement(searchTerm = "") {
 
   for (let i = 0; i < columCount; i++) {
     const column = document.createElement("div");
-    column.id = i;
+    column.id = 1;
     column.classList.add("gap-4");
     column.style.width = `${columnWidth}%`; // Set the width of each column
     imageContainer.appendChild(column);
@@ -143,34 +153,87 @@ function UpdateImagePlacement(searchTerm = "") {
 
 
   for (let i = 0; i < _imagesList.length; i++) {
+
+    const id = entries[i].id;
+
     const imageWrapper = document.createElement("div");
-    imageWrapper.classList.add("mb-4"); // Add margin bottom for spacing between images
+    imageWrapper.classList.add("mb-4", "rounded-lg", "border-blue-400"); // Add margin bottom for spacing between images
+    imageWrapper.id = "img-" + id;
 
     const imageElement = document.createElement("img");
-    imageElement.id=i;
+    imageElement.id = id;
     imageElement.src = _imagesList[i].imageUrl; // Access the imageUrl from the object in imagesList
     imageElement.classList.add("h-auto", "max-w-full", "rounded-lg");
 
     // Add the click event listener to the image element
     imageElement.addEventListener("click", () => {
+
+      //check if control is pressed
+      if (event.ctrlKey) {
+        //prevent default behavior
+        event.preventDefault();
+        SelectImage(i);
+
+        return;
+      }
+
       // Access the associated text from the object in imagesList
       const text = _imagesList[i].text;
       // Pass the text to the updateFullscreenImage function
-      updateFullscreenImage(_imagesList[i].imageUrl, text, _imagesList[i],i);
+      updateFullscreenImage(_imagesList[i].imageUrl, text, _imagesList[i], i);
     });
 
     imageWrapper.appendChild(imageElement);
 
     columns[i % columCount].appendChild(imageWrapper); // Adding the image to the right column based on the remainder of the index divided by column count
   }
+  RefreshSelection();
 }
+
+function SelectImage(_id) {
+  const id = entries[_id].id;
+  if (selectedImages.includes(id)) {
+    selectedImages = selectedImages.filter((entry) => entry !== id);
+  } else {
+    selectedImages.push(id);
+  }
+
+  console.log(selectedImages);
+
+  RefreshSelection();
+}
+
+const SelectionHeader = document.getElementById("SelectionHeader");
+const selectionText = document.getElementById("selectionText");
+const cancelSeletionBtn = document.getElementById("cancelSeletionBtn");
+
+function RefreshSelection() {
+
+  if (selectedImages.length == 0) {
+    SelectionHeader.classList.add("hidden");
+  } else {
+    SelectionHeader.classList.remove("hidden");
+  }
+  selectionText.textContent = selectedImages.length + " selected";
+
+  const images = document.querySelectorAll("img");
+  images.forEach(img => {
+    if (selectedImages.includes(parseInt(img.id))) {
+      img.parentElement.classList.add("border-4");
+    } else {
+      img.parentElement.classList.remove("border-4");
+    }
+  });
+}
+
+
 
 let currentEntry = null;
 let currentID = 0;
 let currentText = ""
 let currentImage = "";
 
-function updateFullscreenImage(image, text, entry,id) {
+function updateFullscreenImage(image, text, entry, id) {
 
   currentEntry = entry;
   currentID = id;
@@ -191,7 +254,7 @@ function updateFullscreenImage(image, text, entry,id) {
 
   words = ["Negative prompt", "Steps", "Sampler", "CFG scale", "Seed", "Size", "Model hash",
     "Model", "Denoising strength", "Clip skip", "ENSD", "TI hashes", "Version", "Lora hashes", "Ultimate SD upscale upscaler",
-    "Ultimate SD upscale tile_width", "Ultimate SD upscale tile_height", "Ultimate SD upscale mask_blur", "Ultimate SD upscale padding", "Worker","Id"
+    "Ultimate SD upscale tile_width", "Ultimate SD upscale tile_height", "Ultimate SD upscale mask_blur", "Ultimate SD upscale padding", "Worker", "Id"
   ];
 
   info.innerHTML = boldWords("<strong>Prompt</strong>:" + text, words);
@@ -215,7 +278,7 @@ const blobToBase64 = async blobUrl => {
   // Convert the Blob to base64
   const reader = new FileReader();
   reader.readAsDataURL(blob);
-  
+
   return new Promise(resolve => {
     reader.onloadend = () => {
       resolve(reader.result);
@@ -224,7 +287,7 @@ const blobToBase64 = async blobUrl => {
 };
 
 function ReUse() {
-  
+
   blobToBase64(currentImage).then(base64 => {
 
     let state = JSON.parse(localStorage.getItem("state"));
@@ -271,9 +334,10 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
 
 document.getElementById("deleteBtn").addEventListener("click", () => {
   console.log(db);
-  console.log("delete:" + currentID);
   document.getElementById("ImageDetailModal").classList.add("hidden");
+  document.getElementById("img-" + entries[currentID].id).remove();
   removeFromIndexedDB(currentID);
+
   //loadImagesFromIndexedDB();
 })
 document.getElementById("reuseBtn").addEventListener("click", () => {
@@ -297,15 +361,20 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft") {
     if (currentID > 0) {
       currentID--;
-      updateFullscreenImage(imagesList[currentID].imageUrl, imagesList[currentID].text, imagesList[currentID],currentID);
+      updateFullscreenImage(imagesList[currentID].imageUrl, imagesList[currentID].text, imagesList[currentID], currentID);
     }
   }
   if (e.key === "ArrowRight") {
     if (currentID < imagesList.length - 1) {
       currentID++;
-      updateFullscreenImage(imagesList[currentID].imageUrl, imagesList[currentID].text, imagesList[currentID],currentID);
+      updateFullscreenImage(imagesList[currentID].imageUrl, imagesList[currentID].text, imagesList[currentID], currentID);
     }
   }
+});
+
+cancelSeletionBtn.addEventListener("click", () => {
+  selectedImages = [];
+  RefreshSelection();
 });
 
 //onclick
@@ -318,3 +387,75 @@ window.addEventListener("click", (e) => {
     document.getElementById("ImageDetailModal").classList.add("hidden");
   }
 });
+//on ctrl + a
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key === "a") {
+    e.preventDefault();
+
+    if (selectedImages.length == entries.length) {
+      selectedImages = [];
+      RefreshSelection();
+      return;
+    }
+
+    selectedImages = [];
+
+
+
+    const images = document.querySelectorAll("img");
+    images.forEach((img, index) => {
+      //check if id is int
+      if (parseInt(img.id))
+        selectedImages.push(parseInt(img.id));
+    });
+    RefreshSelection();
+  }
+});
+
+function getImageEntryById(id) {
+  return imagesList.find((entry) => entry.id === id);
+}
+
+document.getElementById("downloadSelectedBtn").addEventListener("click", () => {
+
+  var links = []
+
+  selectedImages.forEach(imageID => {
+    links.push(getImageEntryById(imageID).imageUrl)
+  });
+  console.log(links);
+
+  downloadZip(links);
+});
+
+document.getElementById("deleteSelectedBtn").addEventListener("click", () => {
+  document.getElementById("ImageDetailModal").classList.add("hidden");
+
+  selectedImages.forEach(image => {
+    removeFromIndexedDB(image, false, false);
+  });
+  loadImagesFromIndexedDB();
+  selectedImages = [];
+  RefreshSelection();
+
+});
+
+async function downloadZip(links) {
+  const zip = new JSZip();
+
+
+  // Fetch and add each image to the zip file
+  for (let i = 0; i < links.length; i++) {
+    const response = await fetch(links[i]);
+    const blob = await response.blob();
+    zip.file(`image_${i + 1}.png`, blob);
+  }
+
+  // Generate the zip file
+  zip.generateAsync({ type: 'blob' }).then((content) => {
+    // Save and trigger the download
+    saveAs(content, 'images.zip');
+  });
+}
+
+
