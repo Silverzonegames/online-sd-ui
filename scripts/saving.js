@@ -94,7 +94,14 @@ function SaveState() {
         return;
 
     GetCurrentState();
-    localStorage.setItem("state", JSON.stringify(variables));
+    try{
+        localStorage.setItem("state", JSON.stringify(variables));
+        console.log("Saved")
+    }
+    catch (e){
+        alert("Saving failed.\n"+e)
+    }
+    
     console.log("Saved")
 }
 SavingIsPossible = false;
@@ -125,25 +132,6 @@ function LoadState() {
     urlInput.value = variables["url"];
     document.getElementById("tokenInput").value = variables["token"];
     UpdateHorde();
-
-
-    url = variables["url"];
-    handleURLChange();
-
-
-    //workflow
-    if(document.getElementById("workflowDropdown")) {
-        document.getElementById("workflowDropdown").value = variables["workflow_file"];
-        if(variables["workflow_file"] == "Custom"){
-            workflow_file = "Custom";
-            workflow = variables["workflow"];
-        }else{
-            workflow_file = "workflows/"+variables["workflow_file"]+".json";
-            workflow = null;
-        }
-    }
-
-
 
     //load variables
     promptField.value = variables["prompt"];
@@ -187,6 +175,24 @@ function LoadState() {
 
     document.getElementById("outputImage").src = variables["generatedImage"];
     updateFullscreenImage(variables["generatedImage"]);
+
+    url = variables["url"];
+    handleURLChange();
+
+
+    //workflow
+    if(document.getElementById("workflowDropdown")) {
+        document.getElementById("workflowDropdown").value = variables["workflow_file"];
+        if(variables["workflow_file"] == "Custom"){
+            workflow_file = "Custom";
+            workflow = variables["workflow"];
+        }else{
+            workflow_file = "workflows/"+variables["workflow_file"]+".json";
+            workflow = null;
+        }
+    }
+
+
 
     UpdateLoraDisplays();
 

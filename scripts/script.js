@@ -239,7 +239,7 @@ function handleURLChange() {
     checkStatus();
     HandleLoras();
     ControlNetInit()
-    changeCode(url);
+    //changeCode(url);
   }else if (serverType === ServerType.ComfyUI){
     RefreshComfy();
   }
