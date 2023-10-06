@@ -36,7 +36,7 @@
   </button>
 
   <div id="ImageDetailModal"
-    class="hs-overlay w-full h-full fixed top-0 left-0 z-[100] overflow-x-hidden overflow-y-hidden dark hidden">
+    class="hs-overlay w-full h-full fixed top-0 left-0 z-[100] overflow-x-hidden overflow-y-hidden dark hidden my-auto">
     <div
       class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 sm:max-w-6xl sm:w-full m-3 sm:mx-auto h-[calc(100%-1rem)]">
       <div
@@ -119,14 +119,18 @@
           <label id="selectionText">1 Selected</label>
         </div>
         <div class="flex mr-2">
+          
+          <!--Unfavorite Btn-->
+          <button id="unfavoriteSelectedBtn" class="w-8 text-yellow-500" title="Unfavorite Selected Images">
+            <i class="fa-regular fa-star"></i>
+
+          <!--Favorite Btn-->
+          <button id="favoriteSelectedBtn" class="w-8 text-yellow-500" title="Favorite Selected Images">
+            <i class="fa-solid fa-star"></i>
+            
           <!--Download Btn-->
           <button id="downloadSelectedBtn" class="w-8 text-green-500" title="Download Selected Images">
             <i class="fa-solid fa-download"></i>
-  
-          <!--Favorite Btn-->
-          <button id="favoriteSelectedBtn" class="w-8 text-yellow-500 hidden" title="Favorite Selected Images">
-            <i class="fa-solid fa-star"></i>
-  
           <button id="deleteSelectedBtn" class="w-8 text-red-500" title="Delete Selected Images">
             <i class="fa-solid fa-trash"></i>
           </button>

@@ -26,7 +26,7 @@ function createIndexedDB() {
   });
 }
 let imagesList = [];
-let favorite_images = [];
+let favorite_images = [124];
 let entries = [];
 let db = null;
 let selectedImages = [];
@@ -106,7 +106,8 @@ async function removeFromIndexedDB(_id, isIndex = true, refresh = true) {
 
 
 
-
+const fullStarIcon = '<i class="fa-solid fa-star shadow-2xl p-2"></i>';
+const emptyStarIcon = '<i class="fa-regular fa-star drop-shadow-2xl p-2"></i>';
 
 
 
@@ -157,7 +158,7 @@ function UpdateImagePlacement(searchTerm = "") {
     const id = entries[i].id;
 
     const imageWrapper = document.createElement("div");
-    imageWrapper.classList.add("mb-4", "rounded-lg", "border-blue-400"); // Add margin bottom for spacing between images
+    imageWrapper.classList.add("mb-4", "rounded-lg", "border-blue-400","z-[1]","relative"); // Add margin bottom for spacing between images
     imageWrapper.id = "img-" + id;
 
     const imageElement = document.createElement("img");
@@ -176,7 +177,6 @@ function UpdateImagePlacement(searchTerm = "") {
 
         return;
       }
-
       // Access the associated text from the object in imagesList
       const text = _imagesList[i].text;
       // Pass the text to the updateFullscreenImage function
@@ -185,9 +185,67 @@ function UpdateImagePlacement(searchTerm = "") {
 
     imageWrapper.appendChild(imageElement);
 
+    //favorite button
+    const favoriteBtn = document.createElement("button");
+    favoriteBtn.classList.add("absolute", "bottom-0", "left-0",  "text-yellow-500","hidden","drop-shadow-2xl","text-lg");
+    favoriteBtn.innerHTML = emptyStarIcon;
+    
+    imageWrapper.addEventListener("mouseover", () => {
+      if(isFavorited(id)){
+        return;
+      }
+
+      favoriteBtn.classList.remove("hidden");
+    });
+    imageWrapper.addEventListener("mouseout", () => {
+      if(isFavorited(id)){
+        return;
+      }
+      favoriteBtn.classList.add("hidden");
+    });
+
+    favoriteBtn.addEventListener("click", () => {
+      FavoriteImage(id);
+    });
+
+    imageWrapper.appendChild(favoriteBtn);
+
     columns[i % columCount].appendChild(imageWrapper); // Adding the image to the right column based on the remainder of the index divided by column count
   }
+  RefreshFavorites();
   RefreshSelection();
+}
+
+function FavoriteImage(_id) {
+  if (favorite_images.includes(_id)) {
+    favorite_images = favorite_images.filter((entry) => entry !== _id);
+  } else {
+    favorite_images.push(_id);
+  }
+  RefreshFavorites();
+}
+function isFavorited(_id) {
+  return favorite_images.includes(_id);
+}
+function RefreshFavorites(){
+  const images = document.querySelectorAll("img");
+  images.forEach(img => {
+
+    const button = img.parentElement.querySelector("button");
+
+    if(!button)
+      return;
+
+    if (isFavorited(parseInt(img.id))) {
+      button.innerHTML = fullStarIcon;
+      button.classList.remove("hidden");
+      console.log(button);
+    } else {
+      button.innerHTML = emptyStarIcon;
+      button.classList.add("hidden");
+
+    }
+  });
 }
 
 function SelectImage(_id) {
@@ -443,6 +501,28 @@ document.getElementById("deleteSelectedBtn").addEventListener("click", () => {
   RefreshSelection();
 
 });
+document.getElementById("favoriteSelectedBtn").addEventListener("click", () => {
+      
+    selectedImages.forEach(image => {
+      if(!favorite_images.includes(image))
+        favorite_images.push(image);
+    });
+    RefreshFavorites();
+
+    selectedImages = [];
+    RefreshSelection();
+});
+document.getElementById("unfavoriteSelectedBtn").addEventListener("click", () => {
+        
+    selectedImages.forEach(image => {
+      favorite_images = favorite_images.filter((entry) => entry !== image);
+    });
+    RefreshFavorites();
+
+
+    selectedImages = [];
+    RefreshSelection();
+});
 
 async function downloadZip(links) {
   const zip = new JSZip();
@@ -478,3 +558,16 @@ async function downloadZip(links) {
 }
 
 
+function save(){
+  //save favorite_images to browser storage
+  localStorage.setItem("favorite_images", JSON.stringify(favorite_images));
+}
+function Load(){
+  //load favorite_images from browser storage
+  favorite_images = JSON.parse(localStorage.getItem("favorite_images"));
+  if(!favorite_images)
+    favorite_images = [];
+  RefreshFavorites();
+}
+window.addEventListener("beforeunload", save);
+window.addEventListener("load", Load);

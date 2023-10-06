@@ -240,4 +240,10 @@ function LoadState() {
 
 window.addEventListener("beforeunload", SaveState);
 window.addEventListener("unload", SaveState);
-LoadState();
+window.addEventListener("pagehide", SaveState);
+
+try{
+    LoadState();
+}catch(e){
+    console.log("Error Loading State: "+e);
+}
