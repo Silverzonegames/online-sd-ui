@@ -18,38 +18,43 @@ const civitaiContainer = document.getElementById("civitaiContainer");
 let automatic1111_support = false;
 let installed_models = {};
 
+const civitai_nsfw = document.getElementById("civitai_nsfw");
+const civitai_favorites = document.getElementById("civitai_favorites");
+const civitai_nsfw_level = document.getElementById("civitai_nsfw_level");
+const civitai_sort = document.getElementById("civitai_sort");
+const civitai_period = document.getElementById("civitai_period");
 
 function updateCivitAi() {
 
-    if(serverType == ServerType.Horde || (serverType == ServerType.Automatic1111 && document.getElementById("allowCivitai").checked)){
+    if (serverType == ServerType.Horde || (serverType == ServerType.Automatic1111 && document.getElementById("allowCivitai").checked)) {
 
         automatic1111_support = (serverType == ServerType.Automatic1111 && document.getElementById("allowCivitai").checked);
 
-        if(serverType == ServerType.Horde){
+        if (serverType == ServerType.Horde) {
             showCivitAi = true;
         }
         civitaiBtn.classList.remove("hidden");
-        
-        if(showCivitAi){
-            ToggleElements(".civitai",true)
-            ToggleElements(".network",false)
+
+        if (showCivitAi) {
+            ToggleElements(".civitai", true)
+            ToggleElements(".network", false)
             civitaiSearch(document.getElementById("searchInput").value);
             civitaiBtn.classList = "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
             networkBtn.classList = "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
-        }else{
-            ToggleElements(".civitai",false)
-            ToggleElements(".network",true)
+        } else {
+            ToggleElements(".civitai", false)
+            ToggleElements(".network", true)
             networkBtn.classList = "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
             civitaiBtn.classList = "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
         }
-        if(serverType == ServerType.Horde){
+        if (serverType == ServerType.Horde) {
             networkBtn.classList.add("hidden");
         }
-        
-    }else{
+
+    } else {
         //hide civitai
-        ToggleElements(".civitai",false)
-        ToggleElements(".network",true)
+        ToggleElements(".civitai", false)
+        ToggleElements(".network", true)
         networkBtn.classList = "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
         civitaiBtn.classList.add("hidden");
     }
@@ -69,7 +74,7 @@ civitaiBtn.addEventListener('click', () => {
 
 function civitaiSearch(searchTerm) {
 
-    if(!showCivitAi){
+    if (!showCivitAi) {
         return;
     }
 
@@ -86,17 +91,13 @@ function civitaiSearch(searchTerm) {
     searchingElement.textContent = "Fetching..."
     lorasContainer.appendChild(searchingElement)
 
-    const civitai_nsfw = document.getElementById("civitai_nsfw");
-    const civitai_favorites = document.getElementById("civitai_favorites");
-    const civitai_nsfw_level = document.getElementById("civitai_nsfw_level");
-    const civitai_sort = document.getElementById("civitai_sort");
-    const civitai_period = document.getElementById("civitai_period");
+
 
     let nsfw = civitai_nsfw.checked
 
     let _url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}&query=${searchTerm.replaceAll(" ", "%20")}`;
 
-    if(civitai_favorites.checked){
+    if (civitai_favorites.checked) {
         _url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}`
         favorite_loras.forEach(id => {
             _url += `&ids=${id}`
@@ -111,12 +112,12 @@ function civitaiSearch(searchTerm) {
             return response.json();
         }).then(data => {
             lorasContainer.innerHTML = "";
-            current_nsfw_level= parseInt(civitai_nsfw_level.value);
-            if(!nsfw){
+            current_nsfw_level = parseInt(civitai_nsfw_level.value);
+            if (!nsfw) {
                 current_nsfw_level = 0;
             }
 
-            if(automatic1111_support) {
+            if (automatic1111_support) {
                 console.log("Checking installed models");
                 payload = {
                     "ids": [],
@@ -124,29 +125,29 @@ function civitaiSearch(searchTerm) {
                 data.items.forEach(model => {
                     payload.ids.push(model.id);
                 });
-                console.log("install",JSON.stringify(payload));
-                fetch(url+"/civitai/installed-multiple", {
+                console.log("install", JSON.stringify(payload));
+                fetch(url + "/civitai/installed-multiple", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(payload)
                 }).then(response => response.json()).then(_data => {
-                    
-                    console.log("install",_data);
+
+                    console.log("install", _data);
 
                     Object.keys(_data).forEach(key => {
                         installed_models[parseInt(key)] = _data[key];
                     });
 
-                    console.log("install",installed_models);
-                    showCivitLoras(data,current_nsfw_level);
+                    console.log("install", installed_models);
+                    showCivitLoras(data, current_nsfw_level);
                     return;
                 }).catch(error => {
-                    console.log("install",error);
+                    console.log("install", error);
                 });
-            }else{
-                showCivitLoras(data,current_nsfw_level);
+            } else {
+                showCivitLoras(data, current_nsfw_level);
             }
         })
 }
@@ -154,11 +155,11 @@ function civitaiSearch(searchTerm) {
 
 function favorite_lora(id, icon) {
 
-    if(favorite_loras == null){
+    if (favorite_loras == null) {
         favorite_loras = [];
     }
 
-    if(favorite_loras.find(lora => lora === id)) {
+    if (favorite_loras.find(lora => lora === id)) {
         console.log("Removing from favorites");
         icon.classList.remove("text-rose-600");
         icon.classList.add("text-white");
@@ -172,14 +173,14 @@ function favorite_lora(id, icon) {
     SaveState();
 }
 
-function isFavorited(id){
-    if(favorite_loras == null){
+function isFavorited(id) {
+    if (favorite_loras == null) {
         return false;
     }
     return favorite_loras.find(lora => lora === id)
 }
 
-let blur_level={
+let blur_level = {
     0: null,
     1: "blur",
     2: "blur-md",
@@ -207,32 +208,32 @@ function showCivitLoras(data, nsfwLevel) {
             let foundImage = false;
             let level = nsfwLevel;
 
-            while (!foundImage){
-                if(_images[level].length > 0){
+            while (!foundImage) {
+                if (_images[level].length > 0) {
 
-                    if(document.getElementById("civitRandomImage").checked){
+                    if (document.getElementById("civitRandomImage").checked) {
                         image = _images[level][Math.floor(Math.random() * _images[level].length)];
-                    }else{
+                    } else {
                         image = _images[level][0];
                     }
 
                     foundImage = true;
-                } else if (level == 0){
-                    while(!foundImage){
-                        if(_images[level].length > 0){
-                            if(document.getElementById("civitRandomImage").checked){
+                } else if (level == 0) {
+                    while (!foundImage) {
+                        if (_images[level].length > 0) {
+                            if (document.getElementById("civitRandomImage").checked) {
                                 image = _images[level][Math.floor(Math.random() * _images[level].length)];
-                            }else{
+                            } else {
                                 image = _images[level][0];
                             }
-                            isBlurred = blur_level[level-nsfwLevel];
-                            
+                            isBlurred = blur_level[level - nsfwLevel];
+
                             foundImage = true;
-                        }else if(level == 3){
+                        } else if (level == 3) {
                             foundImage = true
-                            image=""
+                            image = ""
                         }
-                        else{
+                        else {
                             level++;
                         }
 
@@ -245,12 +246,12 @@ function showCivitLoras(data, nsfwLevel) {
         }
         tokens = lora.modelVersions[0].trainedWords;
 
-        civitai_addLoraEntry(image, lora,isBlurred);
+        civitai_addLoraEntry(image, lora, isBlurred);
     });
 
     nextPage = data.metadata.nextPage;
 
-    
+
 }
 
 
@@ -266,28 +267,28 @@ function getTags() {
             //make text not selectable
             tagSpan.classList.add("select-none");
 
-            if(current_tag == tag.name){
-                tagSpan.classList.add("horde","bg-blue-100", "text-blue-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-blue-900", "dark:text-blue-300");
-            }else{
-                tagSpan.classList.add("horde","bg-gray-100", "text-gray-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-gray-700", "dark:text-gray-300");
+            if (current_tag == tag.name) {
+                tagSpan.classList.add("horde", "bg-blue-100", "text-blue-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-blue-900", "dark:text-blue-300");
+            } else {
+                tagSpan.classList.add("horde", "bg-gray-100", "text-gray-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-gray-700", "dark:text-gray-300");
             }
             tagSpan.style.cursor = "pointer";
             tagSpan.addEventListener("click", () => {
-                if(current_tag == tag.name){
+                if (current_tag == tag.name) {
                     current_tag = "";
                     all_tag_elemnts.forEach(tag => {
-                        tag.classList.remove("horde","bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
-                        tag.classList.add("horde","bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
+                        tag.classList.remove("horde", "bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
+                        tag.classList.add("horde", "bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
                     });
                     //change style
                     tagSpan.classList.remove("bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
                     tagSpan.classList.add("bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
 
-                }else{
+                } else {
                     current_tag = tag.name;
                     all_tag_elemnts.forEach(tag => {
-                        tag.classList.remove("horde","bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
-                        tag.classList.add("horde","bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
+                        tag.classList.remove("horde", "bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-300");
+                        tag.classList.add("horde", "bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
                     });
                     //change style
                     tagSpan.classList.remove("bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-300");
@@ -300,7 +301,7 @@ function getTags() {
             document.getElementById("tags").appendChild(tagSpan);
         });
     })
-    
+
 
 }
 
@@ -320,8 +321,8 @@ lorasContainer.addEventListener('scroll', () => {
             fetch(nextPage).then(response => {
                 return response.json();
             }).then(data => {
-                fetchingText.remove()   
-                if(automatic1111_support) {
+                fetchingText.remove()
+                if (automatic1111_support) {
                     console.log("Checking installed models");
                     payload = {
                         "ids": [],
@@ -329,29 +330,29 @@ lorasContainer.addEventListener('scroll', () => {
                     data.items.forEach(model => {
                         payload.ids.push(model.id);
                     });
-                    console.log("install",JSON.stringify(payload));
-                    fetch(url+"/civitai/installed-multiple", {
+                    console.log("install", JSON.stringify(payload));
+                    fetch(url + "/civitai/installed-multiple", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(payload)
                     }).then(response => response.json()).then(_data => {
-                        
-                        console.log("install",_data);
-    
+
+                        console.log("install", _data);
+
                         Object.keys(_data).forEach(key => {
                             installed_models[parseInt(key)] = _data[key];
                         });
-    
-                        console.log("install",installed_models);
-                        showCivitLoras(data,current_nsfw_level);
+
+                        console.log("install", installed_models);
+                        showCivitLoras(data, current_nsfw_level);
                         loadingContent = false
                         return;
                     }).catch(error => {
-                        console.log("install",error);
+                        console.log("install", error);
                     });
-                }else{
+                } else {
                     showCivitLoras(data, current_nsfw_level);
                     loadingContent = false
 
@@ -381,7 +382,7 @@ const download_version = document.getElementById('download_version');
 const loraDownloadModalToggle = document.getElementById('loraDownloadModalToggle');
 
 //.name, lora.creator, lora.id, isBlurred,tokens
-function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
+function civitai_addLoraEntry(imageSrc, data, Blurred = null) {
     // Create the necessary HTML elements
     const entryDiv = document.createElement('div');
     entryDiv.classList.add('group', 'relative', 'lora');
@@ -398,7 +399,7 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     const image = document.createElement('img');
     image.src = imageSrc;
     image.alt = 'Lora Thumbnail';
-    image.classList.add('object-cover', 'object-center', 'w-full','aspect-[2/3]',"transition-all", "duration-300");
+    image.classList.add('object-cover', 'object-center', 'w-full', 'aspect-[2/3]', "transition-all", "duration-300");
 
     if (Blurred) {
         image.classList.add(Blurred);
@@ -426,7 +427,7 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     nameHeading.classList.add('text-sm', 'text-gray-700');
 
     const nameLink = document.createElement('a');
-    nameLink.classList.add("mb-2", "text-xl", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words","max-h-4", "overflow-hidden");
+    nameLink.classList.add("mb-2", "text-xl", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words", "max-h-4", "overflow-hidden");
 
     const nameText = document.createTextNode(data.name);
     nameLink.appendChild(nameText);
@@ -443,8 +444,8 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     userParagraph.classList.add('mb-3', 'my-auto', 'ml-2', 'font-normal', 'text-gray-700', 'dark:text-gray-400');
     userParagraph.textContent = data.creator.username;
 
-    if(automatic1111_support){
-        if(installed_models[data.id]){
+    if (automatic1111_support) {
+        if (installed_models[data.id]) {
             //add green checkmark
             const checkmark = document.createElement('i');
             checkmark.classList.add("fas", "fa-check", "text-green-500", "ml-2");
@@ -460,8 +461,8 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     imageDiv.addEventListener('click', function (event) {
         event.preventDefault();
 
-        
-        if(serverType == ServerType.Horde){
+
+        if (serverType == ServerType.Horde) {
             if (horde_loras.length >= 5 || horde_loras.find(lora => lora.name === data.id.toString())) {
                 return;
             }
@@ -474,13 +475,13 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
             console.log(horde_loras);
             horde_AddLora(data.name, data.id, data.modelVersions[0].trainedWords);
 
-        }else if(automatic1111_support){
-            
+        } else if (automatic1111_support) {
 
-            
-            if(installed_models[data.id]){
+
+
+            if (installed_models[data.id]) {
                 handleLoraEntryClick(installed_models[data.id].filename);
-            }else{
+            } else {
                 download_name.textContent = data.name;
                 download_name.dataset.id = data.id;
                 download_folder.innerHTML = "";
@@ -507,7 +508,7 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
 
                 loraDownloadModalToggle.click();
             }
-            
+
 
         }
     });
@@ -515,9 +516,7 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     // Add click event listener to the nameLink
     infoDiv.addEventListener('click', function (event) {
         event.preventDefault();
-        document.getElementById("civitIframe").src = "https://civitai.com/models/" + data.id;
-        document.getElementById("civitModalLink").href = "https://civitai.com/models/" + data.id;
-        document.getElementById("civitAIModalToggle").click();
+        OpenCivitAiModal(data.id);
     });
 
     // Append the elements to their respective parent elements
@@ -538,6 +537,197 @@ function civitai_addLoraEntry(imageSrc, data, Blurred=null) {
     const lorasContainer = document.getElementById('civitaiContainer');
     lorasContainer.appendChild(entryDiv);
 }
+
+
+//#region CivitAi Modal
+const model_name = document.getElementById('civitai_modelName');
+const tag_container = document.getElementById('civitai_tagContainer');
+
+const download_count = document.getElementById('civitai_downloadCount');
+const upload_date = document.getElementById('civitai_uploadDate');
+const trigger_words = document.getElementById('civitai_triggerWords');
+
+const rating = document.getElementById('civitai_rating');
+const review_count = document.getElementById('civitai_reviewCount');
+
+const creator_avatar = document.getElementById('civitai_creatorAvatar');
+const creator_name = document.getElementById('civitai_creatorName');
+
+const civitai_description = document.getElementById('civitai_description');
+
+const civitai_images = document.getElementById('civitai_images');
+const civitai_gallery_nsfwLevel = document.getElementById('civitai_gallery_nsfwLevel');
+
+const loadMoreBtn = document.getElementById('civitai_loadMoreButton');
+
+function OpenCivitAiModal(id) {
+    document.getElementById("civitModalLink").href = "https://civitai.com/models/" + id;
+
+    document.getElementById("civitAIModalToggle").click();
+
+    fetch("https://civitai.com/api/v1/models/" + id).then(response => response.json()).then(data => {
+
+        var versionData = data.modelVersions[0];
+
+        model_name.textContent = data.name;
+        tag_container.innerHTML = "";
+        data.tags.forEach(tag => {
+            const tagSpan = document.createElement("span");
+            tagSpan.textContent = tag;
+            tagSpan.classList.add("select-none", "horde", "bg-gray-100", "text-gray-800", "text-sm", "font-medium", "mr-2", "px-2.5", "py-0.5", "rounded", "dark:bg-gray-600", "dark:text-gray-300");
+            tag_container.appendChild(tagSpan);
+        });
+        download_count.textContent = data.stats.downloadCount;
+        //2023-06-30T15:10:31.680Z
+        upload_date.textContent = new Date(versionData.createdAt).toLocaleDateString();
+
+        trigger_words.innerHTML = "";
+        versionData.trainedWords.forEach(word => {
+            //add codeBlock
+            const codeBlock = document.createElement("code");
+            codeBlock.classList.add("px-2", "py-1", "font-mono", "text-sm", "text-gray-900", "dark:text-gray-300", "bg-gray-100", "dark:bg-gray-700", "rounded");
+            codeBlock.textContent = word;
+            trigger_words.appendChild(codeBlock);
+        });
+        AddCodeBlockButtons(trigger_words);
+
+        rating.textContent = versionData.stats.rating;
+        review_count.textContent = versionData.stats.ratingCount + " reviews";
+        review_count.href = "https://civitai.com/models/" + id + "/reviews";
+        review_count.target = "_blank";
+
+        creator_avatar.src = data.creator.image;
+        creator_name.textContent = data.creator.username;
+        creator_name.href = "https://civitai.com/user/" + data.creator.username;
+
+        civitai_description.innerHTML = data.description;
+        AddCodeBlockButtons(civitai_description);
+
+        civitai_images.innerHTML = "";
+        const images = versionData.images;
+
+        for (let i = 0; i < images.length; i += 2) {
+
+
+
+            // Create a new item div
+            const carouselItem = document.createElement('div');
+            carouselItem.className = 'hidden duration-700 ease-in-out flex justify-center overflow-hidden';
+            carouselItem.setAttribute('data-carousel-item', '');
+
+            for (let j = i; j < Math.min(i + 2, images.length); j++) {
+
+
+                var _nsfwLevel = nsfw_level[images[j]["nsfw"]];
+
+                // Skip images that are above the current NSFW level
+                if (!civitai_nsfw.checked && _nsfwLevel != 0) {
+                    continue;
+                }
+                let blur = null;
+                if (_nsfwLevel > parseInt(civitai_nsfw_level.value)) {
+                    blur = blur_level[_nsfwLevel - parseInt(civitai_nsfw_level.value)];
+                }
+
+
+                const _image = document.createElement('img');
+                _image.src = images[j].url;
+                _image.className = 'object-cover h-full rounded mx-1 max-w-1/2 transition-all duration-300';
+                _image.classList.add(blur);
+                _image.addEventListener('mouseover', function () {
+                    if (document.getElementById("unBlurOnHover").checked) {
+                        _image.classList.remove(blur);
+                    }
+                });
+                _image.addEventListener('mouseout', function () {
+                    _image.classList.add(blur);
+                });
+
+                // Append the image to the item
+                carouselItem.appendChild(_image);
+            }
+
+            // Append the item to the carousel container
+            civitai_images.appendChild(carouselItem);
+        }
+
+        initCarousels();
+
+
+    });
+
+    civitai_gallery_nsfwLevel.value = civitai_nsfw_level.value;
+    if(!civitai_nsfw.checked){
+        civitai_gallery_nsfwLevel.value = 0;
+    }
+    civitai_gallery_nsfwLevel.dataset.id = id;
+    civitai_gallery_nsfwLevel.addEventListener('change', (e) => {
+        loadCivitaiImages(e.target.dataset.id, e.target.value,true);
+    });
+
+    loadCivitaiImages(id, civitai_gallery_nsfwLevel.value,true);
+}
+
+function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL = null){
+
+    let nsfwLevels = [
+        "None",
+        "Soft",
+        "Mature",
+        "X",
+    ]
+
+    var _url;
+    if(modelId != null){
+        _url = "https://civitai.com/api/v1/images?modelId=" + modelId 
+        if(nsfwLevel != null){
+            _url += "&nsfw=" + nsfwLevels[nsfwLevel];
+        }
+    }
+    if(overrideURL != null){
+        _url = overrideURL;
+    }
+    if(_url == null){
+        console.log("No URL");
+        return;
+    }
+
+    fetch(_url).then(response => response.json()).then(data => {
+
+        const columns = [
+            document.getElementById("civitai_gallery1"),
+            document.getElementById("civitai_gallery2"),
+            document.getElementById("civitai_gallery3"),
+            document.getElementById("civitai_gallery4"),
+        ]
+        if(clear){
+            columns.forEach(column => {
+                column.innerHTML = "";
+            });
+        }
+
+        for(let i = 0; i < data.items.length; i++) {
+            // <div>
+            //     <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image.jpg" alt="">
+            // </div>
+            const imageDiv = document.createElement("div");
+            imageDiv.classList.add("overflow-hidden");
+            const _image = document.createElement("img");
+            _image.classList.add("h-auto", "max-w-full", "rounded-lg");
+            _image.src = data.items[i].url;
+            imageDiv.appendChild(_image);
+            columns[i%4].appendChild(imageDiv);
+        }
+
+        loadMoreBtn.dataset.next = data.metadata.nextPage;
+        loadMoreBtn.addEventListener('click', (e) => {
+            loadCivitaiImages(null,null,false,e.target.dataset.next);
+        });
+    });
+}
+
+
+//#endregion
 
 
 // <!-- Selected thumbnail-->
@@ -570,17 +760,17 @@ function showDownloadThumbnails(images) {
             "bg-gray-100",
             "cursor-pointer"
         );
-        if(first_image){
+        if (first_image) {
             imageElement.classList.remove("border", "border-gray-300");
             imageElement.classList.add("border-4", "border-green-400");
             first_image = false;
             selected_thumbnail = j;
-            console.log("Selected",selected_thumbnail);
+            console.log("Selected", selected_thumbnail);
         }
         imageElement.addEventListener("click", (e) => {
 
             selected_thumbnail = parseInt(e.target.dataset.id);
-            console.log("Selected",selected_thumbnail);
+            console.log("Selected", selected_thumbnail);
 
             download_thumbnail_container.childNodes.forEach(image => {
                 image.classList.remove("border-4", "border-green-400");
@@ -594,63 +784,63 @@ function showDownloadThumbnails(images) {
     });
 }
 
-function getFolders(showMessage=true){
+function getFolders(showMessage = true) {
 
-    if(automatic1111_model_dirs != null){
+    if (automatic1111_model_dirs != null) {
         return;
     }
 
-    fetch(url+"/civitai/subfolders").then(response => response.json()).then(data => {
+    fetch(url + "/civitai/subfolders").then(response => response.json()).then(data => {
         automatic1111_model_dirs = data;
-        console.log("Folders",data);
+        console.log("Folders", data);
     }).catch(error => {
         console.log(error);
         e.target.checked = false;
-        if(showMessage) {
-            showMessage("Extension Not Installed/Could not connect to server", 3000,"Error")
+        if (showMessage) {
+            showMessage("Extension Not Installed/Could not connect to server", 3000, "Error")
         }
     });
 }
 
-document.getElementById("civitai_downloadBtn").addEventListener('click', () => {  
+document.getElementById("civitai_downloadBtn").addEventListener('click', () => {
 
     //disable button
     document.getElementById("civitai_downloadBtn").disabled = true;
 
     let id = parseInt(download_name.dataset.id);
     let version = parseInt(download_version.value);
-    let folder = download_folder.value.replaceAll("/","%2F").replaceAll("\\","%5C").replaceAll(" ","%20");
+    let folder = download_folder.value.replaceAll("/", "%2F").replaceAll("\\", "%5C").replaceAll(" ", "%20");
 
-    console.log("Downloading",id,version,folder);
+    console.log("Downloading", id, version, folder);
 
     document.getElementById("civitai_downloadBtn").textContent = "Downloading...";
-    fetch(url+"/civitai/download/?id="+id+"&subfolder="+folder+"&version="+version+"&image="+selected_thumbnail,{
+    fetch(url + "/civitai/download/?id=" + id + "&subfolder=" + folder + "&version=" + version + "&image=" + selected_thumbnail, {
         method: 'POST',
     }).then(response => response.json()).then(data => {
-        console.log("Download",data);
+        console.log("Download", data);
 
-        if(data["message"] == "downloaded"){
+        if (data["message"] == "downloaded") {
             //enable button
             document.getElementById("civitai_downloadBtn").disabled = false;
-            document.getElementById("civitai_downloadBtn").textContent = "Download";            
+            document.getElementById("civitai_downloadBtn").textContent = "Download";
             //refresh loras
-            fetch(url+"/sdapi/v1/refresh-loras",{
+            fetch(url + "/sdapi/v1/refresh-loras", {
                 method: 'POST',
             }).then(response => response.json()).then(_data => {
                 lorasHandled = false;
                 HandleLoras();
-                AddToPrompt("<lora:"+ data["filename"] +":1>", true)
+                AddToPrompt("<lora:" + data["filename"] + ":1>", true)
                 civitaiSearch(document.getElementById("searchInput").value);
                 document.getElementById("loraDownloadModalClose").click();
             });
         }
 
-        
-    })  
+
+    })
 });
 
 document.getElementById("allowCivitai").addEventListener('change', (e) => {
-    if(e.target.checked){
+    if (e.target.checked) {
         getFolders();
     }
     updateCivitAi();
@@ -659,7 +849,7 @@ document.getElementById("allowCivitai").addEventListener('change', (e) => {
 document.getElementById("filterButton").addEventListener('click', () => {
     civitaiSearch(document.getElementById("searchInput").value);
 })
-if(automatic1111_model_dirs == null){
+if (automatic1111_model_dirs == null) {
     getFolders(false);
 }
 

@@ -102,13 +102,6 @@ function updateFullscreenImage(base64) {
   });
 
     
-
-
-
-
-
-
-
 }
 
 function boldWords(text, wordsToBold) {
