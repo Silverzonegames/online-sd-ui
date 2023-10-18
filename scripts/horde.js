@@ -540,7 +540,15 @@ document.getElementById("horde_search").addEventListener('input', (e) => {
 });
 
 
+function UpdateCurrentLoras() {
+    //remove all loras
+    horde_loraContainer.innerHTML = "";
 
+    horde_loras.forEach(lora => {
+        horde_AddLora(lora.name, lora.name, lora.tokens);
+        
+    });
+}
 
 
 

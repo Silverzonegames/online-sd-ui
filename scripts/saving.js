@@ -194,12 +194,11 @@ function LoadState() {
 
 
 
+    
     UpdateLoraDisplays();
-
-
-
+    
+    
     horde_loras = variables["current_loras"];
-
     let ids = ""
 
     horde_loras.forEach(lora => {
@@ -211,7 +210,7 @@ function LoadState() {
         if(serverType == ServerType.Horde){
             fetch("https://civitai.com/api/v1/models?primaryFileOnly=true"+ids).then(response => response.json()).then(data => {
                 data.items.forEach(lora => {
-                    AddLora(lora.name, lora.id, lora.modelVersions[0].trainedWords);
+                    horde_AddLora(lora.name, lora.id, lora.modelVersions[0].trainedWords);
                 });
             })
         }
