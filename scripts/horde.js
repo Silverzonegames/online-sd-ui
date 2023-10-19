@@ -586,9 +586,10 @@ function UpdateCurrentLoras() {
 
     horde_loras.forEach(lora => {
 
-        fet
+        fetch("https://civitai.com/api/v1/models/"+lora.name).then(response => response.json()).then(data => {
+            horde_AddLora(data.name, data.id, data.modelVersions[0].trainedWords);
+        });
 
-        horde_AddLora(lora.name, lora.name, lora.tokens);
     });
 }
 

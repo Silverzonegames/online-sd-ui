@@ -1054,7 +1054,38 @@
   </div>
   <!-- End Model Modal-->
 
+  <!--Find Lora modal-->
 
+<!-- Main modal -->
+<div id="findLorasModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+  <div class="relative w-full max-w-2xl max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+          <!-- Modal header -->
+          <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                  Found Loras
+              </h3>
+              <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="findLorasModal">
+                  <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                  </svg>
+                  <span class="sr-only">Close modal</span>
+              </button>
+          </div>
+          <!-- Modal body -->
+          <div id="foundLoraContainer" class="p-6 space-y-6">
+            
+            
+          </div>
+          <!-- Modal footer -->
+          <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+              <button data-modal-hide="findLorasModal" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Done</button>
+          </div>
+      </div>
+  </div>
+</div>
+<!--/Find Lora modal-->
 
 
   <!-- Civitai Modal-->
@@ -1395,6 +1426,7 @@
   <!-- End Civiai Modal-->
 
 
+
   <!-- Download Modal-->
   <!-- Modal toggle -->
   <button id="loraDownloadModalToggle" data-modal-target="loraDownloadModal" data-modal-toggle="loraDownloadModal"
@@ -1442,7 +1474,7 @@
               <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thumbnail</label>
               <!--Change Direction to horizontal instead of vertical-->
               <div id="download_thumbnail_container" class="h-44 overflow-x-auto flex overflow-y-clip space-x-2 pb-6">
-
+                
 
               </div>
             </div>
@@ -1645,9 +1677,12 @@
 
         <div class="flex">
           <label class="block text-lg font-semibold mb-2 ">Prompt</label>
-
+ 
           <!-- Styles DropDown -->
           <div class="relative ml-auto">
+            <button id="find_loras" class="horde my-auto" title="Find Loras in Prompt" data-modal-toggle="findLorasModal">
+              <i class="fa-solid fa-magnifying-glass text-white my-auto"></i>
+            </button>
             <button id="stylesDropdownButton"
               class="automatic1111  text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
               Select Styles

@@ -568,7 +568,7 @@ function OpenCivitAiModal(id) {
     document.getElementById("civitAIModalToggle").click();
 
     civitai_loading.classList.remove("hidden");
-    fetch("https://civitai.com/api/v1/models/" + id+"").then(response => response.json()).then(data => {
+    fetch("https://civitai.com/api/v1/models/" + id + "").then(response => response.json()).then(data => {
 
         var versionData = data.modelVersions[0];
 
@@ -657,14 +657,14 @@ function OpenCivitAiModal(id) {
 
                 if (images[j].meta) {
                     const infoIcon = document.createElement("i");
-                    infoIcon.classList.add("fa-solid", "fa-circle-info", "text-white", "absolute", "bottom-2", "right-2", "z-40","shadow");
+                    infoIcon.classList.add("fa-solid", "fa-circle-info", "text-white", "absolute", "bottom-2", "right-2", "z-40", "shadow");
                     infoIcon.title = "View Metadata";
                     infoIcon.style.cursor = "pointer";
                     infoIcon.setAttribute('data-dropdown-toggle', 'metaDropdown');
                     infoIcon.addEventListener('click', (e) => {
                         UpdateMetaData(images[j].meta);
                     });
-    
+
                     imageDiv.appendChild(infoIcon);
                 }
 
@@ -685,19 +685,19 @@ function OpenCivitAiModal(id) {
     });
 
     civitai_gallery_nsfwLevel.value = civitai_nsfw_level.value;
-    if(!civitai_nsfw.checked){
+    if (!civitai_nsfw.checked) {
         civitai_gallery_nsfwLevel.value = 0;
     }
     civitai_gallery_nsfwLevel.dataset.id = id;
     civitai_gallery_nsfwLevel.addEventListener('change', (e) => {
-        loadCivitaiImages(e.target.dataset.id, e.target.value,true);
+        loadCivitaiImages(e.target.dataset.id, e.target.value, true);
     });
 
-    loadCivitaiImages(id, civitai_gallery_nsfwLevel.value,true);
+    loadCivitaiImages(id, civitai_gallery_nsfwLevel.value, true);
 }
 const civitai_gallery_loading = document.getElementById('civitai_gallery_loading');
 
-function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL = null){
+function loadCivitaiImages(modelId = null, nsfwLevel = null, clear = true, overrideURL = null) {
 
     let nsfwLevels = [
         "None",
@@ -707,16 +707,16 @@ function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL 
     ]
 
     var _url;
-    if(modelId != null){
-        _url = "https://civitai.com/api/v1/images?modelId=" + modelId 
-        if(nsfwLevel != null){
+    if (modelId != null) {
+        _url = "https://civitai.com/api/v1/images?modelId=" + modelId
+        if (nsfwLevel != null) {
             _url += "&nsfw=" + nsfwLevels[nsfwLevel];
         }
     }
-    if(overrideURL != null){
+    if (overrideURL != null) {
         _url = overrideURL;
     }
-    if(_url == null){
+    if (_url == null) {
         console.log("No URL");
         return;
     }
@@ -729,7 +729,7 @@ function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL 
             document.getElementById("civitai_gallery3"),
             document.getElementById("civitai_gallery4"),
         ]
-        if(clear){
+        if (clear) {
             columns.forEach(column => {
                 column.innerHTML = "";
             });
@@ -737,9 +737,9 @@ function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL 
 
         for (let i = 0; i < data.items.length; i++) {
             const imageDiv = document.createElement("div");
-            imageDiv.classList.add("overflow-hidden", "relative","my-1.5");
+            imageDiv.classList.add("overflow-hidden", "relative", "my-1.5");
             imageDiv.style.display = "inline-block"; // Set display to inline-block
-        
+
             const _image = document.createElement("img");
             _image.classList.add("h-auto", "max-w-full", "rounded-lg");
             _image.src = data.items[i].url;
@@ -748,7 +748,7 @@ function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL 
             _image.onerror = function () {
                 imageDiv.remove();
             };
-        
+
             if (data.items[i].meta) {
                 const infoIcon = document.createElement("i");
                 infoIcon.classList.add("fa-solid", "fa-circle-info", "text-white", "absolute", "bottom-4", "right-4");
@@ -761,43 +761,43 @@ function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL 
 
                 imageDiv.appendChild(infoIcon);
             }
-        
+
             columns[i % 4].appendChild(imageDiv);
         }
         initDropdowns();
 
         loadMoreBtn.dataset.next = data.metadata.nextPage;
         loadMoreBtn.addEventListener('click', (e) => {
-            loadCivitaiImages(null,null,false,e.target.dataset.next);
+            loadCivitaiImages(null, null, false, e.target.dataset.next);
         });
-        if(data.metadata.nextPage == null){
+        if (data.metadata.nextPage == null) {
             loadMoreBtn.classList.add("hidden");
-        }else{
+        } else {
             loadMoreBtn.classList.remove("hidden");
         }
         civitai_gallery_loading.classList.add("hidden");
     });
 }
 const metaElements = {
-  prompt: 'meta_prompt',
-  negativePrompt: 'meta_negativePrompt',
-  sampler: 'meta_sampler',
-  Model: 'meta_model',
-  cfgScale: 'meta_cfg',
-  steps: 'meta_steps',
-  seed: 'meta_seed',
-  'Clip skip': 'meta_clip',
+    prompt: 'meta_prompt',
+    negativePrompt: 'meta_negativePrompt',
+    sampler: 'meta_sampler',
+    Model: 'meta_model',
+    cfgScale: 'meta_cfg',
+    steps: 'meta_steps',
+    seed: 'meta_seed',
+    'Clip skip': 'meta_clip',
 };
 
-function UpdateMetaData(meta){
+function UpdateMetaData(meta) {
     for (const prop in metaElements) {
         const element = document.getElementById(metaElements[prop]);
         if (meta[prop]) {
-          element.parentElement.classList.remove("hidden");
-          element.textContent = meta[prop];
+            element.parentElement.classList.remove("hidden");
+            element.textContent = meta[prop];
         } else {
-          element.parentElement.classList.add("hidden");
-        }element.textContent
+            element.parentElement.classList.add("hidden");
+        } element.textContent
     }
     document.getElementById("meta_use").onclick = function () {
         UseMetaData(meta);
@@ -844,9 +844,10 @@ const automatic2hordeSampler = {
     'PLMS': "k_lms",
     'UniPC': "k_dpm_2"
 };
-    
+
 
 function UseMetaData(meta) {
+    console.log("Use Meta:", meta);
     for (const prop in elementsForMeta) {
         const [elementId, property] = elementsForMeta[prop];
         const element = document.getElementById(elementId);
@@ -854,9 +855,9 @@ function UseMetaData(meta) {
         if (element) {
             if (meta[prop]) {
 
-                if(prop == "sampler" && serverType == ServerType.Horde){
+                if (prop == "sampler" && serverType == ServerType.Horde) {
                     element.value = automatic2hordeSampler[meta[prop]];
-                }else{
+                } else {
                     element[property] = meta[prop];
                 }
 
@@ -869,8 +870,129 @@ function UseMetaData(meta) {
             }
         }
     }
+    if (serverType == ServerType.Horde) {
+        if (meta.hashes && meta.hashes.keys) {
+            meta.hashes.keys.forEach((key, index) => {
+                //if key starts with lora:
+                if (key.startsWith("lora:")) {
+                    //add lora to horde
+                    const hash = key.split(":")[1];
+                    fetch("https://civitai.com/api/v1/model-versions/by-hash/" + hash).then(response => response.json()).then(data => {
+                        console.log("Found Lora:", data);
+                        horde_AddLora(data.model.name, data.modelId, data.trainedWords);
+                        
+                    });
+                }
+            });
+        }
+    }
 }
 
+
+//#endregion
+
+
+
+//#region Find Loras
+document.getElementById("find_loras").addEventListener('click', findLorasInPrompt);
+
+const foundLoraContainer = document.getElementById("foundLoraContainer");
+
+//lora is like <lora:model name:1>
+async function findLorasInPrompt() {
+    var prompt = document.getElementById("prompt").value;
+    var loraRegex = /<lora:([\w\s_.\-]+):([\d.]+)>/g; // Modify the regex to capture the name and the number with decimal values and periods
+    var loras = prompt.matchAll(loraRegex); // Use matchAll() to find all matches in the text
+
+    console.log("Prompt:", prompt);
+    foundLoraContainer.innerHTML = "";
+
+    // Check if any matches were found
+    for (const lora of loras) {
+        var name = lora[1];
+        var number = lora[2];
+        console.log("Found Lora: Name =", name, ", Number =", number);
+
+        console.log("Found Lora:", lora[1]); // Print the captured name (group 1)
+        // Print the captured name (group 1)
+        const loraDiv = document.createElement("div");
+        const label = document.createElement("label");
+        label.classList.add("block", "mb-2", "text-lg", "font-medium", "text-gray-900", "dark:text-white");
+        label.textContent = lora[1];
+        loraDiv.appendChild(label);
+
+        var modelname = lora[1].replaceAll(" ", "%20").replaceAll(":", "%3A").replaceAll("/", "%2F").replaceAll("\\", "%5C").replaceAll(".", "%2E");
+
+        const ModelContainer = document.createElement("div");
+        ModelContainer.classList.add("h-64", "overflow-x-auto", "flex", "overflow-y-clip", "space-x-2", "pb-6");
+        loraDiv.appendChild(ModelContainer);
+
+        fetch('https://api.searchcivitai.com/api/models?q=' + modelname + '&sort_by=default&type=LORA').then(response => response.json()).then(data => {
+
+            console.log("Found Lora:", data);
+
+            let model_images = []
+
+            data.models.forEach(model => {
+                const modelDiv = document.createElement("div");
+                modelDiv.classList.add("h-full", "aspect-[2/3]", "relative")
+                const modelImage = document.createElement("img");
+                modelImage.src = model.images[0].url;
+                modelImage.classList.add(
+                    "h-full",
+                    "aspect-[2/3]",
+                    "object-cover",
+                    "rounded-lg",
+                    "border",
+                    "border-gray-300",
+                    "bg-gray-100",
+                    "cursor-pointer");
+
+
+                const modelLabel = document.createElement("label");
+                modelLabel.classList.add("block", "text-sm", "font-medium", "text-gray-900", "dark:text-white", "absolute", "bottom-0", "left-0", "right-0", "bg-black", "bg-opacity-50", "rounded-b-lg", "text-center");
+                modelLabel.textContent = model.model.name;
+                modelDiv.appendChild(modelLabel);
+                modelLabel.addEventListener('click', (e) => {
+                    OpenCivitAiModal(model.id);
+                });
+
+
+
+                modelLabel.style.cursor = "pointer";
+
+
+                modelDiv.appendChild(modelImage);
+                model_images.push(modelImage);
+
+                ModelContainer.appendChild(modelDiv);
+            });
+
+            model_images.forEach((image, index) => {
+                image.addEventListener("click", (e) => {
+                    model_images.forEach(image => {
+                        image.classList.remove("border-4", "border-green-400");
+                        image.classList.add("border", "border-gray-300");
+                        horde_loras = horde_loras.filter(lora => lora.name != data.models[index].id.toString());
+                    });
+                    UpdateCurrentLoras();
+                    image.classList.remove("border", "border-gray-300");
+                    image.classList.add("border-4", "border-green-400");
+                    horde_AddLora(data.models[index].model.name, data.models[index].id, data.models[index].model.modelVersions[0].trainedWords);
+
+                });
+            });
+
+        });
+
+        foundLoraContainer.appendChild(loraDiv);
+        //delay
+        await new Promise(r => setTimeout(r, 1000));
+
+    }
+
+
+}
 
 //#endregion
 
