@@ -487,6 +487,15 @@ function horde_AddLora(name, id, tokens=[]) {
         label.textContent = 'Strength: ' + input.value;
         let _lora = horde_loras.find(lora => lora.name === id.toString());
 
+        if(_lora == null){
+            _lora = {
+                "name": id.toString(),
+                "model": 1,
+                "clip": 1,
+            }
+            horde_loras.push(_lora);
+        }
+
         _lora.model = parseFloat(input.value);
         _lora.clip = parseFloat(input.value);
     })
