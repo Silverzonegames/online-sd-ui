@@ -200,8 +200,15 @@ function GenerateHorde() {
     //document.getElementById("outputImage").classList.add("blur");
     //document.getElementById("imgButtons").classList.add("blur");
 
+    var prompt = promptField.value.replaceAll("###", "");
+    var negativePrompt = negativePromptField.value.replaceAll("###", "");
+    if(document.getElementById("averageWeights").checked) {
+        prompt = normalizeWeights(prompt);
+        negativePrompt = normalizeWeights(negativePrompt);
+    }
+
     payload = {
-        "prompt": promptField.value.replaceAll("###", "") + "###" + negativePromptField.value,
+        "prompt": prompt + "###" + negativePrompt,
         "params": {
             "sampler_name": samplerDropdown.value,
             "cfg_scale": parseFloat(cfgSlider.value),
@@ -232,7 +239,7 @@ function GenerateHorde() {
 
 
     //add seed if specifed
-    if (parseInt(seedDropdown.value) != -1 && seedDropdown.value) {
+    if (parseInt(seedDropdown.value) != -1 && seedDropdown.value && parseInt(batchSizeSlider.value) == 1) {
         payload["params"]["seed"] = seedDropdown.value;
     }
     console.log(JSON.stringify(payload, null, 2));
@@ -516,7 +523,36 @@ function horde_AddLora(name, id, tokens=[]) {
     horde_loraContainer.appendChild(loraDiv);
 }
 
+function normalizeWeights(prompt) {
+    const words = prompt.match(/\([^()]+\)|\S+/g);
+    const result = {};
 
+    for (const word of words) {
+        const match = word.match(/\(([^:]+):([\d.]+)\)/);
+        if (match) {
+          const wordKey = match[1];
+          let wordStrength = parseFloat(match[2]);
+            
+          result[wordKey] = wordStrength;
+        } else {
+          result[word] = 1;
+        }
+      }
+
+    //get average
+    let avg = 0;
+    Object.keys(result).forEach(key => {
+        avg += result[key];
+    });
+    avg /= Object.keys(result).length;
+
+    var output = "";
+    for (const word in result){
+        output += "("+word + ":" + (result[word] / avg).toFixed(2) + ") ";
+    }
+    console.log(output);
+    return output;
+}
 
 
 document.getElementById("listButton").addEventListener("click", () => {
@@ -544,9 +580,15 @@ function UpdateCurrentLoras() {
     //remove all loras
     horde_loraContainer.innerHTML = "";
 
+    //update text
+    loraCount.textContent = horde_loras.length + "/5";
+    
+
     horde_loras.forEach(lora => {
+
+        fet
+
         horde_AddLora(lora.name, lora.name, lora.tokens);
-        
     });
 }
 

@@ -560,12 +560,15 @@ const civitai_gallery_nsfwLevel = document.getElementById('civitai_gallery_nsfwL
 
 const loadMoreBtn = document.getElementById('civitai_loadMoreButton');
 
+const civitai_loading = document.getElementById('civitai_loading');
+
 function OpenCivitAiModal(id) {
     document.getElementById("civitModalLink").href = "https://civitai.com/models/" + id;
 
     document.getElementById("civitAIModalToggle").click();
 
-    fetch("https://civitai.com/api/v1/models/" + id).then(response => response.json()).then(data => {
+    civitai_loading.classList.remove("hidden");
+    fetch("https://civitai.com/api/v1/models/" + id+"").then(response => response.json()).then(data => {
 
         var versionData = data.modelVersions[0];
 
@@ -628,11 +631,15 @@ function OpenCivitAiModal(id) {
                 if (_nsfwLevel > parseInt(civitai_nsfw_level.value)) {
                     blur = blur_level[_nsfwLevel - parseInt(civitai_nsfw_level.value)];
                 }
+                const imageDiv = document.createElement('div');
+                imageDiv.classList.add(
+                    'overflow-hidden', 'relative', 'rounded-lg', 'mx-1', 'my-1', 'transition-all', 'duration-300'
+                );
 
 
                 const _image = document.createElement('img');
                 _image.src = images[j].url;
-                _image.className = 'object-cover h-full rounded mx-1 max-w-1/2 transition-all duration-300';
+                _image.className = 'object-cover h-full rounded mx-1 max-w-1/2 transition-all duration-300 min-w-[5rem]';
                 _image.classList.add(blur);
                 _image.addEventListener('mouseover', function () {
                     if (document.getElementById("unBlurOnHover").checked) {
@@ -642,18 +649,39 @@ function OpenCivitAiModal(id) {
                 _image.addEventListener('mouseout', function () {
                     _image.classList.add(blur);
                 });
+                imageDiv.appendChild(_image);
+                _image.onload = function () {
+                    imageDiv.style.width = _image.width + "px";
+                };
+
+
+                if (images[j].meta) {
+                    const infoIcon = document.createElement("i");
+                    infoIcon.classList.add("fa-solid", "fa-circle-info", "text-white", "absolute", "bottom-2", "right-2", "z-40","shadow");
+                    infoIcon.title = "View Metadata";
+                    infoIcon.style.cursor = "pointer";
+                    infoIcon.setAttribute('data-dropdown-toggle', 'metaDropdown');
+                    infoIcon.addEventListener('click', (e) => {
+                        UpdateMetaData(images[j].meta);
+                    });
+    
+                    imageDiv.appendChild(infoIcon);
+                }
+
+
 
                 // Append the image to the item
-                carouselItem.appendChild(_image);
+                carouselItem.appendChild(imageDiv);
             }
 
             // Append the item to the carousel container
             civitai_images.appendChild(carouselItem);
         }
+        initDropdowns();
 
         initCarousels();
 
-
+        civitai_loading.classList.add("hidden");
     });
 
     civitai_gallery_nsfwLevel.value = civitai_nsfw_level.value;
@@ -667,6 +695,7 @@ function OpenCivitAiModal(id) {
 
     loadCivitaiImages(id, civitai_gallery_nsfwLevel.value,true);
 }
+const civitai_gallery_loading = document.getElementById('civitai_gallery_loading');
 
 function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL = null){
 
@@ -691,7 +720,7 @@ function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL 
         console.log("No URL");
         return;
     }
-
+    civitai_gallery_loading.classList.remove("hidden");
     fetch(_url).then(response => response.json()).then(data => {
 
         const columns = [
@@ -706,24 +735,140 @@ function loadCivitaiImages(modelId=null,nsfwLevel=null, clear=true, overrideURL 
             });
         }
 
-        for(let i = 0; i < data.items.length; i++) {
-            // <div>
-            //     <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image.jpg" alt="">
-            // </div>
+        for (let i = 0; i < data.items.length; i++) {
             const imageDiv = document.createElement("div");
-            imageDiv.classList.add("overflow-hidden");
+            imageDiv.classList.add("overflow-hidden", "relative","my-1.5");
+            imageDiv.style.display = "inline-block"; // Set display to inline-block
+        
             const _image = document.createElement("img");
             _image.classList.add("h-auto", "max-w-full", "rounded-lg");
             _image.src = data.items[i].url;
             imageDiv.appendChild(_image);
-            columns[i%4].appendChild(imageDiv);
+
+            _image.onerror = function () {
+                imageDiv.remove();
+            };
+        
+            if (data.items[i].meta) {
+                const infoIcon = document.createElement("i");
+                infoIcon.classList.add("fa-solid", "fa-circle-info", "text-white", "absolute", "bottom-4", "right-4");
+                infoIcon.title = data.items[i].meta;
+                infoIcon.style.cursor = "pointer";
+                infoIcon.setAttribute('data-dropdown-toggle', 'metaDropdown');
+                infoIcon.addEventListener('click', (e) => {
+                    UpdateMetaData(data.items[i].meta);
+                });
+
+                imageDiv.appendChild(infoIcon);
+            }
+        
+            columns[i % 4].appendChild(imageDiv);
         }
+        initDropdowns();
 
         loadMoreBtn.dataset.next = data.metadata.nextPage;
         loadMoreBtn.addEventListener('click', (e) => {
             loadCivitaiImages(null,null,false,e.target.dataset.next);
         });
+        if(data.metadata.nextPage == null){
+            loadMoreBtn.classList.add("hidden");
+        }else{
+            loadMoreBtn.classList.remove("hidden");
+        }
+        civitai_gallery_loading.classList.add("hidden");
     });
+}
+const metaElements = {
+  prompt: 'meta_prompt',
+  negativePrompt: 'meta_negativePrompt',
+  sampler: 'meta_sampler',
+  Model: 'meta_model',
+  cfgScale: 'meta_cfg',
+  steps: 'meta_steps',
+  seed: 'meta_seed',
+  'Clip skip': 'meta_clip',
+};
+
+function UpdateMetaData(meta){
+    for (const prop in metaElements) {
+        const element = document.getElementById(metaElements[prop]);
+        if (meta[prop]) {
+          element.parentElement.classList.remove("hidden");
+          element.textContent = meta[prop];
+        } else {
+          element.parentElement.classList.add("hidden");
+        }element.textContent
+    }
+    document.getElementById("meta_use").onclick = function () {
+        UseMetaData(meta);
+        document.getElementById("civitAIModalToggle").click();
+    };
+}
+
+const elementsForMeta = {
+    prompt: ['prompt', 'value'],
+    negativePrompt: ['negativePrompt', 'value'],
+    sampler: ['sampler', 'value'],
+    cfgScale: ['scale-slider', 'value'],
+    steps: ['steps-slider', 'value'],
+    seed: ['seed-input', 'value'],
+}
+const automatic2hordeSampler = {
+    'Euler A': "k_euler_a",
+    'DPM++ 2M Karras': "k_dpm_2",
+    'DPM++ SDE Karras': "k_dpmpp_sde",
+    'DPM++ 2M SDE Exponential': "k_dpmpp_sde",
+    'DPM++ 2M SDE Karras': "k_dpmpp_sde",
+    'Euler': "k_euler",
+    'LMS': "k_lms",
+    'Heun': "k_heun",
+    'DPM2': "k_dpm_2",
+    'DPM2 a': "k_dpm_2_a",
+    'DPM++ 2S a': "k_dpmpp_2s_a",
+    'DPM++ 2M': "k_dpmpp_2m",
+    'DPM++ SDE': "k_dpmpp_sde",
+    'DPM++ 2M SDE': "k_dpmpp_sde",
+    'DPM++ 2M SDE Heun': "k_heun",
+    'DPM++ 2M SDE Heun Karras': "k_dpmpp_2m",
+    'DPM++ 2M SDE Heun Exponential': "k_dpmpp_sde",
+    'DPM++ 3M SDE': "k_dpmpp_sde",
+    'DPM++ 3M SDE Karras': "k_dpmpp_sde",
+    'DPM fast': "k_dpm_fast",
+    'DPM adaptive': "k_dpm_adaptive",
+    'LMS Karras': "k_lms",
+    'DPM2 Karras': "k_dpm_2",
+    'DPM2 a Karras': "k_dpm_2_a",
+    'DPM++ 2S a Karras': "k_dpmpp_2s_a",
+    'Restart': "k_dpm_fast",
+    'DDIM': "DDIM",
+    'PLMS': "k_lms",
+    'UniPC': "k_dpm_2"
+};
+    
+
+function UseMetaData(meta) {
+    for (const prop in elementsForMeta) {
+        const [elementId, property] = elementsForMeta[prop];
+        const element = document.getElementById(elementId);
+
+        if (element) {
+            if (meta[prop]) {
+
+                if(prop == "sampler" && serverType == ServerType.Horde){
+                    element.value = automatic2hordeSampler[meta[prop]];
+                }else{
+                    element[property] = meta[prop];
+                }
+
+                if (property === 'value') {
+                    element.dispatchEvent(new Event('input')); // Trigger input event for sliders/inputs
+                }
+                element.parentElement.classList.remove("hidden");
+            } else {
+                element.parentElement.classList.add("hidden");
+            }
+        }
+    }
 }
 
 

@@ -925,7 +925,13 @@
               </div>
             </div>
             <div class="w-1/2 horde">
-              <label class="block text-lg font-semibold">Token</label>
+              <div class="flex">
+                <label class="block text-lg font-semibold">Token</label>
+                <a href="https://github.com/Silverzonegames/online-sd-ui/wiki/AI-Horde#how-to-use">
+                  <i class="fa fa-question-circle text-white"></i>
+                </a>
+              </div>
+              
               <div class="relative">
                 <input id="tokenInput"
                   class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -942,6 +948,13 @@
                 class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
               </div>
               <span class="ml-3 text-sm font-medium  text-gray-300">Unblur Blurred Images On Hover</span>
+            </label>
+            <label class="relative inline-flex items-center cursor-pointer dark mb-4 horde">
+              <input id="averageWeights" type="checkbox" value="" class="sr-only peer">
+              <div
+                class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
+              </div>
+              <span class="ml-3 text-sm font-medium  text-gray-300">Normalize Token Weights to match Automatic1111</span>
             </label>
             <label class="relative inline-flex items-center cursor-pointer dark mb-4 horde automatic1111">
               <input id="civitRandomImage" type="checkbox" value="" class="sr-only peer">
@@ -1041,7 +1054,10 @@
   </div>
   <!-- End Model Modal-->
 
-  <!-- Civiai Modal-->
+
+
+
+  <!-- Civitai Modal-->
   <!-- Modal toggle -->
   <button id="civitAIModalToggle" data-modal-target="civitAIModal" data-modal-toggle="civitAIModal"
     class="hidden block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -1076,172 +1092,302 @@
         </div>
         <!-- Modal body -->
 
-        <!--Title-->
-        <div class="mx-8 mt-2">
-          <h1 class="text-2xl font-bold" id="civitai_modelName">Model Name</h1>
-          <div id="civitai_tagContainer"
-            class="overflow-x-scroll mt-1 h-6 overflow-y-hidden no-scrollbar mb-4 w-[calc(100%-4rem)]"
-            style="white-space: nowrap; width: 100%">
-            <!-- Add your content here -->
-            <span
-              class="select-none horde bg-gray-100 text-gray-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-600 dark:text-gray-300"
-              style="cursor: pointer;">Tag</span>
-          </div>
-        </div>
-
-        <div class="flex p-6">
-          <!--Images-->
-          <div id="controls-carousel" class="relative w-full" data-carousel="static">
-            <!-- Carousel wrapper -->
-            <div id="civitai_images" class="relative h-56 overflow-hidden rounded-lg md:h-96">
-
-
-            </div>
-
-
-            <!-- Slider controls -->
-            <button type="button"
-              class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-              data-carousel-prev>
+        <div class="relative">
+          <!--Title-->
+          <div class="mx-8 mt-2">
+            <h1 class="text-2xl font-bold" id="civitai_modelName">Model Name</h1>
+            <div id="civitai_tagContainer"
+              class="overflow-x-scroll mt-1 h-6 overflow-y-hidden no-scrollbar mb-4 w-[calc(100%-4rem)]"
+              style="white-space: nowrap; width: 100%">
+              <!-- Add your content here -->
               <span
-                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                <svg class="w-4 h-4 text-white dark:text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                  fill="none" viewBox="0 0 6 10">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 1 1 5l4 4" />
-                </svg>
-                <span class="sr-only">Previous</span>
-              </span>
-            </button>
-            <button type="button"
-              class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-              data-carousel-next>
-              <span
-                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                <svg class="w-4 h-4 text-white dark:text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                  fill="none" viewBox="0 0 6 10">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="m1 9 4-4-4-4" />
-                </svg>
-                <span class="sr-only">Next</span>
-              </span>
-            </button>
-          </div>
-          <!--Details-->
-          <div class="px-2 pb-2 relative flex flex-col w-1/3">
-            <div class="bg-gray-800 rounded mb-2">
-              <h3 class="ml-2.5 mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">
-                Details
-              </h3>
-              <table class="border-collapse border border-gray-300 dark:border-gray-700 m-2">
-                <tr>
-                  <td class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
-                    Downloads:
-                  </td>
-                  <td id="civitai_downloadCount"
-                    class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
-                    1000
-                  </td>
-                </tr>
-                <tr>
-                  <td class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
-                    Uploaded:
-                  </td>
-                  <td id="civitai_uploadDate"
-                    class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
-                    2022-01-01
-                  </td>
-                </tr>
-                <tr>
-                  <td class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
-                    Trigger Words:
-                  </td>
-                  <td id="civitai_triggerWords"
-                    class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
-                    word1, word2, word3
-                  </td>
-                </tr>
-              </table>
-
+                class="select-none horde bg-gray-100 text-gray-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-600 dark:text-gray-300"
+                style="cursor: pointer;">Tag</span>
             </div>
-            <div class="p-4 bg-gray-800 rounded my-2">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Rating</h3>
+          </div>
 
-              <div class="flex items-center">
-                <svg class="w-4 h-4 text-yellow-300 mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor" viewBox="0 0 22 20">
-                  <path
-                    d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-                </svg>
-                <p id="civitai_rating" class="ml-2 text-sm font-bold text-gray-900 dark:text-white">4.95</p>
-                <span class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
-                <a id="civitai_reviewCount" href="#"
-                  class="text-sm font-medium text-gray-900 underline hover:no-underline dark:text-white">73
-                  reviews</a>
+          <div class="flex p-6">
+            <!--Images-->
+            <div id="controls-carousel" class="relative w-full" data-carousel="static">
+              <!-- Carousel wrapper -->
+              <div id="civitai_images" class="relative h-56 overflow-hidden rounded-lg md:h-96">
+
+
               </div>
 
-            </div>
-            <div class="p-4 bg-gray-800 rounded my-2">
 
-              <div class="flex items-center space-x-4">
-                <img id="civitai_creatorAvatar" class="w-10 h-10 rounded-full" src="placeholder.png" alt="">
-                <div id="civitai_creatorName" style="cursor: pointer;" target="_blank"
-                  class="font-medium dark:text-white">
-                  <div>Creator Name</div>
+              <!-- Slider controls -->
+              <button type="button"
+                class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+                data-carousel-prev>
+                <span
+                  class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
+                  <svg class="w-4 h-4 text-white dark:text-gray-800" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 1 1 5l4 4" />
+                  </svg>
+                  <span class="sr-only">Previous</span>
+                </span>
+              </button>
+              <button type="button"
+                class="absolute top-0 right-0 z-30 flex items-center justify-center h-[calc(100%-2rem)] px-4 cursor-pointer group focus:outline-none"
+                data-carousel-next>
+                <span
+                  class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
+                  <svg class="w-4 h-4 text-white dark:text-gray-800" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m1 9 4-4-4-4" />
+                  </svg>
+                  <span class="sr-only">Next</span>
+                </span>
+              </button>
+            </div>
+            <!--Details-->
+            <div class="px-2 pb-2 relative flex flex-col w-1/3">
+              <div class="bg-gray-800 rounded mb-2">
+                <h3 class="ml-2.5 mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">
+                  Details
+                </h3>
+                <table class="border-collapse border border-gray-300 dark:border-gray-700 m-2">
+                  <tr>
+                    <td
+                      class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
+                      Downloads:
+                    </td>
+                    <td id="civitai_downloadCount"
+                      class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
+                      1000
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
+                      Uploaded:
+                    </td>
+                    <td id="civitai_uploadDate"
+                      class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
+                      2022-01-01
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
+                      Trigger Words:
+                    </td>
+                    <td id="civitai_triggerWords"
+                      class="p-2 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700">
+                      word1, word2, word3
+                    </td>
+                  </tr>
+                </table>
+
+              </div>
+              <div class="p-4 bg-gray-800 rounded my-2">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Rating</h3>
+
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 text-yellow-300 mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor" viewBox="0 0 22 20">
+                    <path
+                      d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
+                  </svg>
+                  <p id="civitai_rating" class="ml-2 text-sm font-bold text-gray-900 dark:text-white">4.95</p>
+                  <span class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
+                  <a id="civitai_reviewCount" href="#"
+                    class="text-sm font-medium text-gray-900 underline hover:no-underline dark:text-white">73
+                    reviews</a>
+                </div>
+
+              </div>
+              <div class="p-4 bg-gray-800 rounded my-2">
+
+                <div class="flex items-center space-x-4">
+                  <img id="civitai_creatorAvatar" class="w-10 h-10 rounded-full" src="placeholder.png" alt="">
+                  <a id="civitai_creatorName" style="cursor: pointer;" target="_blank"
+                    class="font-medium dark:text-white">
+                    <div>Creator Name</div>
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!--Model Description-->
+          <h3 class="mx-8 text-xl font-semibold text-gray-900 dark:text-white">Description</h3>
+
+          <div id="civitai_description" class="mx-8 text-white">
+            Model Description goes here
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis minus vel, eveniet quidem ex illum,
+            culpa
+            voluptatum sunt mollitia beatae dolorum! Deserunt, possimus culpa! Provident aspernatur atque vitae
+            excepturi
+            autem.
+            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Delectus, perspiciatis facere tempora reiciendis
+            nulla laudantium aliquam, voluptate numquam porro optio sunt blanditiis, nostrum aliquid? Ipsa fugiat itaque
+            voluptatum laboriosam voluptates.
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis illo dicta delectus voluptatibus
+            perferendis pariatur totam vero mollitia rerum quidem, odio, sed, aperiam voluptatum deserunt harum quas
+            nostrum commodi officiis.
+          </div>
+
+          <div id="civitai_loading"
+            class="absolute inset-0 flex justify-center items-center z-10 bg-black z-50 max-h-full opacity-75">
+            <div role="status">
+              <svg aria-hidden="true" class="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                  fill="currentColor" />
+                <path
+                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                  fill="currentFill" />
+              </svg>
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!--Model Gallery-->
+        <div class="relative">
+          <h3 class="mx-8  mt-2 text-xl font-semibold text-gray-900 dark:text-white">Gallery</h3>
+          <div class="mx-8 mt-4 mb-8 flex">
+            <label for="civitai_gallery_nsfwLevel"
+              class="pt-3 mr-1 block text-sm font-medium text-gray-700 dark:text-gray-300">NSFW Level</label>
+            <select id="civitai_gallery_nsfwLevel" name="nsfwLevel"
+              class="w-32 mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white dark:border-gray-600">
+              <option value="0">None</option>
+              <option value="1">Soft</option>
+              <option value="2">Mature</option>
+              <option value="3">X</option>
+            </select>
+          </div>
+          <div class="mx-8 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4"> <!-- Adjust the height as needed -->
+            <div id="civitai_gallery1" class="flex flex-col">
+              <!-- Your images and info icons go here -->
+            </div>
+            <div id="civitai_gallery2" class="flex flex-col">
+              <!-- Your images and info icons go here -->
+            </div>
+            <div id="civitai_gallery3" class="flex flex-col">
+              <!-- Your images and info icons go here -->
+            </div>
+            <div id="civitai_gallery4" class="flex flex-col">
+              <!-- Your images and info icons go here -->
+            </div>
+          </div>
+  
+          <button id="civitai_loadMoreButton"
+            class="mx-8 mt-4 mb-8 text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            Load More
+          </button>
+
+          <div id="civitai_gallery_loading"
+            class="absolute inset-0 flex justify-center items-center z-10 bg-black z-50 max-h-full opacity-75">
+            <div role="status">
+              <svg aria-hidden="true" class="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                  fill="currentColor" />
+                <path
+                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                  fill="currentFill" />
+              </svg>
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- Dropdown menu -->
+        <div id="metaDropdown"
+          class="z-50 hidden bg-white divide-y divide-gray-100 rounded shadow w-64 dark:bg-gray-800">
+          <ul class="py-2 text-xs text-gray-700 dark:text-gray-200">
+            <!--Prompt-->
+            <li class="mx-2">
+              <label class="px-1 block  pb-1">Prompt</label>
+              <label id="meta_prompt" rows="4"
+                class="block p-1 w-full max-h-28 overflow-y-auto text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                readonly> Prompt Goes Here Lorem ipsum, dolor sit amet consectetur adipisicing elit. Unde ipsa
+                exercitationem, repellat consectetur quae nihil voluptas perspiciatis optio, obcaecati dolore at
+                adipisci sit, dignissimos est vel. Velit distinctio delectus inventore.</textarea>
+            </li>
+            <!--Negative Prompt-->
+            <li class="mx-2">
+              <label class="px-1 block  py-1">Negative Prompt</label>
+              <label id="meta_negativePrompt" rows="4"
+                class="block p-1 w-full max-h-28 overflow-y-auto text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                readonly> Negative Prompt Goes Here</textarea>
+            </li>
+            <!--Sampler-->
+            <li class="m-2">
+              <div class="flex">
+                <label class="my-auto mr-2">Sampler</label>
+                <label id="meta_sampler" rows="1"
+                  class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  readonly>Euler A</textarea>
+              </div>
+            </li>
+            <!--Model-->
+            <li class="m-2">
+              <div class="flex">
+                <label class="my-auto mr-2">Model</label>
+                <label id="meta_model" rows="1"
+                  class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  readonly>UltraRealism_promax_mix_v3</textarea>
+              </div>
+            </li>
+            <!--CFG and Steps-->
+            <li class="m-2">
+              <div class="flex w-full">
+                <!--CFG-->
+                <div class="flex w-1/2">
+                  <label class="my-auto mr-2 w-full">CFG Scale</label>
+                  <label id="meta_cfg" rows="1"
+                    class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    readonly>7</textarea>
+                </div>
+                <!--Steps-->
+                <div class="flex w-1/2 ml-1.5">
+                  <label class="my-auto mr-2">Steps</label>
+                  <label id="meta_steps" rows="1"
+                    class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    readonly>100</textarea>
                 </div>
               </div>
-
-            </div>
-          </div>
+            </li>
+            <!--Seed and Clip Skip-->
+            <li class="m-2">
+              <div class="flex w-full">
+                <!--Seed-->
+                <div class="flex w-full">
+                  <label class="my-auto mr-2">Seed</label>
+                  <label id="meta_seed" rows="1"
+                    class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    readonly>532542624</textarea>
+                </div>
+                <!--Clip Skip-->
+                <div class="flex w-full ml-1.5">
+                  <label class="my-auto mr-2">Clip Skip</label>
+                  <label id="meta_clip" rows="1"
+                    class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    readonly>2</textarea>
+                </div>
+              </div>
+            </li>
+            <li class="mx-2">
+              <button id="meta_use"
+                class="w-full py-1 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Use Parameters
+              </button>
+            </li>
+          </ul>
         </div>
-
-        <!--Model Description-->
-        <h3 class="mx-8 text-xl font-semibold text-gray-900 dark:text-white">Description</h3>
-
-        <div id="civitai_description" class="mx-8 text-white">
-          Model Description goes here
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reiciendis minus vel, eveniet quidem ex illum, culpa
-          voluptatum sunt mollitia beatae dolorum! Deserunt, possimus culpa! Provident aspernatur atque vitae excepturi
-          autem.
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Delectus, perspiciatis facere tempora reiciendis
-          nulla laudantium aliquam, voluptate numquam porro optio sunt blanditiis, nostrum aliquid? Ipsa fugiat itaque
-          voluptatum laboriosam voluptates.
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis illo dicta delectus voluptatibus
-          perferendis pariatur totam vero mollitia rerum quidem, odio, sed, aperiam voluptatum deserunt harum quas
-          nostrum commodi officiis.
-        </div>
-        <!--Model Gallery-->
-
-
-        <h3 class="mx-8  mt-2 text-xl font-semibold text-gray-900 dark:text-white">Gallery</h3>
-        <div class="mx-8 mt-4 mb-8 flex">
-          <label for="civitai_gallery_nsfwLevel" class="pt-3 mr-1 block text-sm font-medium text-gray-700 dark:text-gray-300">NSFW Level</label>
-          <select id="civitai_gallery_nsfwLevel" name="nsfwLevel" class="w-32 mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white dark:border-gray-600">
-            <option value="0">None</option>
-            <option value="1">Soft</option>
-            <option value="2">Mature</option>
-            <option value="3">X</option>
-          </select>
-        </div>
-        <div class="mx-8 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4 ">
-
-          <div id="civitai_gallery1" class="grid gap-4">
-
-          </div>
-          <div id="civitai_gallery2" class="grid gap-4">
-
-          </div>
-          <div id="civitai_gallery3" class="grid gap-4">
-
-          </div>
-          <div id="civitai_gallery4" class="grid gap-4">
-
-          </div>
-        </div>
-        <button id="civitai_loadMoreButton"
-          class="mx-8 mt-4 mb-8 text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-          Load More
-        </button>
 
       </div>
     </div>
@@ -1503,7 +1649,7 @@
           <!-- Styles DropDown -->
           <div class="relative ml-auto">
             <button id="stylesDropdownButton"
-              class="automatic1111 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+              class="automatic1111  text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
               Select Styles
             </button>
             <div id="stylesDropdown"

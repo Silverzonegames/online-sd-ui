@@ -74,6 +74,7 @@ const InputsToSave = [
     {id:"unBlurOnHover", type:"checked"},
     {id:"civitRandomImage", type:"checked"},
     {id:"allowCivitai",typeof:"checked"},
+    {id:"averageWeights", type:"checked"},
     //ui
     {id:"loras-toggle", type:"checked"},
     {id:"saveToServer", type:"checked"},
