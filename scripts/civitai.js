@@ -931,7 +931,7 @@ async function findLorasInPrompt() {
 
             console.log("Found Lora:", data);
 
-            let model_images = []
+            var model_images = [];
 
             data.models.forEach(model => {
                 const modelDiv = document.createElement("div");
@@ -948,6 +948,14 @@ async function findLorasInPrompt() {
                     "bg-gray-100",
                     "cursor-pointer");
 
+                if(horde_loras.find(l => l.name == model.id.toString())){
+                    modelImage.classList.remove("border", "border-gray-300");
+                    modelImage.classList.add("border-4", "border-green-400");
+                }else{
+                    modelImage.classList.remove("border-4", "border-green-400");
+                    modelImage.classList.add("border", "border-gray-300");
+                }
+
 
                 const modelLabel = document.createElement("label");
                 modelLabel.classList.add("block", "text-sm", "font-medium", "text-gray-900", "dark:text-white", "absolute", "bottom-0", "left-0", "right-0", "bg-black", "bg-opacity-50", "rounded-b-lg", "text-center");
@@ -957,7 +965,8 @@ async function findLorasInPrompt() {
                     OpenCivitAiModal(model.id);
                 });
 
-
+                
+                    
 
                 modelLabel.style.cursor = "pointer";
 
@@ -970,16 +979,24 @@ async function findLorasInPrompt() {
 
             model_images.forEach((image, index) => {
                 image.addEventListener("click", (e) => {
-                    model_images.forEach(image => {
+                    if(horde_loras.find(lora => lora.name == data.models[index].id.toString())){
                         image.classList.remove("border-4", "border-green-400");
                         image.classList.add("border", "border-gray-300");
                         horde_loras = horde_loras.filter(lora => lora.name != data.models[index].id.toString());
-                    });
-                    UpdateCurrentLoras();
-                    image.classList.remove("border", "border-gray-300");
-                    image.classList.add("border-4", "border-green-400");
-                    horde_AddLora(data.models[index].model.name, data.models[index].id, data.models[index].model.modelVersions[0].trainedWords);
-
+                        UpdateCurrentLoras();
+                    }else{
+                        if (horde_loras.length >= 5) {
+                            return;
+                        }
+                        horde_loras.push({
+                            name: data.models[index].id.toString(),
+                            clip: 1,
+                            model: 1
+                        });
+                        image.classList.remove("border", "border-gray-300");
+                        image.classList.add("border-4", "border-green-400");
+                        UpdateCurrentLoras();
+                    }
                 });
             });
 
@@ -987,7 +1004,7 @@ async function findLorasInPrompt() {
 
         foundLoraContainer.appendChild(loraDiv);
         //delay
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 500));
 
     }
 
