@@ -430,12 +430,13 @@ function civitai_addLoraEntry(imageSrc, data, Blurred = null) {
     infoDiv.setAttribute('data-modal-toggle', 'loraInfoModal');
 
     const nameHeading = document.createElement('h3');
-    nameHeading.classList.add('text-sm', 'text-gray-700');
+    nameHeading.classList.add('text-sm', 'text-gray-700',"m-1");
 
     const nameLink = document.createElement('a');
-    nameLink.classList.add("mb-2", "text-xl", "font-bold", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words", "max-h-4", "overflow-hidden");
+    nameLink.classList.add("mb-2","mr-1", "font-bold","text-lg", "tracking-tight", "text-gray-900", "dark:text-white", "whitespace-normal", "break-words", "max-h-4", "overflow-hidden");
 
     const nameText = document.createTextNode(data.name);
+
     nameLink.appendChild(nameText);
 
     const userFlexDiv = document.createElement('div');
@@ -594,6 +595,11 @@ function OpenCivitAiModal(id) {
         var versionData = data.modelVersions[0];
 
         model_name.textContent = data.name;
+
+        document.getElementById("civitai_useBtn").onclick = function () {
+            
+        };
+
         tag_container.innerHTML = "";
         data.tags.forEach(tag => {
             const tagSpan = document.createElement("span");
@@ -769,6 +775,11 @@ function loadCivitaiImages(modelId = null, nsfwLevel = null, clear = true, overr
             _image.onerror = function () {
                 imageDiv.remove();
             };
+            _image.addEventListener("click", () => {
+                //open https://civitai.com/images/ in new tab
+                window.open("https://civitai.com/images/" + data.items[i].id, '_blank');
+                
+            });
 
             if (data.items[i].meta) {
                 const infoIcon = document.createElement("i");
@@ -782,6 +793,43 @@ function loadCivitaiImages(modelId = null, nsfwLevel = null, clear = true, overr
 
                 imageDiv.appendChild(infoIcon);
             }
+
+            const reactionDiv = document.createElement("div");
+            //rounded transparent black background horizontal in left corner container
+            reactionDiv.classList.add("absolute", "bottom-2", "left-2", "flex", "items-center", "rounded", "bg-black", "bg-opacity-50", "px-2", "py-0.5");
+            
+            var stats = data.items[i].stats;
+            var likeCount = stats.heartCount + stats.likeCount + stats.laughCount
+            
+            if(likeCount >0) {
+                const heartIcon = document.createElement("i");
+                heartIcon.classList.add("fa-solid", "fa-heart", "text-red-500", "text-base");
+                reactionDiv.appendChild(heartIcon);
+                const heartText = document.createElement("p");
+                heartText.classList.add("text-white", "text-sm", "ml-1");
+                heartText.textContent = likeCount
+                reactionDiv.appendChild(heartText);
+            }
+            if(stats.commentCount >0) {
+                const commentIcon = document.createElement("i");
+                commentIcon.classList.add("fa-solid", "fa-comment", "text-white", "text-base", "ml-2");
+                reactionDiv.appendChild(commentIcon);
+                const commentText = document.createElement("p");
+                commentText.classList.add("text-white", "text-sm", "ml-1");
+                commentText.textContent = stats.commentCount
+                reactionDiv.appendChild(commentText);
+            }
+
+
+
+
+
+
+
+
+
+
+            imageDiv.appendChild(reactionDiv);
 
             columns[i % 4].appendChild(imageDiv);
         }

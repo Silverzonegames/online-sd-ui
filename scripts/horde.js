@@ -217,6 +217,9 @@ function GenerateHorde() {
             "height": parseInt(height),
             "steps": parseInt(stepsSlider.value),
             "n": parseInt(batchSizeSlider.value),
+            "hires_fix": document.getElementById("horde_hires").checked,
+            "tiling": document.getElementById("horde_tiling").checked,
+            "karras": document.getElementById("horde_karras").checked,
         },
         "nsfw": document.getElementById("allowNSFW").checked,
         "slow_workers": document.getElementById("slowWorkers").checked,
@@ -545,6 +548,7 @@ function horde_AddEmbedding(data, _id=null) {
         });
         return;
     }
+    
 
     var name = data.name;
     var id = data.id;

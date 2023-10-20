@@ -87,6 +87,9 @@ const InputsToSave = [
     //horde
     {id:"allowNSFW", type:"checked"},
     {id:"slowWorkers", type:"checked"},
+    {id:"horde_karras", type:"checked"},
+    {id:"horde_hires", type:"value"},
+    {id:"horde_tiling", type:"checked"},
     //filters
     {id:"civitai_nsfw", type:"checked"},
     {id:"civitai_favorites", type:"checked"},
