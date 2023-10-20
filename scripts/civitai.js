@@ -95,17 +95,23 @@ function civitaiSearch(searchTerm) {
 
     let nsfw = civitai_nsfw.checked
 
-    let _url = `https://civitai.com/api/v1/models?primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}&query=${searchTerm.replaceAll(" ", "%20")}`;
+    let _url = `https://civitai.com/api/v1/models?primaryFileOnly=true&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}&query=${searchTerm.replaceAll(" ", "%20")}`;
 
+    
     if (civitai_favorites.checked) {
-        _url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&types=LORA&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}`
+        _url = `https://civitai.com/api/v1/models?ids=0&primaryFileOnly=true&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}`
         favorite_loras.forEach(id => {
             _url += `&ids=${id}`
         });
-
+        
         _url += `&query=${searchTerm.replaceAll(" ", "%20")}`
     }
-
+    if(serverType == ServerType.Horde){
+        _url+= document.getElementById("civitai_type").value;
+    }else{
+        _url+= "&types=LORA";
+    }
+    
     console.log(_url);
     fetch(_url)
         .then(response => {
@@ -463,6 +469,21 @@ function civitai_addLoraEntry(imageSrc, data, Blurred = null) {
 
 
         if (serverType == ServerType.Horde) {
+
+            if(data.type == "TextualInversion"){
+                horde_AddEmbedding(data);
+
+                horde_embeddings.push({
+                    name: data.id.toString(),
+                    strength: 1,
+                    inject_ti:"prompt"
+                });
+                console.log(horde_embeddings);
+
+                return;
+            }
+
+
             if (horde_loras.length >= 5 || horde_loras.find(lora => lora.name === data.id.toString())) {
                 return;
             }
@@ -473,12 +494,12 @@ function civitai_addLoraEntry(imageSrc, data, Blurred = null) {
             });
             loraCount.textContent = horde_loras.length + "/5";
             console.log(horde_loras);
-            horde_AddLora(data.name, data.id, data.modelVersions[0].trainedWords);
+
+            if(data.type == "LORA") {
+                horde_AddLora(data.name, data.id, data.modelVersions[0].trainedWords);
+            }
 
         } else if (automatic1111_support) {
-
-
-
             if (installed_models[data.id]) {
                 handleLoraEntryClick(installed_models[data.id].filename);
             } else {
@@ -921,7 +942,7 @@ async function findLorasInPrompt() {
         label.textContent = lora[1];
         loraDiv.appendChild(label);
 
-        var modelname = lora[1].replaceAll(" ", "%20").replaceAll(":", "%3A").replaceAll("/", "%2F").replaceAll("\\", "%5C").replaceAll(".", "%2E");
+        var modelname = lora[1].replaceAll(" ", "+").replaceAll(":", "%3A").replaceAll("/", "%2F").replaceAll("\\", "%5C").replaceAll(".", "%2E");
 
         const ModelContainer = document.createElement("div");
         ModelContainer.classList.add("h-64", "overflow-x-auto", "flex", "overflow-y-clip", "space-x-2", "pb-6");

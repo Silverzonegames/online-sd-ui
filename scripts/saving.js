@@ -22,6 +22,7 @@ variables = {
     workflow: null,
     favorite_loras : [],
     current_loras : [],
+    current_embeddings : [],
     model:"stable_diffusion",
     inputs: [],
 }
@@ -47,7 +48,12 @@ function GetCurrentState(){
     variables["workflow_file"] = document.getElementById("workflowDropdown")?.value;
     variables["workflow"] = workflow;
     variables["favorite_loras"] = favorite_loras;
-    variables["current_loras"] = horde_loras;
+    if(horde_loras){
+        variables["current_loras"] = horde_loras;
+    }
+    if(horde_embeddings){
+        variables["current_embeddings"] = horde_embeddings;
+    }
     variables["model"] = document.getElementById("model-name")?.value;
     
     variables["inputs"] = [];
@@ -180,6 +186,11 @@ function LoadState() {
     url = variables["url"];
     handleURLChange();
 
+    variables["current_embeddings"].forEach(embedding => {
+        console.log("Loading Embeddings ",embedding);
+        horde_AddEmbedding(null,embedding.name);
+    });
+    horde_embeddings = variables["current_embeddings"];
 
     //workflow
     if(document.getElementById("workflowDropdown")) {
@@ -217,6 +228,10 @@ function LoadState() {
         }
 
     }
+
+    
+
+
 
     variables["inputs"].forEach(input => {
         const element = document.getElementById(input.id);

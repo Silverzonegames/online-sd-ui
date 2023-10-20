@@ -25,6 +25,7 @@ const tokenAmount = document.getElementById("tokenAmount");
 const cancelBtn = document.getElementById("cancelBtn");
 
 let horde_loras = [];
+let horde_embeddings = [];
 
 
 
@@ -44,10 +45,10 @@ let horde_status = {
 };
 
 let nsfw_level = {
-    None:0,
-    Soft:1,
-    Mature:2,
-    X:3,
+    None: 0,
+    Soft: 1,
+    Mature: 2,
+    X: 3,
 }
 
 current_id = 0;
@@ -66,7 +67,7 @@ function UpdateUser() {
 
 
     const headers = {
-        'apikey': token, 
+        'apikey': token,
     };
 
     fetch(`${horde_url}/v2/find_user`, {
@@ -192,7 +193,7 @@ function updateModelDisplay(name, homepageLink, RequestsAmount, style, versionNu
     });
 }
 function GenerateHorde() {
-    
+
     max_wait_time = 0;
     progress_container.classList.remove("hidden");
     generateBtn.classList.add("hidden");
@@ -202,7 +203,7 @@ function GenerateHorde() {
 
     var prompt = promptField.value.replaceAll("###", "");
     var negativePrompt = negativePromptField.value.replaceAll("###", "");
-    if(document.getElementById("averageWeights").checked) {
+    if (document.getElementById("averageWeights").checked) {
         prompt = normalizeWeights(prompt);
         negativePrompt = normalizeWeights(negativePrompt);
     }
@@ -223,8 +224,11 @@ function GenerateHorde() {
         "r2": false //use base64 instead of links
     }
 
-    if(horde_loras.length > 0){
+    if (horde_loras.length > 0) {
         payload["params"]["loras"] = horde_loras;
+    }
+    if(horde_embeddings.length > 0){
+        payload["params"]["tis"] = horde_embeddings;
     }
 
     if (uploadedImageBase64 != "") {
@@ -341,7 +345,7 @@ function OnGenerationFinished() {
             const imageURL = `data:image/png;base64, ${generation["img"]}`;
             generatedImages.push(imageURL);
         });
-        if(generatedImages[0]){
+        if (generatedImages[0]) {
             imageDisplay.src = generatedImages[0].toString();
             if ('Notification' in window) {
                 Notification.requestPermission()
@@ -351,9 +355,9 @@ function OnGenerationFinished() {
                                 body: 'Click to view your images',
                                 icon: generatedImages[0].toString() // URL of the notification icon
                             };
-        
+
                             const notification = new Notification('Generation Finished!', notificationOptions);
-                            
+
                             notification.onclick = () => {
                                 // Handle click event when user clicks on the notification
                                 // You can redirect to a specific page or perform an action here
@@ -418,7 +422,7 @@ function OnGenerationFinished() {
 }
 
 // Add lora To Active Loras
-function horde_AddLora(name, id, tokens=[]) {
+function horde_AddLora(name, id, tokens = []) {
     const horde_loraContainer = document.getElementById('horde_loraContainer');
 
     const loraDiv = document.createElement('div');
@@ -439,23 +443,23 @@ function horde_AddLora(name, id, tokens=[]) {
 
 
     const favoriteBtn = document.createElement('button');
-    favoriteBtn.classList.add( 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    favoriteBtn.classList.add('font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
     const favoriteIcon = document.createElement('i');
     favoriteIcon.classList.add('fa-solid', 'fa-heart');
     favoriteBtn.appendChild(favoriteIcon);
     btnDiv.appendChild(favoriteBtn);
-    if(isFavorited(id)){
+    if (isFavorited(id)) {
         favoriteIcon.classList.add('text-rose-600');
-    }else{
+    } else {
         favoriteIcon.classList.add('text-white');
     }
 
     favoriteBtn.addEventListener('click', function () {
-        favorite_lora(id,favoriteIcon);
+        favorite_lora(id, favoriteIcon);
     })
 
     const button = document.createElement('button');
-    button.classList.add('bg-red-500', 'text-white','hover:bg-red-700', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    button.classList.add('bg-red-500', 'text-white', 'hover:bg-red-700', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
     const icon = document.createElement('i');
     icon.classList.add('fa-solid', 'fa-trash-can');
     button.appendChild(icon);
@@ -478,8 +482,8 @@ function horde_AddLora(name, id, tokens=[]) {
     input.setAttribute('id', 'lora_strength_' + id);
     input.setAttribute('name', 'strength');
     input.classList.add('block', 'w-full', 'mt-1');
-    input.setAttribute('min', '-5');
-    input.setAttribute('max', '5');
+    input.setAttribute('min', '-2');
+    input.setAttribute('max', '4');
     input.setAttribute('step', '0.05');
     input.setAttribute('value', '1');
 
@@ -487,7 +491,7 @@ function horde_AddLora(name, id, tokens=[]) {
         label.textContent = 'Strength: ' + input.value;
         let _lora = horde_loras.find(lora => lora.name === id.toString());
 
-        if(_lora == null){
+        if (_lora == null) {
             _lora = {
                 "name": id.toString(),
                 "model": 1,
@@ -502,22 +506,22 @@ function horde_AddLora(name, id, tokens=[]) {
 
     const tokenLabel = document.createElement('label');
     const tokenDiv = document.createElement('div');
-    
+
     if (tokens.length > 0) {
         tokenLabel.classList.add('text-white', 'block', 'mb-1');
         tokenLabel.textContent = 'Activation Tokens: ';
         tokenDiv.classList.add('flex', 'flex-wrap', 'items-center');  // Adding 'flex-wrap' class for wrapping tokens
-    
+
         tokens.forEach(token => {
             let tokenBlock = document.createElement('code');
             tokenBlock.classList.add('text-white', 'block', 'mb-1', 'mr-2');  // Adding 'mr-2' class for margin between tokens
             tokenBlock.textContent = token;
             tokenDiv.appendChild(tokenBlock);
         });
-    
+
         AddCodeBlockButtons(tokenDiv);
     }
-    
+
 
     // Assemble the elements
     flexDiv.appendChild(h1);
@@ -532,21 +536,169 @@ function horde_AddLora(name, id, tokens=[]) {
     horde_loraContainer.appendChild(loraDiv);
 }
 
+function horde_AddEmbedding(data, _id=null) {
+
+
+    if(data == null){
+        fetch("https://civitai.com/api/v1/models/" + _id).then(response => response.json()).then(data => {
+            horde_AddEmbedding(data);
+        });
+        return;
+    }
+
+    var name = data.name;
+    var id = data.id;
+    const TIContainer = document.getElementById('horde_TIContainer');
+
+    const TIDiv = document.createElement('div');
+    TIDiv.classList.add('border-gray-700', 'border', 'rounded', 'flex', 'items-center', 'p-4');
+
+    const innerDiv = document.createElement('div');
+    innerDiv.classList.add('w-full');
+
+    const flexDiv = document.createElement('div');
+    flexDiv.classList.add('flex', 'justify-between', 'items-center');
+
+    const h1 = document.createElement('h1');
+    h1.classList.add('text-xl', 'font-bold', 'mb-2', 'text-white');
+    h1.textContent = name;
+
+    const btnDiv = document.createElement('div');
+    btnDiv.classList.add('flex', 'justify-between', 'items-center');
+
+    const favoriteBtn = document.createElement('button');
+    favoriteBtn.classList.add('font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    const favoriteIcon = document.createElement('i');
+    favoriteIcon.classList.add('fa-solid', 'fa-heart');
+    favoriteBtn.appendChild(favoriteIcon);
+    btnDiv.appendChild(favoriteBtn);
+    if (isFavorited(id)) {
+        favoriteIcon.classList.add('text-rose-600');
+    } else {
+        favoriteIcon.classList.add('text-white');
+    }
+
+    favoriteBtn.addEventListener('click', function () {
+        favorite_lora(id, favoriteIcon);
+    })
+
+    const button = document.createElement('button');
+    button.classList.add('bg-red-500', 'text-white', 'hover:bg-red-700', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+    const icon = document.createElement('i');
+    icon.classList.add('fa-solid', 'fa-trash-can');
+    button.appendChild(icon);
+    btnDiv.appendChild(button);
+
+    button.addEventListener('click', function () {
+        TIContainer.removeChild(TIDiv);
+        horde_embeddings = horde_embeddings.filter(embedding => embedding.name !== id.toString());
+        console.log(horde_embeddings);
+    })
+
+    const label = document.createElement('label');
+    label.classList.add('text-white', 'block', 'mb-1');
+    label.setAttribute('for', 'strength');
+    label.textContent = 'Strength: 1';
+
+    const input = document.createElement('input');
+    input.setAttribute('type', 'range');
+    input.setAttribute('id', 'embedding_strength_' + id);
+    input.setAttribute('name', 'strength');
+    input.classList.add('block', 'w-full', 'mt-1');
+    input.setAttribute('min', '0.05');
+    input.setAttribute('max', '1');
+    input.setAttribute('step', '0.05');
+    input.setAttribute('value', '1');
+
+
+    //Apply to negative prompt toggle
+    const negativeLabel = document.createElement('label');
+    negativeLabel.classList.add('relative', 'inline-flex', 'items-center', 'cursor-pointer');
+    
+    const negativeToggle = document.createElement('input');
+    negativeToggle.setAttribute('type', 'checkbox');
+    negativeToggle.setAttribute('id', 'embedding_negative_' + id);
+    negativeToggle.setAttribute('name', 'negative');
+    negativeToggle.classList.add('sr-only', 'peer');
+    negativeLabel.appendChild(negativeToggle);
+
+    const negativeDiv = document.createElement('div');
+    negativeDiv.classList.add('w-11', 'h-6', 'bg-gray-200', 'peer-focus:outline-none', 'peer-focus:ring-4', 'peer-focus:ring-blue-300', 'dark:peer-focus:ring-blue-800', 'rounded-full', 'peer', 'dark:bg-gray-700', 'peer-checked:after:translate-x-full', 'peer-checked:after:border-white', 'after:content-[""]', 'after:absolute', 'after:top-[2px]', 'after:left-[2px]', 'after:bg-white', 'after:border-gray-300', 'after:border', 'after:rounded-full', 'after:h-5', 'after:w-5', 'after:transition-all', 'dark:border-gray-600', 'peer-checked:bg-blue-600');
+    negativeLabel.appendChild(negativeDiv);
+
+    const negativeSpan = document.createElement('span');
+    negativeSpan.classList.add('ml-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-gray-300');
+    negativeSpan.textContent = "Apply to negative prompt";
+    negativeSpan.title="When enabled, this will automatically apply  to the negative prompt, instead of the positive prompt."
+    negativeLabel.appendChild(negativeSpan);
+
+
+
+
+    input.addEventListener('input', function () {
+        label.textContent = 'Strength: ' + input.value;
+        let _embedding = horde_embeddings.find(embedding => embedding.name === id.toString());
+
+        if (_embedding == null) {
+            _embedding = {
+                "name": id.toString(),
+                "inject_ti": "prompt",
+                "strength": 1,
+            }
+            horde_embeddings.push(_embedding);
+        }
+
+        _embedding.strength = parseFloat(input.value);
+        console.log(horde_embeddings);
+    });
+
+    negativeToggle.addEventListener('input', function () {
+        let _embedding = horde_embeddings.find(embedding => embedding.name === id.toString());
+
+        if (_embedding == null) {
+            _embedding = {
+                "name": id.toString(),
+                "inject_ti": "prompt",
+                "strength": 1,
+            }
+            horde_embeddings.push(_embedding);
+        }
+
+        _embedding.inject_ti = negativeToggle.checked ? "negprompt" : "prompt";
+    });
+
+    // Assemble the elements
+    flexDiv.appendChild(h1);
+    flexDiv.appendChild(btnDiv);
+    innerDiv.appendChild(flexDiv);
+    innerDiv.appendChild(label);
+    innerDiv.appendChild(input);
+    innerDiv.appendChild(negativeLabel);
+    TIDiv.appendChild(innerDiv);
+
+    TIContainer.appendChild(TIDiv);
+}
+
 function normalizeWeights(prompt) {
     const words = prompt.match(/\([^()]+\)|\S+/g);
+
+    if (!words) {
+        return prompt;
+    }
+
     const result = {};
 
     for (const word of words) {
         const match = word.match(/\(([^:]+):([\d.]+)\)/);
         if (match) {
-          const wordKey = match[1];
-          let wordStrength = parseFloat(match[2]);
-            
-          result[wordKey] = wordStrength;
+            const wordKey = match[1];
+            let wordStrength = parseFloat(match[2]);
+
+            result[wordKey] = wordStrength;
         } else {
-          result[word] = 1;
+            result[word] = 1;
         }
-      }
+    }
 
     //get average
     let avg = 0;
@@ -556,8 +708,8 @@ function normalizeWeights(prompt) {
     avg /= Object.keys(result).length;
 
     var output = "";
-    for (const word in result){
-        output += "("+word + ":" + (result[word] / avg).toFixed(2) + ") ";
+    for (const word in result) {
+        output += "(" + word + ":" + (result[word] / avg).toFixed(2) + ") ";
     }
     console.log(output);
     return output;
@@ -591,11 +743,11 @@ function UpdateCurrentLoras() {
 
     //update text
     loraCount.textContent = horde_loras.length + "/5";
-    
+
 
     horde_loras.forEach(lora => {
 
-        fetch("https://civitai.com/api/v1/models/"+lora.name).then(response => response.json()).then(data => {
+        fetch("https://civitai.com/api/v1/models/" + lora.name).then(response => response.json()).then(data => {
             horde_AddLora(data.name, data.id, data.modelVersions[0].trainedWords);
         });
 
