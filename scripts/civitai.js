@@ -95,7 +95,8 @@ function civitaiSearch(searchTerm) {
 
     let nsfw = civitai_nsfw.checked
 
-    let _url = `https://civitai.com/api/v1/models?primaryFileOnly=true&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}&query=${searchTerm.replaceAll(" ", "%20")}`;
+    
+    let _url = `https://civitai.com/api/v1/models?primaryFileOnly=true&sort=${civitai_sort.value}&period=${civitai_period.value}&nsfw=${nsfw}&tag=${current_tag}`;
 
     
     if (civitai_favorites.checked) {
@@ -106,10 +107,16 @@ function civitaiSearch(searchTerm) {
         
         _url += `&query=${searchTerm.replaceAll(" ", "%20")}`
     }
-    if(serverType == ServerType.Horde){
-        _url+= document.getElementById("civitai_type").value;
+    
+    if(parseInt(searchTerm)){
+        _url += `&ids=${searchTerm}`
     }else{
-        _url+= "&types=LORA";
+        _url += `&query=${searchTerm.replaceAll(" ", "+")}`
+        if(serverType == ServerType.Horde){
+            _url+= document.getElementById("civitai_type").value;
+        }else{
+            _url+= "&types=LORA";
+        }
     }
     
     console.log(_url);
@@ -597,7 +604,11 @@ function OpenCivitAiModal(id) {
         model_name.textContent = data.name;
 
         document.getElementById("civitai_useBtn").onclick = function () {
-            
+            if(data.type == "TextualInversion"){
+                horde_AddEmbedding(data);
+            }else if (data.type == "LORA") {
+                horde_AddLora(data.name, data.id, versionData.trainedWords);
+            }
         };
 
         tag_container.innerHTML = "";

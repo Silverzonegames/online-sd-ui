@@ -424,6 +424,17 @@ function OnGenerationFinished() {
     })
 }
 
+function addModelById(id) {
+    fetch("https://civitai.com/api/v1/models/" + id).then(response => response.json()).then(data => {
+        if(data.type == "LORA"){
+            horde_AddLora(data.name, data.id, data.modelVersions[0].trainedWords);
+        }else if (data.type == "TextualInversion"){
+            horde_AddEmbedding(data);
+        }
+    });
+}
+
+
 // Add lora To Active Loras
 function horde_AddLora(name, id, tokens = []) {
     const horde_loraContainer = document.getElementById('horde_loraContainer');
@@ -713,7 +724,12 @@ function normalizeWeights(prompt) {
 
     var output = "";
     for (const word in result) {
-        output += "(" + word + ":" + (result[word] / avg).toFixed(2) + ") ";
+        var _strength = (result[word] / avg).toFixed(2);
+        if(_strength == 1){
+            output += word + " ";
+        }else{
+            output += "(" + word + ":" + _strength + ") ";
+        }
     }
     console.log(output);
     return output;

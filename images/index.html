@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civitai Images</title>
+    <!-- Link to Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/9685c3d611.js" crossorigin="anonymous"></script>
+    <style>
+        /* Add dark theme styles here */
+        body.dark {
+            background-color: #1a202c;
+            color: #d8dee9;
+        }
+    </style>
+</head>
+
+<body class="dark">
+
+    <header class="py-4 px-8 bg-gray-800 flex justify-between items-center w-full h-16 z-50 mt-0">
+        <div class="relative flex items-center">
+            <h1 class="text-2xl font-bold mr-4">Stable Diffusion</h1>
+            <!-- Generate link -->
+            <a id="generateLink" href="/" class="text-white align-middle hover:text-blue-500">Generate</a>
+        </div>
+    </header>
+
+
+
+    <div class="container mx-auto mt-8 mb-4">
+
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex ">
+                <h1 class="text-2xl font-bold mb-4 my-auto">Community Images</h1>
+                <h1 class="text-sm text-gray-200 mb-4 my-auto ml-2 my-auto pb-1">(data provided by civitai.com)</h1>
+            </div>
+            <!-- Search bar -->
+            <div class="ml-4">
+                <input type="text" id="searchInput"
+                    class="w-full px-4 py-2 text-gray-900 rounded-lg border border-gray-300 focus:ring focus:ring-blue-300"
+                    placeholder="Search...">
+            </div>
+        </div>
+
+        <!--Sorting Options-->
+        <div class="flex dark mb-6">
+            <!-- NSFW level -->
+            <div class="">
+                <select id="nsfwSelect"
+                    class=" border text-sm rounded-lg   block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500">
+                    <option value="0">SFW</option>
+                    <option value="1">Soft</option>
+                    <option value="2">Mature</option>
+                    <option value="3">X</option>
+                </select>
+            </div>
+            <!-- Sort by -->
+            <div class="ml-4">
+                <select id="sortSelect"
+                    class="border text-sm rounded-lg   block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500">
+                    <option value="Most Reactions">Most Liked</option>
+                    <option value="Most Comments">Most Comments</option>
+                    <option value="Newest">Latest</option>
+                </select>
+            </div>
+            <!--Perriod-->
+            <div class="ml-4">
+                <select id="periodSelect"
+                    class="border text-sm rounded-lg   block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500">
+                    <option value="AllTime">All Time</option>
+                    <option value="Day">Today</option>
+                    <option value="Week">This Week</option>
+                    <option value="Month">This Month</option>
+                    <option value="Year">This Year</option>
+                </select>
+            </div>
+        </div>
+
+
+        <div id="imageContainer" class="flex flex-row gap-4">
+            <!-- Images added through script -->
+        </div>
+    </div>
+
+
+    <div id="metaDropdown"
+        class="z-50 hidden bg-white divide-y divide-gray-100 rounded shadow w-64 dark:bg-gray-800">
+        <ul class="py-2 text-xs text-gray-700 dark:text-gray-200">
+            <!--Prompt-->
+            <li class="mx-2">
+                <label class="px-1 block  pb-1">Prompt</label>
+                <label id="meta_prompt" rows="4"
+                    class="block p-1 w-full max-h-28 overflow-y-auto text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    readonly> Prompt Goes Here </textarea>
+            </li>
+            <!--Negative Prompt-->
+            <li class="mx-2">
+                <label class="px-1 block  py-1">Negative Prompt</label>
+                <label id="meta_negativePrompt" rows="4"
+                    class="block p-1 w-full max-h-28 overflow-y-auto text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    readonly> Negative Prompt Goes Here</textarea>
+            </li>
+            <!--Sampler-->
+            <li class="m-2">
+                <div class="flex">
+                    <label class="my-auto mr-2">Sampler</label>
+                    <label id="meta_sampler" rows="1"
+                        class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        readonly>Euler A</textarea>
+                </div>
+            </li>
+            <!--Model-->
+            <li class="m-2">
+                <div class="flex">
+                    <label class="my-auto mr-2">Model</label>
+                    <label id="meta_model" rows="1"
+                        class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        readonly>UltraRealism_promax_mix_v3</textarea>
+                </div>
+            </li>
+            <!--CFG and Steps-->
+            <li class="m-2">
+                <div class="flex w-full">
+                    <!--CFG-->
+                    <div class="flex w-1/2">
+                        <label class="my-auto mr-2 w-full">CFG Scale</label>
+                        <label id="meta_cfg" rows="1"
+                            class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            readonly>7</textarea>
+                    </div>
+                    <!--Steps-->
+                    <div class="flex w-1/2 ml-1.5">
+                        <label class="my-auto mr-2">Steps</label>
+                        <label id="meta_steps" rows="1"
+                            class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            readonly>100</textarea>
+                    </div>
+                </div>
+            </li>
+            <!--Seed and Clip Skip-->
+            <li class="m-2">
+                <div class="flex w-full">
+                    <!--Seed-->
+                    <div class="flex w-full">
+                        <label class="my-auto mr-2">Seed</label>
+                        <label id="meta_seed" rows="1"
+                            class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            readonly>532542624</textarea>
+                    </div>
+                    <!--Clip Skip-->
+                    <div class="flex w-full ml-1.5">
+                        <label class="my-auto mr-2">Clip Skip</label>
+                        <label id="meta_clip" rows="1"
+                            class="block p-1 w-full text-xs text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            readonly>2</textarea>
+                    </div>
+                </div>
+            </li>
+            <li class="mx-2">
+                <button id="meta_use"
+                    class="w-full py-1 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    Use Parameters
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <script src="images.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+
+</body>
+
+</html>
