@@ -79,7 +79,7 @@ function updateColums() {
     }
 }
 
-function UpdateShownImages() {
+async function UpdateShownImages() {
 
     if(columns.length == 0){
         updateColums();
@@ -93,7 +93,7 @@ function UpdateShownImages() {
         var width = columns[index % columCount].clientWidth;
 
         const loadingImage = document.createElement("img");
-        loadingImage.src = shortUrl + 5;
+        loadingImage.src = shortUrl + 3;
         //blurred
         loadingImage.classList.add("absolute", "w-full", "h-full", "rounded-lg", "blur-lg", );
         imageWrapper.appendChild(loadingImage);
@@ -101,7 +101,12 @@ function UpdateShownImages() {
 
         const imageElement = document.createElement("img");
         imageElement.id = image.id;
-        imageElement.src = image.url;//shortUrl+(columns[index % columCount].clientWidth+10);
+        //imageElement.src = image.url;//shortUrl+(columns[index % columCount].clientWidth+10);
+        imageElement.srcset =  `${shortUrl+240} 240w, ${shortUrl+512} 512w, ${shortUrl+768} 768w, ${shortUrl+1024} 1024w`
+        imageElement.sizes = `(max-width: 1024px) 100vw, 1024px`
+
+
+        imageElement.setAttribute("decoding", "async");
         imageElement.setAttribute("loading", "lazy");
         imageElement.setAttribute("width", image.width);
         imageElement.setAttribute("height", image.height);
@@ -262,6 +267,9 @@ nsfwSelect.addEventListener('change', () => {
     UpdateImages();
 });
 sortSelect.addEventListener('change', () => {
+    UpdateImages();
+});
+periodSelect.addEventListener('change', () => {
     UpdateImages();
 });
 

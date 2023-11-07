@@ -508,30 +508,38 @@ function getAllInstalled(){
 
 
 document.getElementById("checkpoint-selector").addEventListener("change", (e) => {
-  if (confirm("Are you sure you want to Change Model?")){
-    let _options = {}
-    _options["sd_model_checkpoint"] = e.target.value;
 
-    //post new options to server
-    fetch(url+"/sdapi/v1/options", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(_options)
-    }).then(response => {
-      if (!response.ok) {
-        showMessage(response.error);
-        throw new Error('Request failed');
-      }
-      return response.json();
-    }).then(data => {
-      getCheckpoints();
-      showMessage("Model Loaded!",300,"success");
-    }).catch(error => {
-      console.error('Error:', error);
-    });
+  if(serverType == ServerType.Automatic1111){
+    if (confirm("Are you sure you want to Change Model?")){
+      let _options = {}
+      _options["sd_model_checkpoint"] = e.target.value;
+  
+      //post new options to server
+      fetch(url+"/sdapi/v1/options", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(_options)
+      }).then(response => {
+        if (!response.ok) {
+          showMessage(response.error);
+          throw new Error('Request failed');
+        }
+        return response.json();
+      }).then(data => {
+        getCheckpoints();
+        showMessage("Model Loaded!",300,"success");
+      }).catch(error => {
+        console.error('Error:', error);
+      });
+    }
   }
+  if (serverType == ServerType.ComfyUI){
+    variables["comfy_model"] = e.target.value;
+  }
+
+
 });
 
 document.getElementById("esrgan-upscale-btn").addEventListener("click", () => {

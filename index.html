@@ -1700,7 +1700,7 @@
     <div class="w-full md:w-full  p-4 md:overflow-y-auto md:max-h-screen">
 
       <!-- Content goes here -->
-      <div class="automatic1111 horde">
+      <div class="">
 
         <div class="flex">
           <label class="block text-lg font-semibold mb-2 ">Prompt</label>
@@ -1829,8 +1829,8 @@
               </div>
 
               <!--A1111 Model Selector-->
-              <div class="mb-4 flex automatic1111">
-                <label class="block mr-2 text-gray-500 dark:text-gray-400" for="sampling-method">Model:</label>
+              <div class="mb-4 flex automatic1111 comfyui">
+                <label class="block mr-2 text-gray-500 dark:text-gray-400" for="checkpoint-selector">Model:</label>
                 <select id="checkpoint-selector"
                   class="w-80 bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 </select>
@@ -1847,35 +1847,44 @@
               <!-- Options Here -->
               <div class="md:flex mb-4">
                 <!-- First row: Sampling method Dropdown -->
-                <div class="mr-4 ">
-                  <label class="block mb-2 text-gray-500 dark:text-gray-400" for="sampling-method">Sampling
-                    method:</label>
-                  <select id="sampling-method"
-                    class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                    <option value="Euler a">Euler a</option>
-                    <option value="Euler">Euler</option>
-                    <option value="LMS">LMS</option>
-                    <option value="Heun">Heun</option>
-                    <option value="DPM2">DPM2</option>
-                    <option value="DPM2 a">DPM2 a</option>
-                    <option value="DPM++ 2S a">DPM++ 2S a</option>
-                    <option value="DPM++ 2M">DPM++ 2M</option>
-                    <option value="DPM++ SDE">DPM++ SDE</option>
-                    <option value="DPM++ 2M SDE">DPM++ 2M SDE</option>
-                    <option value="DPM fast">DPM fast</option>
-                    <option value="DPM adaptive">DPM adaptive</option>
-                    <option value="LMS Karras">LMS Karras</option>
-                    <option value="DPM2 Karras">DPM2 Karras</option>
-                    <option value="DPM2 a Karras">DPM2 a Karras</option>
-                    <option value="DPM++ 2S a Karras">DPM++ 2S a Karras</option>
-                    <option value="DPM++ 2M Karras">DPM++ 2M Karras</option>
-                    <option value="DPM++ SDE Karras">DPM++ SDE Karras</option>
-                    <option value="DPM++ 2M SDE Karras">DPM++ 2M SDE Karras</option>
-                    <option value="Restart">Restart</option>
-                    <option value="DDIM">DDIM</option>
-                    <option value="PLMS">PLMS</option>
-                    <option value="UniPC">UniPC</option>
-                  </select>
+                <div>
+                  <div class="mr-4 ">
+                    <label class="block mb-2 text-gray-500 dark:text-gray-400" for="sampling-method">Sampling
+                      method:</label>
+                    <select id="sampling-method"
+                      class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                      <option value="Euler a">Euler a</option>
+                      <option value="Euler">Euler</option>
+                      <option value="LMS">LMS</option>
+                      <option value="Heun">Heun</option>
+                      <option value="DPM2">DPM2</option>
+                      <option value="DPM2 a">DPM2 a</option>
+                      <option value="DPM++ 2S a">DPM++ 2S a</option>
+                      <option value="DPM++ 2M">DPM++ 2M</option>
+                      <option value="DPM++ SDE">DPM++ SDE</option>
+                      <option value="DPM++ 2M SDE">DPM++ 2M SDE</option>
+                      <option value="DPM fast">DPM fast</option>
+                      <option value="DPM adaptive">DPM adaptive</option>
+                      <option value="LMS Karras">LMS Karras</option>
+                      <option value="DPM2 Karras">DPM2 Karras</option>
+                      <option value="DPM2 a Karras">DPM2 a Karras</option>
+                      <option value="DPM++ 2S a Karras">DPM++ 2S a Karras</option>
+                      <option value="DPM++ 2M Karras">DPM++ 2M Karras</option>
+                      <option value="DPM++ SDE Karras">DPM++ SDE Karras</option>
+                      <option value="DPM++ 2M SDE Karras">DPM++ 2M SDE Karras</option>
+                      <option value="Restart">Restart</option>
+                      <option value="DDIM">DDIM</option>
+                      <option value="PLMS">PLMS</option>
+                      <option value="UniPC">UniPC</option>
+                    </select>
+                  </div>
+                  <div class="mr-4 comfyui">
+                    <label class="block mb-2 text-gray-500 dark:text-gray-400" for="scheduler">Scheduler:</label>
+                    <select id="scheduler"
+                      class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+  
+                    </select>
+                  </div>
                 </div>
 
                 <!-- Steps slider (1-100 scale) -->
@@ -1934,17 +1943,6 @@
 
                   <!-- Batch size slider -->
                   <div>
-
-                    <!--Batch Count Slider-->
-                    <div class="automatic1111">
-                      <label id="batchCountValue" class=" block mb-2 text-gray-500 dark:text-gray-400 "
-                        for="batch-count-slider">Batch Count: 1</label>
-                      <input type="range" id="batchCountSlider"
-                        class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                        min="1" max="10" step="1" value="1">
-                    </div>
-
-
                     <div>
                       <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
                         for="batch-size-slider">Batch Size: 1</label>
@@ -2031,7 +2029,7 @@
           </div>
           <h2 id="accordion-open-heading-3">
             <button type="button"
-              class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              class="automatic1111 horde flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
               data-accordion-target="#accordion-open-body-3" aria-expanded="false"
               aria-controls="accordion-open-body-3">
               <span class="flex items-center"><svg class="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20"
