@@ -24,6 +24,7 @@ variables = {
     current_loras : [],
     current_embeddings : [],
     model:"stable_diffusion",
+    comfy_model: "",
     inputs: [],
 }
 function GetCurrentState(){

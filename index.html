@@ -135,46 +135,50 @@
 </head>
 
 <body>
-  <header class="py-4 px-8 bg-gray-800 flex justify-between items-center w-full md:h-16 z-50 md:fixed mt-0">
-    <div class="relative flex items-center">
+  <header
+    class="py-4 px-8 bg-gray-800 flex flex-col md:flex-row justify-between items-center w-full md:h-16 z-50 md:fixed mt-0">
+    <div class="sm:flex items-center">
       <h1 class="text-2xl font-bold mr-4">Stable Diffusion</h1>
-      <!-- History link -->
-      <a id="historyLink" href="easy-auto1111-ui/history/index.html"
-        class="text-white z-10 align-middle hover:text-blue-500 hover:underline">History</a>
-      <!--Contribution link-->
-      <br>
-      <div class="relative flex items-left ml-4">
+      <!-- Mobile Menu Icon -->
+      <!-- Navigation Links -->
+      <div id="navLinks" class="md:flex md:items-center md:space-x-4">
+        <a id="historyLink" href="/history/index.html"
+          class="text-white hover:text-blue-500 hover:underline">History</a>
+        <a href="/images/index.html" class="text-white hover:text-blue-500 hover:underline">Explore</a>
         <a href="https://github.com/silverzonegames/online-sd-ui"
-          class="text-gray-400 z-10 align-middle hover:text-blue-500 hover:underline ">Contribute</a>
+          class="text-gray-400 hover:text-blue-500 hover:underline">Contribute</a>
       </div>
     </div>
 
-    <div class="flex justify-center">
-      <div class="flex flex-col items-end">
-        <label id="userName" class="mr-4 horde">Anonymous</label>
-        <span id="tokenAmount" class="horde mr-4 text-sm text-gray-500"></span>
+    <div class="flex justify-between items-center w-full md:w-auto">
+
+
+      <!-- User Information and Controls -->
+      <div class="flex items-center space-x-4 sm:mx-auto">
+        <div class="flex-col flex">
+          <label id="userName" class="horde text-white">Anonymous</label>
+          <span id="tokenAmount" class="horde text-sm text-gray-500"></span>
+        </div>
+        <!-- Model Dropdown and Toggle Buttons -->
+        <label for="nodes-toggle"
+          class="comfyui flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
+          <input type="checkbox" id="nodes-toggle">
+          <span class="ml-2">Node View</span>
+        </label>
+        <label for="loras-toggle"
+          class="automatic1111 horde flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
+          <input type="checkbox" id="loras-toggle">
+          <span class="ml-2">Show Loras</span>
+        </label>
+        <button data-modal-target="settingsModal" data-modal-toggle="settingsModal"
+          class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          type="button">
+          <i class="fas fa-cog"></i> <!-- Settings Icon -->
+        </button>
       </div>
-      <!--Model Dropdown-->
-
-
-
-      <label for="nodes-toggle"
-        class="comfyui mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
-        <input type="checkbox" id="nodes-toggle">
-        <span class="ml-2">Node View</span>
-      </label>
-      <label for="loras-toggle"
-        class="automatic1111 horde mr-4 flex items-center text-white rounded-lg bg-blue-500 px-4 py-2 cursor-pointer">
-        <input type="checkbox" id="loras-toggle">
-        <span class="ml-2">Show Loras</span>
-      </label>
-      <button data-modal-target="settingsModal" data-modal-toggle="settingsModal"
-        class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        type="button">
-        <i class="fas fa-cog"></i> <!-- Settings Icon -->
-      </button>
     </div>
   </header>
+
 
 
 
@@ -931,7 +935,7 @@
                   <i class="fa fa-question-circle text-white"></i>
                 </a>
               </div>
-              
+
               <div class="relative">
                 <input id="tokenInput"
                   class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -954,7 +958,8 @@
               <div
                 class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
               </div>
-              <span class="ml-3 text-sm font-medium  text-gray-300">Normalize Token Weights to match Automatic1111</span>
+              <span class="ml-3 text-sm font-medium  text-gray-300">Normalize Token Weights to match
+                Automatic1111</span>
             </label>
             <label class="relative inline-flex items-center cursor-pointer dark mb-4 horde automatic1111">
               <input id="civitRandomImage" type="checkbox" value="" class="sr-only peer">
@@ -1056,36 +1061,41 @@
 
   <!--Find Lora modal-->
 
-<!-- Main modal -->
-<div id="findLorasModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-  <div class="relative w-full max-w-2xl max-h-full">
+  <!-- Main modal -->
+  <div id="findLorasModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
       <!-- Modal content -->
       <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <!-- Modal header -->
-          <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                  Found Loras
-              </h3>
-              <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="findLorasModal">
-                  <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                  </svg>
-                  <span class="sr-only">Close modal</span>
-              </button>
-          </div>
-          <!-- Modal body -->
-          <div id="foundLoraContainer" class="p-6 space-y-6">
-            
-            
-          </div>
-          <!-- Modal footer -->
-          <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-              <button data-modal-hide="findLorasModal" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Done</button>
-          </div>
+        <!-- Modal header -->
+        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Found Loras
+          </h3>
+          <button type="button"
+            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="findLorasModal">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div id="foundLoraContainer" class="p-6 space-y-6">
+
+
+        </div>
+        <!-- Modal footer -->
+        <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <button data-modal-hide="findLorasModal" type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Done</button>
+        </div>
       </div>
+    </div>
   </div>
-</div>
-<!--/Find Lora modal-->
+  <!--/Find Lora modal-->
 
 
   <!-- Civitai Modal-->
@@ -1176,14 +1186,13 @@
               </button>
             </div>
             <!--Details-->
-            
-            
+
+
             <div class="px-2 pb-2 relative flex flex-col w-1/3">
-              <button type="button"
-              id="civitai_useBtn"
-              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2 my-2">
-              Use Model
-            </button>
+              <button type="button" id="civitai_useBtn"  data-modal-toggle="civitAIModal"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2 my-2">
+                Use Model
+              </button>
               <div class="bg-gray-800 rounded mb-2">
                 <h3 class="ml-2.5 mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">
                   Details
@@ -1317,7 +1326,7 @@
               <!-- Your images and info icons go here -->
             </div>
           </div>
-  
+
           <button id="civitai_loadMoreButton"
             class="mx-8 mt-4 mb-8 text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
             Load More
@@ -1481,7 +1490,7 @@
               <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thumbnail</label>
               <!--Change Direction to horizontal instead of vertical-->
               <div id="download_thumbnail_container" class="h-44 overflow-x-auto flex overflow-y-clip space-x-2 pb-6">
-                
+
 
               </div>
             </div>
@@ -1588,10 +1597,10 @@
           </select>
         </li>
         <li>
-        <!-- Type -->
+          <!-- Type -->
         <li class="flex items-center horde">
           <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100 mr-2">
-            Type: 
+            Type:
           </label>
           <select id="civitai_type"
             class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
@@ -1691,14 +1700,15 @@
     <div class="w-full md:w-full  p-4 md:overflow-y-auto md:max-h-screen">
 
       <!-- Content goes here -->
-      <div class="automatic1111 horde">
+      <div class="">
 
         <div class="flex">
           <label class="block text-lg font-semibold mb-2 ">Prompt</label>
- 
+
           <!-- Styles DropDown -->
           <div class="relative ml-auto">
-            <button id="find_loras" class="horde my-auto" title="Find Loras in Prompt" data-modal-toggle="findLorasModal">
+            <button id="find_loras" class="horde my-auto" title="Find Loras in Prompt"
+              data-modal-toggle="findLorasModal">
               <i class="fa-solid fa-magnifying-glass text-white my-auto"></i>
             </button>
             <button id="stylesDropdownButton"
@@ -1741,7 +1751,7 @@
 
           </div>
         </div>
-        
+
         <div class="container mx-auto p-2 horde">
           <div class="mb-6 border p-4 rounded border-gray-300 dark:border-gray-700">
             <div class="flex justify-between items-center">
@@ -1749,7 +1759,7 @@
             </div>
             <div class="horde overflow-y-scroll max-h-80" id="horde_TIContainer">
               <!-- Lora elements will be added here dynamically -->
-              
+
             </div>
 
 
@@ -1807,7 +1817,7 @@
               <div class="mb-4 flex horde ">
                 <label class="block mr-2 text-gray-500 dark:text-gray-400" for="sampling-method">Model:</label>
                 <select id="model-name"
-                  class="w-80 bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                  class="w-full bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                   <option value="stable_diffusion">stable diffusion</option>
                 </select>
                 <!-- List Button-->
@@ -1819,8 +1829,8 @@
               </div>
 
               <!--A1111 Model Selector-->
-              <div class="mb-4 flex automatic1111">
-                <label class="block mr-2 text-gray-500 dark:text-gray-400" for="sampling-method">Model:</label>
+              <div class="mb-4 flex automatic1111 comfyui">
+                <label class="block mr-2 text-gray-500 dark:text-gray-400" for="checkpoint-selector">Model:</label>
                 <select id="checkpoint-selector"
                   class="w-80 bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 </select>
@@ -1837,35 +1847,44 @@
               <!-- Options Here -->
               <div class="md:flex mb-4">
                 <!-- First row: Sampling method Dropdown -->
-                <div class="mr-4 ">
-                  <label class="block mb-2 text-gray-500 dark:text-gray-400" for="sampling-method">Sampling
-                    method:</label>
-                  <select id="sampling-method"
-                    class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                    <option value="Euler a">Euler a</option>
-                    <option value="Euler">Euler</option>
-                    <option value="LMS">LMS</option>
-                    <option value="Heun">Heun</option>
-                    <option value="DPM2">DPM2</option>
-                    <option value="DPM2 a">DPM2 a</option>
-                    <option value="DPM++ 2S a">DPM++ 2S a</option>
-                    <option value="DPM++ 2M">DPM++ 2M</option>
-                    <option value="DPM++ SDE">DPM++ SDE</option>
-                    <option value="DPM++ 2M SDE">DPM++ 2M SDE</option>
-                    <option value="DPM fast">DPM fast</option>
-                    <option value="DPM adaptive">DPM adaptive</option>
-                    <option value="LMS Karras">LMS Karras</option>
-                    <option value="DPM2 Karras">DPM2 Karras</option>
-                    <option value="DPM2 a Karras">DPM2 a Karras</option>
-                    <option value="DPM++ 2S a Karras">DPM++ 2S a Karras</option>
-                    <option value="DPM++ 2M Karras">DPM++ 2M Karras</option>
-                    <option value="DPM++ SDE Karras">DPM++ SDE Karras</option>
-                    <option value="DPM++ 2M SDE Karras">DPM++ 2M SDE Karras</option>
-                    <option value="Restart">Restart</option>
-                    <option value="DDIM">DDIM</option>
-                    <option value="PLMS">PLMS</option>
-                    <option value="UniPC">UniPC</option>
-                  </select>
+                <div>
+                  <div class="mr-4 ">
+                    <label class="block mb-2 text-gray-500 dark:text-gray-400" for="sampling-method">Sampling
+                      method:</label>
+                    <select id="sampling-method"
+                      class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                      <option value="Euler a">Euler a</option>
+                      <option value="Euler">Euler</option>
+                      <option value="LMS">LMS</option>
+                      <option value="Heun">Heun</option>
+                      <option value="DPM2">DPM2</option>
+                      <option value="DPM2 a">DPM2 a</option>
+                      <option value="DPM++ 2S a">DPM++ 2S a</option>
+                      <option value="DPM++ 2M">DPM++ 2M</option>
+                      <option value="DPM++ SDE">DPM++ SDE</option>
+                      <option value="DPM++ 2M SDE">DPM++ 2M SDE</option>
+                      <option value="DPM fast">DPM fast</option>
+                      <option value="DPM adaptive">DPM adaptive</option>
+                      <option value="LMS Karras">LMS Karras</option>
+                      <option value="DPM2 Karras">DPM2 Karras</option>
+                      <option value="DPM2 a Karras">DPM2 a Karras</option>
+                      <option value="DPM++ 2S a Karras">DPM++ 2S a Karras</option>
+                      <option value="DPM++ 2M Karras">DPM++ 2M Karras</option>
+                      <option value="DPM++ SDE Karras">DPM++ SDE Karras</option>
+                      <option value="DPM++ 2M SDE Karras">DPM++ 2M SDE Karras</option>
+                      <option value="Restart">Restart</option>
+                      <option value="DDIM">DDIM</option>
+                      <option value="PLMS">PLMS</option>
+                      <option value="UniPC">UniPC</option>
+                    </select>
+                  </div>
+                  <div class="mr-4 comfyui">
+                    <label class="block mb-2 text-gray-500 dark:text-gray-400" for="scheduler">Scheduler:</label>
+                    <select id="scheduler"
+                      class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+  
+                    </select>
+                  </div>
                 </div>
 
                 <!-- Steps slider (1-100 scale) -->
@@ -1924,17 +1943,6 @@
 
                   <!-- Batch size slider -->
                   <div>
-
-                    <!--Batch Count Slider-->
-                    <div class="automatic1111">
-                      <label id="batchCountValue" class=" block mb-2 text-gray-500 dark:text-gray-400 "
-                        for="batch-count-slider">Batch Count: 1</label>
-                      <input type="range" id="batchCountSlider"
-                        class="w-32 h-6 px-3 rounded-lg bg-blue-200 appearance-none dark:bg-gray-700 focus:ring-blue-200 dark:focus:ring-blue-800"
-                        min="1" max="10" step="1" value="1">
-                    </div>
-
-
                     <div>
                       <label id="batchSizeValue" class="block mb-2 text-gray-500 dark:text-gray-400"
                         for="batch-size-slider">Batch Size: 1</label>
@@ -1950,24 +1958,25 @@
 
               <!-- Horde Options-->
               <div class="flex mb-4 horde">
-                <div class="horde mr-8">  
+                <div class="horde mr-8">
                   <label for="horde_hires" class="flex items-center cursor-pointer">
-                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-24" >Hires fix</span>
+                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-full">Hires fix</span>
                     <input type="checkbox" id="horde_hires"
                       class="form-checkbox h-6 w-6 text-red-600 dark:text-red-400 rounded-md focus:ring-red-200 dark:focus:ring-red-800">
                   </label>
                 </div>
-                <div class="horde mr-8"> 
+                <div class="horde mr-8">
                   <label for="horde_karras" class="flex items-center cursor-pointer">
-                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-24" >Karras</span>
+                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-full">Karras</span>
                     <input type="checkbox" id="horde_karras" checked
                       class="form-checkbox h-6 w-6 text-red-600 dark:text-red-400 rounded-md focus:ring-red-200 dark:focus:ring-red-800">
                   </label>
                 </div>
-                <div class="horde mr-8">  
+                <div class="horde mr-8">
                   <label for="horde_tiling" class="flex items-center cursor-pointer">
-                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-28" title="Create seamless textures">Tiling</span>
-                    <input type="checkbox" id="horde_tiling" 
+                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-full"
+                      title="Create seamless textures">Tiling</span>
+                    <input type="checkbox" id="horde_tiling"
                       class="form-checkbox h-6 w-6 text-red-600 dark:text-red-400 rounded-md focus:ring-red-200 dark:focus:ring-red-800">
                   </label>
                 </div>
@@ -1978,7 +1987,7 @@
 
                 <div class="horde mr-8">
                   <label for="allowNSFW" class="flex items-center cursor-pointer">
-                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-24" title="Allow NSFW content">Allow
+                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-full" title="Allow NSFW content">Allow
                       NSFW</span>
                     <input type="checkbox" id="allowNSFW" checked
                       class="form-checkbox h-6 w-6 text-red-600 dark:text-red-400 rounded-md focus:ring-red-200 dark:focus:ring-red-800">
@@ -1986,7 +1995,7 @@
                 </div>
                 <div class="horde mr-8">
                   <label for="slowWorkers" class="flex items-center cursor-pointer">
-                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-24" title="Enable Slow Workers">Slow
+                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-full" title="Enable Slow Workers">Slow
                       Workers</span>
                     <input type="checkbox" id="slowWorkers" checked
                       class="form-checkbox h-6 w-6 text-green-600 dark:text-green-400 rounded-md focus:ring-green-200 dark:focus:ring-green-800">
@@ -1998,7 +2007,7 @@
                   <label for="saveToServer" class=" flex items-center cursor-pointer">
                     <span class="block text-gray-500 dark:text-gray-400 mr-2"
                       title="Save Images to Automatic1111 outputs. Also shows a grid of the generated images">Save
-                      
+
                       to server</span>
                     <input type="checkbox" id="saveToServer"
                       class="form-checkbox h-6 w-6 text-blue-600 dark:text-blue-400 rounded-md focus:ring-blue-200 dark:focus:ring-blue-800">
@@ -2006,7 +2015,7 @@
                 </div>
                 <div>
                   <label for="saveToHistory" class="flex items-center cursor-pointer">
-                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-28"
+                    <span class="block text-gray-500 dark:text-gray-400 mr-2 w-full"
                       title="Save Images to Local History Tab">Save to History</span>
                     <input type="checkbox" checked id="saveToHistory"
                       class="form-checkbox h-6 w-6 text-blue-600 dark:text-blue-400 rounded-md focus:ring-blue-200 dark:focus:ring-blue-800">
@@ -2020,7 +2029,7 @@
           </div>
           <h2 id="accordion-open-heading-3">
             <button type="button"
-              class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              class="automatic1111 horde flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
               data-accordion-target="#accordion-open-body-3" aria-expanded="false"
               aria-controls="accordion-open-body-3">
               <span class="flex items-center"><svg class="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20"

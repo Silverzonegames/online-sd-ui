@@ -5,6 +5,8 @@ let workflow = null
 let workflow_api = {}
 
 let models = []
+let sampling_methods = [];
+let schedulers = [];
 
 const inputContainer = document.getElementById("comfyInputs");
 
@@ -17,17 +19,49 @@ async function RefreshComfy() {
     try {
         object_info = await FetchInfo("/object_info");
         models = object_info["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0];
+        sampling_methods = object_info["KSampler"]["input"]["required"]["sampler_name"][0];
+        schedulers = object_info["KSampler"]["input"]["required"]["scheduler"][0];
         console.log(models);
         offlineBanner.classList.add("hidden");
         connectingBanner.classList.add("hidden");
+
+        var model_select = document.getElementById("checkpoint-selector");
+        model_select.innerHTML = "";
+        models.forEach(model => {
+            var option = document.createElement("option");
+            option.text = model;
+            model_select.add(option);
+        });
+        document.getElementById("checkpoint-selector").value = variables["comfy_model"];
+
+        var sampling_select = document.getElementById("sampling-method")
+        sampling_select.innerHTML = "";
+        sampling_methods.forEach(sampling => {
+            var option = document.createElement("option");
+            option.text = sampling;
+            sampling_select.add(option);
+        });
+
+        var scheduler_select = document.getElementById("scheduler")
+        scheduler_select.innerHTML = "";
+        schedulers.forEach(scheduler => {
+            var option = document.createElement("option");
+            option.text = scheduler;
+            scheduler_select.add(option);
+        });
 
         if (workflow == null) {
             const workflowResponse = await fetch(workflow_file);
             workflow = await workflowResponse.json();
             console.log(workflow);
         }
+
+
+
         inputContainer.innerHTML = "";
-        AddInput("workflowDropdown", "dropdown", "Workflow", ["txt2img", "txt2img_vae", "img2img", "img2img_vae", "inpaint","lora", "sdxl", "Custom"]);
+        return;
+
+        AddInput("workflowDropdown", "dropdown", "Workflow", ["txt2img", "txt2img_vae", "img2img", "img2img_vae", "inpaint", "lora", "sdxl", "Custom"]);
 
         if (workflow_file == "Custom") {
             document.getElementById("workflowDropdown").value = "Custom";
@@ -94,7 +128,7 @@ async function RefreshComfy() {
                 const title = node["title"] || "Image";
                 AddInput(node["id"], "image", title);
             }
-            if(node["type"] === "LoadImageMask"){
+            if (node["type"] === "LoadImageMask") {
                 const title = node["title"] || "Image Mask";
                 AddInput(node["id"], "mask", title);
             }
@@ -140,14 +174,24 @@ function queuePrompt(prompt) {
 }
 
 async function getImages(prompt) {
-    
+
     const promptId = (await queuePrompt(prompt))["prompt_id"];
     const outputImages = {};
 
+    progress_bar.classList.remove("hidden");
+    progress_bar_progress.textContent = "Waiting...";
+    progress_bar_progress.style.width = "100%";
+
     const ws = new WebSocket(`ws://${serverAddress}/ws?clientId=${clientId}`);
     ws.onmessage = event => {
+
         const message = JSON.parse(event.data);
         console.log(message)
+        if (message.type === "progress") {
+            progress_bar_progress.textContent = ((message.data.value / message.data.max) * 100).toFixed(0) + "%";
+            progress_bar_progress.style.width = (message.data.value / message.data.max) * 100 + "%";
+        }
+
         if (message.type === "executing" && message.data.node === null && message.data.prompt_id === promptId) {
             ws.close(); // Execution is done
         }
@@ -158,6 +202,7 @@ async function getImages(prompt) {
     };
 
     ws.onclose = async () => {
+        progress_bar.classList.add("hidden");
         console.log("WebSocket closed");
         const historyResponse = await fetch(`http://${serverAddress}/history`);
         console.log("History response received");
@@ -174,6 +219,9 @@ async function getImages(prompt) {
                     const imageData = await getImage(image.filename, image.subfolder, image.type);
                     const base64ImageData = await convertToBase64(imageData);
                     generatedImages.push(base64ImageData);
+                    console.log("Generated image:", base64ImageData);
+                    var img = base64ImageData.replaceAll(" ", "").replaceAll("\n", "");
+                    addToImageHistory(img, last_generation_info);
                 }
             }
         }
@@ -204,7 +252,6 @@ async function getImages(prompt) {
             );
 
 
-            addToImageHistory(imageSrc, "ComfyUI");
 
 
             imageButton.addEventListener("click", () => {
@@ -238,15 +285,55 @@ async function getImage(filename, subfolder, folderType) {
     return await response.blob();
 }
 
+var last_generation_info = "";
 
-
-function GenerateComfy() {
+async function GenerateComfy() {
     serverAddress = url.replace("http://", "").replace("https://", "");
-    const prompt = convertWorkflowToApiFormat(workflow);
 
-    console.log(JSON.stringify(prompt, null, 2));
+    var apiWorkflow;;
 
-    getImages(prompt);
+    if (uploadedImageBase64 == "") {
+        apiWorkflow = await fetch("/workflows/txt2img_api.txt");
+        apiWorkflow = await apiWorkflow.text();
+    }
+    var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
+    var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
+    if (document.getElementById("averageWeights").checked) {
+        prompt = normalizeWeights(prompt);
+        negativePrompt = normalizeWeights(negativePrompt);
+    }
+
+    apiWorkflow = apiWorkflow.replaceAll("{prompt}", prompt);
+    apiWorkflow = apiWorkflow.replaceAll("{negative}", negativePrompt);
+    apiWorkflow = apiWorkflow.replaceAll("{model_name}", document.getElementById("checkpoint-selector").value.replace("\\", "\\\\"));
+    apiWorkflow = apiWorkflow.replaceAll("{sampler}", document.getElementById("sampling-method").value);
+    apiWorkflow = apiWorkflow.replaceAll("{scheduler}", document.getElementById("scheduler").value);
+    apiWorkflow = apiWorkflow.replaceAll("{width}", document.getElementById("width-slider").value);
+    apiWorkflow = apiWorkflow.replaceAll("{height}", document.getElementById("height-slider").value);
+    apiWorkflow = apiWorkflow.replaceAll("{batch_size}", document.getElementById("batchSizeSlider").value);
+    apiWorkflow = apiWorkflow.replaceAll("{cfg}", document.getElementById("scale-slider").value);
+    apiWorkflow = apiWorkflow.replaceAll("{steps}", document.getElementById("steps-slider").value);
+    apiWorkflow = apiWorkflow.replaceAll("{seed}", getRandomInt(0, 18446744073709552000));
+
+    //prompt,negative,steps,size, cfg, model, sampler, scheduler
+    last_generation_info += prompt +
+        "\nNegative prompt: " + negativePrompt +
+        "\nModel: " + document.getElementById("checkpoint-selector").value +
+        "\nSampler: " + document.getElementById("sampling-method").value +
+        "\nScheduler: " + document.getElementById("scheduler").value +
+        "\nSize: " + document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value +
+        "\nSteps: " + document.getElementById("steps-slider").value +
+        "\nCFG: " + document.getElementById("scale-slider").value;
+        "Server: ComfyUI\n\n";
+
+    //convert to json¨
+    console.log(apiWorkflow);
+    apiWorkflow = JSON.parse(apiWorkflow);
+    console.log(apiWorkflow);
+
+
+
+    getImages(apiWorkflow);
 
 }
 
@@ -632,7 +719,7 @@ function convertWorkflowToApiFormat(workflow) {
             else {
                 if (node["type"] === "LoadImage") {
                     apiNode.inputs["image"] = document.getElementById(node["id"] + "-image").textContent.toString();
-                }else if(node["type"] === "LoadImageMask"){
+                } else if (node["type"] === "LoadImageMask") {
                     apiNode.inputs["image"] = document.getElementById(node["id"] + "-image").textContent.toString();
                     apiNode.inputs["channel"] == "alpha"
                 }
@@ -675,11 +762,11 @@ document.getElementById("nodes-toggle").addEventListener("change", function () {
     //open
     if (this.checked) {
 
-        targetIframe.src = url +"/?workflow=" + JSON.stringify(workflow);
-        console.log(url +"/?workflow=" + JSON.stringify(workflow));
+        targetIframe.src = url + "/?workflow=" + JSON.stringify(workflow);
+        console.log(url + "/?workflow=" + JSON.stringify(workflow));
         targetIframe.classList.remove("hidden");
 
-        
+
     } else {
         targetIframe.classList.add("hidden");
     }
