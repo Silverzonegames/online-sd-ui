@@ -293,8 +293,8 @@ async function GenerateComfy() {
     var apiWorkflow;;
 
     if (uploadedImageBase64 == "") {
-        apiWorkflow = await fetch("/workflows/txt2img_api.txt");
-        apiWorkflow = await apiWorkflow.text();
+        apiWorkflow = await fetch("/workflows/txt2img_api.json");
+        apiWorkflow = await apiWorkflow.json();
     }
     var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
     var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
@@ -303,17 +303,20 @@ async function GenerateComfy() {
         negativePrompt = normalizeWeights(negativePrompt);
     }
 
-    apiWorkflow = apiWorkflow.replaceAll("{prompt}", prompt);
-    apiWorkflow = apiWorkflow.replaceAll("{negative}", negativePrompt);
-    apiWorkflow = apiWorkflow.replaceAll("{model_name}", document.getElementById("checkpoint-selector").value.replace("\\", "\\\\"));
-    apiWorkflow = apiWorkflow.replaceAll("{sampler}", document.getElementById("sampling-method").value);
-    apiWorkflow = apiWorkflow.replaceAll("{scheduler}", document.getElementById("scheduler").value);
-    apiWorkflow = apiWorkflow.replaceAll("{width}", document.getElementById("width-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{height}", document.getElementById("height-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{batch_size}", document.getElementById("batchSizeSlider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{cfg}", document.getElementById("scale-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{steps}", document.getElementById("steps-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{seed}", getRandomInt(0, 18446744073709552000));
+    apiWorkflow["Positive"].inputs.text = prompt;
+    apiWorkflow["Negative"].inputs.text = negativePrompt;
+
+    apiWorkflow["CheckpointLoader"].inputs.ckpt_name = document.getElementById("checkpoint-selector").value;
+
+    apiWorkflow["KSampler"].inputs.seed = getRandomInt(0, 18446744073709552000);
+    apiWorkflow["KSampler"].inputs.steps = document.getElementById("steps-slider").value;
+    apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
+    apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
+    apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
+
+    apiWorkflow["EmptyLatentImage"].inputs.width = document.getElementById("width-slider").value;
+    apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
+    apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
 
     //prompt,negative,steps,size, cfg, model, sampler, scheduler
     last_generation_info += prompt +
@@ -326,12 +329,7 @@ async function GenerateComfy() {
         "\nCFG: " + document.getElementById("scale-slider").value;
         "Server: ComfyUI\n\n";
 
-    //convert to json¨
     console.log(apiWorkflow);
-    apiWorkflow = JSON.parse(apiWorkflow);
-    console.log(apiWorkflow);
-
-
 
     getImages(apiWorkflow);
 

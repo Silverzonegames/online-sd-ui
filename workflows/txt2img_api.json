@@ -1,0 +1,87 @@
+{
+  "KSampler": {
+    "inputs": {
+      "seed": 1,
+      "steps": 20,
+      "cfg": 7,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "CheckpointLoader",
+        0
+      ],
+      "positive": [
+        "Positive",
+        0
+      ],
+      "negative": [
+        "Negative",
+        0
+      ],
+      "latent_image": [
+        "EmptyLatentImage",
+        0
+      ]
+    },
+    "class_type": "KSampler"
+  },
+  "CheckpointLoader": {
+    "inputs": {
+      "ckpt_name": "{model_name}"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "EmptyLatentImage": {
+    "inputs": {
+      "width": 512,
+      "height": 512,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage"
+  },
+  "Positive": {
+    "inputs": {
+      "text": "{prompt}",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "Negative": {
+    "inputs": {
+      "text": "{negative}",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "VAEDecode": {
+    "inputs": {
+      "samples": [
+        "KSampler",
+        0
+      ],
+      "vae": [
+        "CheckpointLoader",
+        2
+      ]
+    },
+    "class_type": "VAEDecode"
+  },
+  "SaveImage": {
+    "inputs": {
+      "filename_prefix": "silverzone/ComfyUI",
+      "images": [
+        "VAEDecode",
+        0
+      ]
+    },
+    "class_type": "SaveImage"
+  }
+
+}

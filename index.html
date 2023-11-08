@@ -130,6 +130,7 @@
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <script src="https://cdn.tailwindcss.com"></script>
 
 </head>
@@ -945,6 +946,15 @@
           </div>
 
           <div class="flex flex-col">
+
+            <label class="relative inline-flex items-center cursor-pointer dark mb-4">
+              <input id="useAutocomplete" type="checkbox" value="" class="sr-only peer">
+              <div
+                class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
+              </div>
+              <span class="ml-3 text-sm font-medium  text-gray-300">Autocomplete</span>
+            </label>
+
             <!--HORDE-->
             <label class="relative inline-flex items-center cursor-pointer dark mb-4 horde automatic1111">
               <input id="unBlurOnHover" type="checkbox" value="" class="sr-only peer">
@@ -1731,7 +1741,7 @@
         <div class="mb-6">
           <label class="block text-lg font-semibold mb-2">Negative Prompt</label>
           <textarea id="negativePrompt"
-            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">extra fingers,fewer fingers,(low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2),bad composition, inaccurate eyes, extra digit,fewer digits,(extra arms:1.2),easynegative  </textarea>
+            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 autocomplete">extra fingers,fewer fingers,(low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2),bad composition, inaccurate eyes, extra digit,fewer digits,(extra arms:1.2),easynegative  </textarea>
         </div>
 
         <div class="container mx-auto mt-10 p-2 automatic1111 horde">
@@ -2328,7 +2338,9 @@
 
 
 
-
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  
 
   <script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
@@ -2347,6 +2359,7 @@
   <script src="scripts/saving.js"></script>
   <script src="scripts/edit-attention.js"></script>
   <script src="scripts/edit-order.js"></script>
+  <script src="scripts/autocomplete.js"></script>
 </body>
 
 <style>
