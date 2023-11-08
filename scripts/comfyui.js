@@ -55,105 +55,7 @@ async function RefreshComfy() {
             workflow = await workflowResponse.json();
             console.log(workflow);
         }
-
-
-
-        inputContainer.innerHTML = "";
-        return;
-
-        AddInput("workflowDropdown", "dropdown", "Workflow", ["txt2img", "txt2img_vae", "img2img", "img2img_vae", "inpaint", "lora", "sdxl", "Custom"]);
-
-        if (workflow_file == "Custom") {
-            document.getElementById("workflowDropdown").value = "Custom";
-        } else {
-            document.getElementById("workflowDropdown").value = workflow_file.split("/")[1].split(".")[0];
-        }
-
-        document.getElementById("workflowDropdown").addEventListener("change", (e) => {
-
-            if (e.target.value == "Custom") {
-                workflow_file == "Custom";
-                // Prompt the user to upload a JSON file
-                const fileInput = document.createElement("input");
-                fileInput.type = "file";
-                fileInput.accept = "application/json";
-                fileInput.addEventListener("change", (event) => {
-                    const uploadedFile = event.target.files[0];
-
-                    if (uploadedFile) {
-                        const reader = new FileReader();
-                        reader.onload = (fileEvent) => {
-                            try {
-                                workflow = JSON.parse(fileEvent.target.result);
-                                RefreshComfy();
-                            } catch (error) {
-                                console.error("Error parsing uploaded JSON:", error);
-                            }
-                        };
-                        reader.readAsText(uploadedFile);
-                    }
-                });
-
-                fileInput.click(); // Simulate a click on the file input to open the file picker
-            } else {
-                workflow_file = "workflows/" + e.target.value + ".json";
-                workflow = null;
-                // Fetch and assign the JSON data from 'workflow_file' if needed
-                RefreshComfy();
-            }
-        });
-
-        workflow["nodes"].forEach(node => {
-            if (node["type"] === "CLIPTextEncode") {
-                const title = node["title"] || "CLIPTextEncode";
-                AddInput(node["id"] + "-text", "text", title, node["widgets_values"]);
-            }
-        });
-
-        workflow["nodes"].forEach(node => {
-            if (node["type"] === "CheckpointLoaderSimple") {
-                const title = node["title"] || "CheckpointLoaderSimple";
-                AddInput(node["id"] + "-ckpt_name", "dropdown", title, models);
-            }
-            if (node["type"] === "VAELoader") {
-                const title = node["title"] || "VAE Loader";
-                AddInput(node["id"], "container", title, object_info["VAELoader"]["input"]["required"]);
-            }
-            if (node["type"] === "LoraLoader") {
-                const title = node["title"] || "Lora Loader";
-                AddInput(node["id"], "container", title, object_info["LoraLoader"]["input"]["required"]);
-            }
-            if (node["type"] === "LoadImage") {
-                console.log("image");
-                const title = node["title"] || "Image";
-                AddInput(node["id"], "image", title);
-            }
-            if (node["type"] === "LoadImageMask") {
-                const title = node["title"] || "Image Mask";
-                AddInput(node["id"], "mask", title);
-            }
-        });
-
-        workflow["nodes"].forEach(node => {
-            if (node["type"] === "KSampler") {
-                const title = node["title"] || "KSampler";
-                AddInput(node["id"], "container", title, object_info["KSampler"]["input"]["required"]);
-            }
-            if (node["type"] === "KSamplerAdvanced") {
-                const title = node["title"] || "KSampler (Advanced)";
-                AddInput(node["id"], "container", title, object_info["KSampler"]["input"]["required"]);
-            }
-            if (node["type"] === "EmptyLatentImage") {
-                const title = node["title"] || "EmptyLatentImage";
-                AddInput(node["id"], "container", title, object_info["EmptyLatentImage"]["input"]["required"]);
-            }
-            if (node["type"] === "ImageScale") {
-                const title = node["title"] || "ImageScale";
-                AddInput(node["id"], "container", title, object_info["ImageScale"]["input"]["required"]);
-            }
-        });
-
-
+    
 
     } catch (error) {
         showMessage(error);
@@ -292,10 +194,11 @@ async function GenerateComfy() {
 
     var apiWorkflow;;
 
-    if (uploadedImageBase64 == "") {
-        apiWorkflow = await fetch("/workflows/txt2img_api.json");
-        apiWorkflow = await apiWorkflow.json();
-    }
+    // get workflow
+    apiWorkflow = await fetch("/workflows/txt2img_api.json");
+    apiWorkflow = await apiWorkflow.json();
+
+    //format prompts
     var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
     var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
     if (document.getElementById("averageWeights").checked) {
@@ -303,6 +206,7 @@ async function GenerateComfy() {
         negativePrompt = normalizeWeights(negativePrompt);
     }
 
+    //apply current settings to workflow
     apiWorkflow["Positive"].inputs.text = prompt;
     apiWorkflow["Negative"].inputs.text = negativePrompt;
 
@@ -318,8 +222,8 @@ async function GenerateComfy() {
     apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
     apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
 
-    //prompt,negative,steps,size, cfg, model, sampler, scheduler
-    last_generation_info += prompt +
+    //create text for history
+    last_generation_info = prompt +
         "\nNegative prompt: " + negativePrompt +
         "\nModel: " + document.getElementById("checkpoint-selector").value +
         "\nSampler: " + document.getElementById("sampling-method").value +
