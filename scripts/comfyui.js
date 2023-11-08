@@ -1,12 +1,12 @@
 let object_info = {}
 
-let workflow_file = "workflows/txt2img.json";
 let workflow = null
 let workflow_api = {}
 
 let models = []
 let sampling_methods = [];
 let schedulers = [];
+let comfy_loras = []
 
 const inputContainer = document.getElementById("comfyInputs");
 
@@ -21,6 +21,10 @@ async function RefreshComfy() {
         models = object_info["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0];
         sampling_methods = object_info["KSampler"]["input"]["required"]["sampler_name"][0];
         schedulers = object_info["KSampler"]["input"]["required"]["scheduler"][0];
+
+        comfy_loras = object_info["LoraLoader"].input.required.lora_name[0];
+        HandleComfyLoras();
+
         console.log(models);
         offlineBanner.classList.add("hidden");
         connectingBanner.classList.add("hidden");
@@ -50,12 +54,8 @@ async function RefreshComfy() {
             scheduler_select.add(option);
         });
 
-        if (workflow == null) {
-            const workflowResponse = await fetch(workflow_file);
-            workflow = await workflowResponse.json();
-            console.log(workflow);
-        }
-    
+
+
 
     } catch (error) {
         showMessage(error);
@@ -66,13 +66,98 @@ async function RefreshComfy() {
 let serverAddress = url.replace("http://", "");
 let clientId = uuid.v4(); // Generate a UUID for the client
 
-function queuePrompt(prompt) {
-    const data = JSON.stringify({ prompt: prompt, client_id: clientId });
-    return fetch(`http://${serverAddress}/prompt`, {
-        method: "POST",
-        body: data,
-        headers: { "Content-Type": "application/json" }
-    }).then(response => response.json());
+
+
+//#region Generation
+
+var last_generation_info = "";
+async function GenerateComfy() {
+    serverAddress = url.replace("http://", "").replace("https://", "");
+
+    var apiWorkflow;;
+
+    // get workflow
+    apiWorkflow = await fetch("/workflows/txt2img_api.json");
+    apiWorkflow = await apiWorkflow.json();
+
+    //format prompts
+    var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
+    var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
+    if (document.getElementById("averageWeights").checked) {
+        prompt = normalizeWeights(prompt);
+        negativePrompt = normalizeWeights(negativePrompt);
+    }
+
+    //apply current settings to workflow
+    apiWorkflow["Positive"].inputs.text = prompt;
+    apiWorkflow["Negative"].inputs.text = negativePrompt;
+
+    apiWorkflow["CheckpointLoader"].inputs.ckpt_name = document.getElementById("checkpoint-selector").value;
+
+    apiWorkflow["KSampler"].inputs.seed = getRandomInt(0, 18446744073709552000);
+    apiWorkflow["KSampler"].inputs.steps = document.getElementById("steps-slider").value;
+    apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
+    apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
+    apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
+
+    apiWorkflow["EmptyLatentImage"].inputs.width = document.getElementById("width-slider").value;
+    apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
+    apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
+
+
+
+    if (current_comfy_loras.length > 0) {
+        for (let i = 0; i < current_comfy_loras.length; i++) {
+
+            var input;
+
+            if (i == 0) {
+                input = "CheckpointLoader";
+            } else {
+                input = "lora" + (i - 1);
+            }
+
+            apiWorkflow["lora" + i] = {
+                "inputs": {
+                    "lora_name": current_comfy_loras[i].lora_name,
+                    "strength_model": current_comfy_loras[i].strength_model,
+                    "strength_clip": current_comfy_loras[i].strength_clip,
+                    "model": [
+                        input,
+                        0
+                    ],
+                    "clip": [
+                        input,
+                        1
+                    ]
+                },
+                "class_type": "LoraLoader"
+            };
+        }
+        var firstLoraNode = "lora0";
+        var lastLoraNode = "lora" + (current_comfy_loras.length - 1);
+
+        apiWorkflow["Positive"].inputs.clip[0] = lastLoraNode;
+        apiWorkflow["Negative"].inputs.clip[0] = lastLoraNode;
+
+        apiWorkflow["KSampler"].inputs.model[0] = lastLoraNode;
+    }
+
+    //create text for history
+    last_generation_info = prompt +
+        "\nNegative prompt: " + negativePrompt +
+        "\nModel: " + document.getElementById("checkpoint-selector").value +
+        "\nSampler: " + document.getElementById("sampling-method").value +
+        "\nScheduler: " + document.getElementById("scheduler").value +
+        "\nSize: " + document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value +
+        "\nSteps: " + document.getElementById("steps-slider").value +
+        "\nCFG: " + document.getElementById("scale-slider").value;
+    "Server: ComfyUI\n\n";
+
+    console.log(apiWorkflow);
+
+    getImages(apiWorkflow);
+
 }
 
 async function getImages(prompt) {
@@ -167,16 +252,13 @@ async function getImages(prompt) {
         });
     };
 }
-
-
-async function convertToBase64(blob) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            resolve(event.target.result.split(',')[1]); // Extract base64 data
-        };
-        reader.readAsDataURL(blob);
-    });
+function queuePrompt(prompt) {
+    const data = JSON.stringify({ prompt: prompt, client_id: clientId });
+    return fetch(`http://${serverAddress}/prompt`, {
+        method: "POST",
+        body: data,
+        headers: { "Content-Type": "application/json" }
+    }).then(response => response.json());
 }
 
 async function getImage(filename, subfolder, folderType) {
@@ -186,59 +268,15 @@ async function getImage(filename, subfolder, folderType) {
     console.log(`http://${serverAddress}/view?${urlValues}`);
     return await response.blob();
 }
-
-var last_generation_info = "";
-
-async function GenerateComfy() {
-    serverAddress = url.replace("http://", "").replace("https://", "");
-
-    var apiWorkflow;;
-
-    // get workflow
-    apiWorkflow = await fetch("/workflows/txt2img_api.json");
-    apiWorkflow = await apiWorkflow.json();
-
-    //format prompts
-    var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
-    var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
-    if (document.getElementById("averageWeights").checked) {
-        prompt = normalizeWeights(prompt);
-        negativePrompt = normalizeWeights(negativePrompt);
-    }
-
-    //apply current settings to workflow
-    apiWorkflow["Positive"].inputs.text = prompt;
-    apiWorkflow["Negative"].inputs.text = negativePrompt;
-
-    apiWorkflow["CheckpointLoader"].inputs.ckpt_name = document.getElementById("checkpoint-selector").value;
-
-    apiWorkflow["KSampler"].inputs.seed = getRandomInt(0, 18446744073709552000);
-    apiWorkflow["KSampler"].inputs.steps = document.getElementById("steps-slider").value;
-    apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
-    apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
-    apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
-
-    apiWorkflow["EmptyLatentImage"].inputs.width = document.getElementById("width-slider").value;
-    apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
-    apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
-
-    //create text for history
-    last_generation_info = prompt +
-        "\nNegative prompt: " + negativePrompt +
-        "\nModel: " + document.getElementById("checkpoint-selector").value +
-        "\nSampler: " + document.getElementById("sampling-method").value +
-        "\nScheduler: " + document.getElementById("scheduler").value +
-        "\nSize: " + document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value +
-        "\nSteps: " + document.getElementById("steps-slider").value +
-        "\nCFG: " + document.getElementById("scale-slider").value;
-        "Server: ComfyUI\n\n";
-
-    console.log(apiWorkflow);
-
-    getImages(apiWorkflow);
-
+async function convertToBase64(blob) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            resolve(event.target.result.split(',')[1]); // Extract base64 data
+        };
+        reader.readAsDataURL(blob);
+    });
 }
-
 
 function FetchInfo(info) {
     return fetch(url + info)
@@ -553,8 +591,324 @@ function AddInput(id, type, label, options = null) {
     }
 }
 
+function LatentUpscaleWithComfy() {
+    //upload image to server
+    var base64 = document.getElementById("outputImage").src.replace("data:image/png;base64,", "");
+    var image = base64ToBlob(base64, "image/png");
+    console.log(image);
+
+}
+
+//#endregion
+
+//#region Loras
+const comfyLoraContainer = document.getElementById("comfyLoraContainer");
+const comfy_currentLoraContainer = document.getElementById("comfy_currentLoraContainer");
+
+let current_comfy_loras = [];
+
+function HandleComfyLoras() {
+    let folder = "";
+    categories = ["All"];
+    comfyLoraContainer.innerHTML = "";
+    comfy_loras.forEach(lora => {
+
+        let lora_name = getNameFromPath(lora);
+        //Add Categories
+        lora = lora.replaceAll("/", "\\");
+        let folders = lora.split("\\");
+        for (let i = 0; i < folders.length - 1; i++) {
+
+            folder = (i == 0) ? folders[i] : folder + "\\" + folders[i];
+
+            if (!categories.includes(folder)) {
+                categories.push(folder);
+            }
+        }
+        addComfycategoryButtons();
+
+        // Add Lora Card
+        const loraCard = document.createElement("div");
+        loraCard.id = lora;
+        loraCard.classList.add(
+            "lora",
+            "flex",
+            "flex-col",
+            "items-center",
+            "justify-center",
+            "rounded-lg",
+            "border",
+            "border-gray-700",
+            "p-4",
+            "cursor-pointer",
+            "hover:border-blue-500",
+            "hover:text-blue-500",
+            "transition",
+            "duration-200",
+            "ease-in-out",
+            "bg-gradient-to-br", "from-gray-900", "to-gray-800" // Dark background with gradient
+        );
+        loraCard.addEventListener("click", () => handleComfyLoraClick(lora));
+
+        const label = document.createElement("label");
+        label.textContent = lora_name;
+        label.classList.add(
+            "text-center",
+            "text-xl",
+            "m-1",
+            "break-all",
+            "font-semibold",
+            "text-white", // White text on dark background
+            "drop-shadow-lg", // Add shadow for text
+            "px-2", // Add horizontal padding
+            "py-1" // Add vertical padding
+        );
+        loraCard.appendChild(label);
+
+        comfyLoraContainer.appendChild(loraCard);
+    });
+}
+function handleComfyLoraClick(lora) {
 
 
+    if (current_comfy_loras.find(x => x.lora_name == lora)) {
+        current_comfy_loras = current_comfy_loras.filter(x => x.lora_name != lora);
+    } else {
+        current_comfy_loras.push({
+            lora_name: lora,
+            strength_model: 1,
+            strength_clip: 1,
+        });
+
+    }
+
+
+    RefreshCurrentComfyuiLoras();
+}
+function RefreshCurrentComfyuiLoras() {
+
+    console.log(current_comfy_loras);
+
+    comfy_currentLoraContainer.innerHTML = "";
+
+    current_comfy_loras.forEach((current_lora, index) => {
+        const loraDiv = document.createElement("div");
+        loraDiv.classList.add('border-gray-700', 'border', 'rounded', 'flex', 'items-center', 'p-4');
+
+        const innerDiv = document.createElement('div');
+        innerDiv.classList.add('w-full');
+
+        const flexDiv = document.createElement('div');
+        flexDiv.classList.add('flex', 'justify-between', 'items-center');
+
+        const h1 = document.createElement('h1');
+        h1.classList.add('text-xl', 'font-bold', 'mb-2', 'text-white');
+        h1.textContent = getNameFromPath(current_lora.lora_name);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.classList.add('bg-red-500', 'text-white', 'hover:bg-red-700', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+        const icon = document.createElement('i');
+        icon.classList.add('fa-solid', 'fa-trash-can');
+        removeBtn.appendChild(icon);
+
+        removeBtn.addEventListener('click', function () {
+            current_comfy_loras = current_comfy_loras.filter(x => x.lora_name != current_lora.lora_name);
+            RefreshCurrentComfyuiLoras();
+        });
+
+        loraDiv.appendChild(innerDiv);
+        innerDiv.appendChild(flexDiv);
+        flexDiv.appendChild(h1);
+        flexDiv.appendChild(removeBtn);
+
+        // input.setAttribute('type', 'range');
+        // input.setAttribute('id', 'lora_strength_' + id);
+        // input.setAttribute('name', 'strength');
+        // input.classList.add('block', 'w-full', 'mt-1');
+        // input.setAttribute('min', '-2');
+        // input.setAttribute('max', '4');
+        // input.setAttribute('step', '0.05');
+        // input.setAttribute('value', '1');
+
+        const model_slider_label = document.createElement('label');
+        model_slider_label.classList.add('block', 'text-sm', 'font-medium', 'text-white');
+        model_slider_label.setAttribute('for', 'strength_model_' + index);
+        model_slider_label.textContent = "Model Strength:" + current_lora.strength_model;
+
+
+        const model_slider = document.createElement('input');
+        model_slider.type = "range";
+        model_slider.name = "strength_model";
+        model_slider.id = "strength_model_" + index;
+        model_slider.classList.add('block', 'w-full', 'mt-1');
+        model_slider.min = -2;
+        model_slider.max = 4;
+        model_slider.step = 0.05;
+        model_slider.value = current_lora.strength_model;
+
+        const clip_slider_label = document.createElement('label');
+        clip_slider_label.classList.add('block', 'text-sm', 'font-medium', 'text-white');
+        clip_slider_label.setAttribute('for', 'strength_clip_' + index);
+        clip_slider_label.textContent = "Clip Strength:" + current_lora.strength_clip;
+
+
+        const clip_slider = document.createElement('input');
+        clip_slider.type = "range";
+        clip_slider.name = "strength_clip";
+        clip_slider.id = "strength_clip_" + index;
+        clip_slider.classList.add('block', 'w-full', 'mt-1');
+        clip_slider.min = -2;
+        clip_slider.max = 4;
+        clip_slider.step = 0.05;
+        clip_slider.value = current_lora.strength_clip;
+
+
+        model_slider.addEventListener('input', function () {
+            current_comfy_loras[index].strength_model = this.value;
+            model_slider_label.textContent = "Model Strength:" + this.value;
+        });
+        clip_slider.addEventListener('input', function () {
+            current_comfy_loras[index].strength_clip = this.value;
+            clip_slider_label.textContent = "Clip Strength:" + this.value;
+        });
+
+        innerDiv.appendChild(model_slider_label);
+        innerDiv.appendChild(model_slider);
+        innerDiv.appendChild(clip_slider_label);
+        innerDiv.appendChild(clip_slider);
+
+        comfy_currentLoraContainer.appendChild(loraDiv);
+
+    });
+}
+
+
+function addComfycategoryButtons() {
+    const categoriesContainer = document.getElementById("categories");
+    categoriesContainer.innerHTML = "";
+    categories.forEach(category => {
+
+        showButton = false;
+
+        let selectedCategoryLength = subCategory;
+        let buttonCategoryLength = category.split("\\").length;
+        let isSelected = category == currentCategory;
+        let isSubCategory = selectedCategoryLength + 1 == buttonCategoryLength && category.includes(currentCategory + "\\");
+        let selectedFolderHasSubFolders = GetSubCategoryCount(currentCategory) > 0;
+        let isParentFolder = currentCategory.includes(category + "\\");
+        let isSiblingFolder = selectedCategoryLength == buttonCategoryLength && getParentFolder(category) == getParentFolder(currentCategory);
+        if (category == "All" && category != currentCategory) {
+            isParentFolder = true;
+        }
+
+
+        //always show selected category
+        if (isSelected) {
+            showButton = true;
+        }
+        //show next subcategory
+        if (isSubCategory) {
+            showButton = true;
+        }
+        //show parent folder
+        if (isParentFolder) {
+            showButton = true;
+        }
+        if (!selectedFolderHasSubFolders && isSiblingFolder) {
+            showButton = true;
+        }
+
+        //show all folders when all is selected or if selected folder doesn't have any subfolders
+        if (currentCategory == "All" || (!GetSubCategoryCount(currentCategory) && subCategory == 1)) {
+            showButton = buttonCategoryLength == 1;
+        }
+        //always add All category button
+        if (category == "All") {
+            showButton = true;
+        }
+
+        if (showButton) {
+
+            let suffix = "";
+            if (isParentFolder || isSelected) {
+                suffix = "/";
+            }
+
+            const button = document.createElement('button');
+            button.textContent = category.split("\\")[category.split("\\").length - 1] + suffix;
+            button.classList.add('px-4', 'py-2', 'text-white', 'rounded', 'mr-2', 'mb-2');
+            if (isSelected) {
+                button.classList.add('bg-white', 'text-blue-600', "border-blue-600", "border");
+            } else if (isParentFolder) {
+                button.classList.add('bg-blue-600');
+            }
+            else if (isSiblingFolder) {
+                button.classList.add('border');
+            }
+            else {
+                button.classList.add('bg-gray-500');
+            }
+            button.addEventListener('click', () => handleComfyCategoryClick(category));
+            categoriesContainer.appendChild(button);
+        }
+
+    });
+}
+function handleComfyCategoryClick(category) {
+    console.log('Category clicked:', category);
+    currentCategory = category;
+    subCategory = category.split("\\").length;
+
+    addComfycategoryButtons();
+
+
+    //get all elements in comfyLoraContainer
+    const _elements = comfyLoraContainer.querySelectorAll(".lora");
+    for (var i = 0; i < _elements.length; i++) {
+        var element = _elements[i];
+
+        if (category == "All") {
+            element.classList.remove("hidden");
+            continue;
+        }
+
+        loraCategory = element.id;
+        //lower trim replace
+        loraCategory = loraCategory.toLowerCase().trim().replaceAll("\\", "/");
+        category = category.toLowerCase().trim().replaceAll("\\", "/");
+
+        if (loraCategory.startsWith(category)) {
+            element.classList.remove("hidden");
+        } else {
+            element.classList.add("hidden");
+
+        }
+
+    }
+
+}
+document.getElementById("searchInput").addEventListener("input", function (e) {
+    if (serverType === ServerType.ComfyUI) {
+        handleComfySearch(e.target.value);
+    }
+});
+function handleComfySearch(search) {
+    const _elements = comfyLoraContainer.querySelectorAll(".lora");
+    for (var i = 0; i < _elements.length; i++) {
+        var element = _elements[i];
+        if (element.id.toLowerCase().includes(search.toLowerCase())) {
+            element.classList.remove("hidden");
+        } else {
+            element.classList.add("hidden");
+        }
+    }
+}
+
+//#endregion
+
+function getNameFromPath(path) {
+    return path.split("\\")[path.split("\\").length - 1].replaceAll(".safetensors", "").replaceAll(".pt", "").replaceAll(".ckpt", "");
+}
 
 function convertWorkflowToApiFormat(workflow) {
     const apiWorkflow = {};

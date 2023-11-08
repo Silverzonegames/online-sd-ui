@@ -1,7 +1,7 @@
 {
   "3": {
     "inputs": {
-      "seed": 796840890086838,
+      "seed": 165350912224669,
       "steps": 20,
       "cfg": 8,
       "sampler_name": "euler",
@@ -20,7 +20,7 @@
         0
       ],
       "latent_image": [
-        "12",
+        "13",
         0
       ]
     },
@@ -28,13 +28,13 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "{model}"
+      "ckpt_name": "Anime\\kizukiAnimeHentai_animeHentaiV3.safetensors"
     },
     "class_type": "CheckpointLoaderSimple"
   },
   "6": {
     "inputs": {
-      "text": "prompt",
+      "text": "pos",
       "clip": [
         "4",
         1
@@ -44,7 +44,7 @@
   },
   "7": {
     "inputs": {
-      "text": "negative",
+      "text": "neg",
       "clip": [
         "4",
         1
@@ -67,7 +67,7 @@
   },
   "9": {
     "inputs": {
-      "filename_prefix": "upscale/ComfyUI",
+      "filename_prefix": "ComfyUI",
       "images": [
         "8",
         0
@@ -75,23 +75,12 @@
     },
     "class_type": "SaveImage"
   },
-  "10": {
+  "11": {
     "inputs": {
-      "image": "{image}",
+      "image": "ComfyUI_00115_.png",
       "choose file to upload": "image"
     },
     "class_type": "LoadImage"
-  },
-  "11": {
-    "inputs": {
-      "upscale_method": "bilinear",
-      "scale_by": 2,
-      "image": [
-        "10",
-        0
-      ]
-    },
-    "class_type": "ImageScaleBy"
   },
   "12": {
     "inputs": {
@@ -105,5 +94,16 @@
       ]
     },
     "class_type": "VAEEncode"
+  },
+  "13": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "scale_by": 2,
+      "samples": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "LatentUpscaleBy"
   }
 }

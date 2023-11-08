@@ -11,7 +11,8 @@ serverTypeDropdown.addEventListener("change", (e) => {
 
 function UpdateServer(serverType, changeURL = true) {
     if (serverType === ServerType.Automatic1111) {
-        
+        ToggleElements(".noautomatic1111", false)
+
         ToggleElements(".comfyui", false)
         ToggleElements(".horde", false)
         ToggleElements(".automatic1111", true)
@@ -25,6 +26,8 @@ function UpdateServer(serverType, changeURL = true) {
 
 
     } else if (serverType === ServerType.ComfyUI) {
+        ToggleElements(".nocomfyui", false)
+
         ToggleElements(".automatic1111", false)
         ToggleElements(".horde", false)
         ToggleElements(".comfyui", true)
@@ -34,6 +37,8 @@ function UpdateServer(serverType, changeURL = true) {
         }
 
     } else if (serverType === ServerType.Horde) {
+        ToggleElements(".nohorde", false)
+
         ToggleElements(".automatic1111", false)
         ToggleElements(".comfyui", false)
         ToggleElements(".horde", true)
