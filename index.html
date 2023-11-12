@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./output.css">
 
   <title>Online SD UI</title>
   <style>
@@ -730,8 +730,8 @@
             <input id="comfy-latent-upscale-denoise" type="range" value="0.5" min="0" max="1" step="0.01" class="w-full">
 
             <div class="mb-2">
-              <label for="esrgan-upscale-upscaler_index" class="block">Upscale Method</label>
-              <select id="esrgan-upscale-upscaler_index"
+              <label for="comfy-latent-upscale-method" class="block">Upscale Method</label>
+              <select id="comfy-latent-upscale-method"
                 class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 <option>nearest-exact</option>
                 <option>bilinear</option>
@@ -1768,8 +1768,12 @@
       <!-- Content goes here -->
       <div class="">
 
-        <div class="flex">
+        <div class="flex justify-between">
           <label class="block text-lg font-semibold mb-2 ">Prompt</label>
+
+          <div id="styles" class="bg-gray-800 rounded w-24 relative hidden">
+            
+          </div>
 
           <!-- Styles DropDown -->
           <div class="relative ml-auto">
@@ -2401,7 +2405,8 @@
     <div id="offlineBanner"
       class="comfyui automatic1111 bg-red-500 text-white text-center py-2 hidden fixed bottom-0 w-screen">Offline</div>
     <div id="connectingBanner"
-      class="comfyui automatic1111 bg-blue-500 text-white text-center py-2 fixed bottom-0 w-screen">Connecting...
+      class="flex justify-center items-center comfyui automatic1111 bg-blue-500 text-white text-center py-2 fixed bottom-0 w-screen">Connecting...
+      <button class="ml-2 underline" onClick="window.location.reload();">Refresh</button>
     </div>
 
   </div>
@@ -2413,6 +2418,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
+  <script src="scripts/selectivity-3.1.0/selectivity.js"></script>
 
   <script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>

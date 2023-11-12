@@ -80,6 +80,36 @@ async function GenerateComfy() {
     apiWorkflow = await fetch("/workflows/txt2img_api.json");
     apiWorkflow = await apiWorkflow.json();
 
+
+
+
+    apiWorkflow = ApplyCurrentSettingsToWorkflow(apiWorkflow);
+
+
+
+    //create text for history
+    last_generation_info = {
+        "Prompt": document.getElementById("prompt").value,
+        "Negative prompt": document.getElementById("negativePrompt").value,
+        "Steps": document.getElementById("steps-slider").value,
+        "CFG": document.getElementById("scale-slider").value,
+        "Seed":-1,
+        "Size": document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value,
+        "Sampler": document.getElementById("sampling-method").value,
+        "Scheduler": document.getElementById("scheduler").value,
+        "Model": document.getElementById("checkpoint-selector").value,
+        "Loras": current_comfy_loras,
+
+        "Server":"ComfyUI"
+    }
+
+    console.log(apiWorkflow);
+
+    getImages(apiWorkflow);
+
+}
+
+function ApplyCurrentSettingsToWorkflow(apiWorkflow) {
     //format prompts
     var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
     var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
@@ -89,23 +119,32 @@ async function GenerateComfy() {
     }
 
     //apply current settings to workflow
-    apiWorkflow["Positive"].inputs.text = prompt;
-    apiWorkflow["Negative"].inputs.text = negativePrompt;
+    if(apiWorkflow["Positive"])
+        apiWorkflow["Positive"].inputs.text = prompt || {};
+    
 
-    apiWorkflow["CheckpointLoader"].inputs.ckpt_name = document.getElementById("checkpoint-selector").value;
+    if(apiWorkflow["Negative"])
+        apiWorkflow["Negative"].inputs.text = negativePrompt;
+    
 
-    apiWorkflow["KSampler"].inputs.seed = getRandomInt(0, 18446744073709552000);
-    apiWorkflow["KSampler"].inputs.steps = document.getElementById("steps-slider").value;
-    apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
-    apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
-    apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
+    if(apiWorkflow["CheckpointLoader"])
+        apiWorkflow["CheckpointLoader"].inputs.ckpt_name = document.getElementById("checkpoint-selector").value;
 
-    apiWorkflow["EmptyLatentImage"].inputs.width = document.getElementById("width-slider").value;
-    apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
-    apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
+    if(apiWorkflow["KSampler"]){
+        
+        apiWorkflow["KSampler"].inputs.seed = getRandomInt(0, 18446744073709552000);
+        apiWorkflow["KSampler"].inputs.steps = document.getElementById("steps-slider").value;
+        apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
+        apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
+        apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
 
-
-
+    }
+    
+    if(apiWorkflow["EmptyLatentImage"]){
+        apiWorkflow["EmptyLatentImage"].inputs.width = document.getElementById("width-slider").value;
+        apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
+        apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
+    }
     if (current_comfy_loras.length > 0) {
         for (let i = 0; i < current_comfy_loras.length; i++) {
 
@@ -134,7 +173,6 @@ async function GenerateComfy() {
                 "class_type": "LoraLoader"
             };
         }
-        var firstLoraNode = "lora0";
         var lastLoraNode = "lora" + (current_comfy_loras.length - 1);
 
         apiWorkflow["Positive"].inputs.clip[0] = lastLoraNode;
@@ -143,21 +181,7 @@ async function GenerateComfy() {
         apiWorkflow["KSampler"].inputs.model[0] = lastLoraNode;
     }
 
-    //create text for history
-    last_generation_info = prompt +
-        "\nNegative prompt: " + negativePrompt +
-        "\nModel: " + document.getElementById("checkpoint-selector").value +
-        "\nSampler: " + document.getElementById("sampling-method").value +
-        "\nScheduler: " + document.getElementById("scheduler").value +
-        "\nSize: " + document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value +
-        "\nSteps: " + document.getElementById("steps-slider").value +
-        "\nCFG: " + document.getElementById("scale-slider").value;
-    "Server: ComfyUI\n\n";
-
-    console.log(apiWorkflow);
-
-    getImages(apiWorkflow);
-
+    return apiWorkflow;
 }
 
 async function getImages(prompt) {
@@ -196,6 +220,8 @@ async function getImages(prompt) {
         let history = await historyResponse.json();
         history = history[promptId];
         console.log("History data:", history);
+        last_generation_info["Workflow"] = history["prompt"]
+        last_generation_info["Seed"] = history["prompt"][2]?.["KSampler"]?.["inputs"]?.["seed"]
 
         const generatedImages = [];
 
@@ -206,9 +232,8 @@ async function getImages(prompt) {
                     const imageData = await getImage(image.filename, image.subfolder, image.type);
                     const base64ImageData = await convertToBase64(imageData);
                     generatedImages.push(base64ImageData);
-                    console.log("Generated image:", base64ImageData);
                     var img = base64ImageData.replaceAll(" ", "").replaceAll("\n", "");
-                    addToImageHistory(img, last_generation_info);
+                    addToImageHistory(img, JSON.stringify(last_generation_info).toString());
                 }
             }
         }
@@ -591,13 +616,72 @@ function AddInput(id, type, label, options = null) {
     }
 }
 
-function LatentUpscaleWithComfy() {
-    //upload image to server
-    var base64 = document.getElementById("outputImage").src.replace("data:image/png;base64,", "");
-    var image = base64ToBlob(base64, "image/png");
-    console.log(image);
+async function LatentUpscaleWithComfy() {
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"),true);
+
+    upscale_workflow = await fetch("/workflows/latent_upscale_api.json");
+    upscale_workflow = await upscale_workflow.json();
+
+    upscale_workflow = ApplyCurrentSettingsToWorkflow(upscale_workflow);
+
+
+    upscale_workflow["LoadImage"].inputs.image = file_name;
+
+    upscale_workflow["LatentUpscaleBy"].inputs.scale_by = document.getElementById("comfy-latent-upscale-scale").value;
+    upscale_workflow["LatentUpscaleBy"].inputs.upscale_method = document.getElementById("comfy-latent-upscale-method").value;
+
+    console.log(upscale_workflow);
+    getImages(upscale_workflow);
+}
+async function UploadImageToComfyServer(image,overwrite = true) {
+    var imageBase64 = image.src.replace("data:image/png;base64,", "");
+    var imageBlob = base64ToBlob(imageBase64, "image/png");
+
+    const formData = new FormData();
+    formData.append("image", imageBlob,"ToBeUpscaled.png");
+    formData.append("overwrite", overwrite)
+
+    const response = await fetch(url + "/upload/image", {
+        method: "POST",
+        body: formData,
+    });
+
+    if (!response.ok) {
+        console.error("Image upload failed:", response.status, response.statusText);
+        return;
+    }
+
+    const responseData = await response.json();
+    var filename = responseData["name"];
+    return filename;
+}
+
+
+function base64ToBlob(base64, mime) {
+    mime = mime || '';
+    var sliceSize = 1024;
+    var byteChars = window.atob(base64);
+    var byteArrays = [];
+
+    for (var offset = 0, len = byteChars.length; offset < len; offset += sliceSize) {
+        var slice = byteChars.slice(offset, offset + sliceSize);
+
+        var byteNumbers = new Array(slice.length);
+        for (var i = 0, sliceLen = slice.length; i < sliceLen; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, { type: mime });
 
 }
+
+
+
+document.getElementById("comfy-latent-upscale-btn").addEventListener("click", LatentUpscaleWithComfy);
 
 //#endregion
 

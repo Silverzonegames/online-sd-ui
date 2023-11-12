@@ -1033,3 +1033,9 @@ window.addEventListener('keydown', function(e) {
     }
   }
 });
+
+$(document.getElementById("styles")).selectivity({
+  items: ["Masterpiece","Painting","Negative"],
+  multiple: true,
+  placeholder: "Select styles",
+})

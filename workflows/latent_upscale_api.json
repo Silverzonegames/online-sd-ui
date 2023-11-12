@@ -1,5 +1,5 @@
 {
-  "3": {
+  "KSampler": {
     "inputs": {
       "seed": 165350912224669,
       "steps": 20,
@@ -8,99 +8,99 @@
       "scheduler": "normal",
       "denoise": 0.6,
       "model": [
-        "4",
+        "CheckpointLoader",
         0
       ],
       "positive": [
-        "6",
+        "Positive",
         0
       ],
       "negative": [
-        "7",
+        "Negative",
         0
       ],
       "latent_image": [
-        "13",
+        "LatentUpscaleBy",
         0
       ]
     },
     "class_type": "KSampler"
   },
-  "4": {
+  "CheckpointLoader": {
     "inputs": {
       "ckpt_name": "Anime\\kizukiAnimeHentai_animeHentaiV3.safetensors"
     },
     "class_type": "CheckpointLoaderSimple"
   },
-  "6": {
+  "Positive": {
     "inputs": {
       "text": "pos",
       "clip": [
-        "4",
+        "CheckpointLoader",
         1
       ]
     },
     "class_type": "CLIPTextEncode"
   },
-  "7": {
+  "Negative": {
     "inputs": {
       "text": "neg",
       "clip": [
-        "4",
+        "CheckpointLoader",
         1
       ]
     },
     "class_type": "CLIPTextEncode"
   },
-  "8": {
+  "VAEDecode": {
     "inputs": {
       "samples": [
-        "3",
+        "KSampler",
         0
       ],
       "vae": [
-        "4",
+        "CheckpointLoader",
         2
       ]
     },
     "class_type": "VAEDecode"
   },
-  "9": {
+  "SaveImage": {
     "inputs": {
       "filename_prefix": "ComfyUI",
       "images": [
-        "8",
+        "VAEDecode",
         0
       ]
     },
     "class_type": "SaveImage"
   },
-  "11": {
+  "LoadImage": {
     "inputs": {
       "image": "ComfyUI_00115_.png",
       "choose file to upload": "image"
     },
     "class_type": "LoadImage"
   },
-  "12": {
+  "VAEEncode": {
     "inputs": {
       "pixels": [
-        "11",
+        "LoadImage",
         0
       ],
       "vae": [
-        "4",
+        "CheckpointLoader",
         2
       ]
     },
     "class_type": "VAEEncode"
   },
-  "13": {
+  "LatentUpscaleBy": {
     "inputs": {
       "upscale_method": "nearest-exact",
       "scale_by": 2,
       "samples": [
-        "12",
+        "VAEEncode",
         0
       ]
     },

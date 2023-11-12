@@ -1,0 +1,20 @@
+{
+    "Prompt":"Prompt",
+    "Negative prompt":"Negative prompt",
+    
+    "Steps":20,
+    "CFG": 7,
+    "Seed": 0,
+    "Size":"Size",
+
+    "Sampler":"Sampler",
+    "Scheduler":"Scheduler",
+    
+    "Model":"Model",
+
+    "Loras":"Loras",
+
+    "Worker":"Worker",
+    "Server":"Server",
+    "Workflow":"Workflow"
+}
