@@ -183,17 +183,18 @@
 
 
   <!--Fullscreen Image-->
-  <div id="fullscreenPanel" class="fixed w-full h-full bg-black bg-opacity-50 z-50 flex items-center justify-center">
-    <button class="mt-2 mr-2 right-0 top-0 fixed z-[100] inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-red-800 to-red-500 group-hover:from-red-800 group-hover:to-red-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-red-800"
-    onclick="document.getElementById('fullscreenPanel').classlist.add('hidden')"
-    >
-      <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+  <div id="fullscreenPanel"
+    class="fixed w-full h-full bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <button id="closeFullscreenBtn"
+      class="mt-2 mr-2 right-0 top-0 fixed z-[100] inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-red-800 to-red-500 group-hover:from-red-800 group-hover:to-red-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-red-800">
+      <span
+        class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
         Close
       </span>
     </button>
-    <img class="max-h-full" src="image.png">
+    <img id="fullscreen_image" class="max-h-full" src="image.png">
   </div>
-  
+
 
 
 
@@ -403,6 +404,12 @@
                   class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
                   id="comfy-sd-upscale-tab" data-tabs-target="#comfy-sd-upscale" type="button" role="tab"
                   aria-controls="comfy-sd-upscale" aria-selected="false">Ultimate SD Upscale</button>
+              </li>
+              <li class="comfyui" role="presentation">
+                <button
+                  class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                  id="comfy-model-upscale-tab" data-tabs-target="#comfy-model-upscale" type="button" role="tab"
+                  aria-controls="comfy-model-upscale" aria-selected="false">Upscale With Model</button>
               </li>
             </ul>
           </div>
@@ -734,25 +741,30 @@
             role="tabpanel" aria-labelledby="comfy-latent-upscale">
 
 
-            <label class="relative inline-flex items-center cursor-pointer dark mb-4" title="Use this if you run out of memory">
+            <label class="relative inline-flex items-center cursor-pointer dark mb-4"
+              title="Use this if you run out of memory">
               <input id="comfy-latent-upscale-tiled" type="checkbox" value="" class="sr-only peer">
               <div
                 class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
               </div>
               <span class="ml-3 text-sm font-medium  text-gray-300">Use Tiled VAE</span>
             </label>
-            
+
             <label for="comfy-latent-upscale-scale" class="block mt-2" title="Amount to Upscale">
               <span class="mr-2">Upscale By:</span>
-              <input id="comfy-latent-upscale-scale-value" type="number" value="2" min="1" max="4" step="0.01" class="w-16 bg-transparent">
+              <input id="comfy-latent-upscale-scale-value" type="number" value="2" min="1" max="4" step="0.01"
+                class="w-16 bg-transparent">
             </label>
             <input id="comfy-latent-upscale-scale" type="range" value="2" min="1" max="4" step="0.01" class="w-full">
 
-            <label for="comfy-latent-upscale-denoise" class="block mt-2" title="Denoising strength, 0=original image, 1=new image, set around 0.5-0.6">
+            <label for="comfy-latent-upscale-denoise" class="block mt-2"
+              title="Denoising strength, 0=original image, 1=new image, set around 0.5-0.6">
               <span class="mr-2">Denoising Strengh:</span>
-              <input id="comfy-latent-upscale-denoise-value" type="number" value="0.5" min="0" max="1" step="0.01" class="w-16 bg-transparent">
+              <input id="comfy-latent-upscale-denoise-value" type="number" value="0.5" min="0" max="1" step="0.01"
+                class="w-16 bg-transparent">
             </label>
-            <input id="comfy-latent-upscale-denoise" type="range" value="0.5" min="0" max="1" step="0.01" class="w-full">
+            <input id="comfy-latent-upscale-denoise" type="range" value="0.5" min="0" max="1" step="0.01"
+              class="w-full">
 
             <div class="mb-2">
               <label for="comfy-latent-upscale-method" class="block">Upscale Method</label>
@@ -767,7 +779,7 @@
             </div>
 
             <button id="comfy-latent-upscale-btn" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
-            class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
+              class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
 
             <script>
               document.getElementById("comfy-latent-upscale-scale").addEventListener("input", (e) => {
@@ -790,20 +802,22 @@
           <div class="noautomatic1111 hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="comfy-sd-upscale"
             role="tabpanel" aria-labelledby="comfy-sd-upscale">
             <p class="text-sm text-gray-500 dark:text-gray-400">Use the <a
-              href="https://github.com/ssitu/ComfyUI_UltimateSDUpscale?tab=readme-ov-file#installation"
-              target="_blank"
-              class="text-blue-500 underline">Ultimate SD Upscale</a> Node to
-            Upscale the current Image. Will not work without the extension</p>
+                href="https://github.com/ssitu/ComfyUI_UltimateSDUpscale?tab=readme-ov-file#installation"
+                target="_blank" class="text-blue-500 underline">Ultimate SD Upscale</a> Node to
+              Upscale the current Image. Will not work without the extension</p>
 
             <label for="comfy-sd-upscale-scale" class="block mt-2" title="Amount to Upscale">
               <span class="mr-2">Upscale By:</span>
-              <input id="comfy-sd-upscale-scale-value" type="number" value="2" min="1" max="4" step="0.01" class="w-16 bg-transparent">
+              <input id="comfy-sd-upscale-scale-value" type="number" value="2" min="1" max="4" step="0.01"
+                class="w-16 bg-transparent">
             </label>
             <input id="comfy-sd-upscale-scale" type="range" value="2" min="1" max="4" step="0.01" class="w-full">
 
-            <label for="comfy-sd-upscale-denoise" class="block mt-2" title="Denoising strength, 0=original image, 1=new image, set around 0.2-0.5">
+            <label for="comfy-sd-upscale-denoise" class="block mt-2"
+              title="Denoising strength, 0=original image, 1=new image, set around 0.2-0.5">
               <span class="mr-2">Denoising Strengh:</span>
-              <input id="comfy-sd-upscale-denoise-value" type="number" value="0.35" min="0" max="1" step="0.01" class="w-16 bg-transparent">
+              <input id="comfy-sd-upscale-denoise-value" type="number" value="0.35" min="0" max="1" step="0.01"
+                class="w-16 bg-transparent">
             </label>
             <input id="comfy-sd-upscale-denoise" type="range" value="0.5" min="0" max="1" step="0.01" class="w-full">
 
@@ -845,10 +859,30 @@
             </script>
 
             <button id="comfy-sd-upscale-btn" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
+              class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
+          </div>
+
+          <!--comfy-model-upscale-->
+          <div class="noautomatic1111 hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="comfy-model-upscale"
+            role="tabpanel" aria-labelledby="comfy-sd-upscale">
+
+            <div class="mb-2">
+              <label for="comfy-model-upscale-upscaler" class="block">Upscale Model</label>
+              <select id="comfy-model-upscale-upscaler"
+                class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                <!-- Include other upscaler options -->
+              </select>
+            </div>
+            <button id="comfy-model-upscale-btn" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
             class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
+          </div>
+
+
+
+
         </div>
 
-      
+
       </div>
 
 
@@ -1775,13 +1809,13 @@
   <!-- End Filters Drawer-->
 
   <!--Main Body-->
-  <div class="flex flex-col md:flex-row md:h-[calc(100%)] md:max-h-screen mb-32 w-screen md:fixed mt-8">
+  <div class="flex flex-col md:flex-row md:fixed w-screen md:h-full mt-8 pb-16">
     <!-- Image side... -->
-    <div class="w-full md:w-full p-4 md:pl-8 md:pr-4 h-full pb-8">
+    <div class="w-full p-4 md:pl-8 md:pr-4 h-full">
       <!-- Content goes here -->
 
       <!--Generate Button-->
-      <div class="mb-6 flex justify-center md:justify-start">
+      <div class="pb-6 flex justify-center  h-20">
         <button id="generateBtn"
           class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg text-lg">
           Generate
@@ -1797,10 +1831,10 @@
           style="width: 45%"> 12s</div>
       </div>
       <!-- Image max width height max to the screen plus place for image option buttons -->
-      <div id="imageDisplay" class="border border-gray-500 p-4 rounded-lg relative">
+      <div id="imageDisplay" class="border border-gray-500 p-4 rounded-lg relative h-[100%]">
 
-        <img data-modal-target="ImageDetailModal" data-modal-toggle="ImageDetailModal" id="outputImage"
-          src="placeholder.png" alt="Generated Image" class="object-contain h-full w-full rounded-md">
+        <img data-modal-target="ImageDetailModal" id="outputImage" src="placeholder.png" alt="Generated Image"
+          class="object-contain h-full w-full rounded-md">
         <!-- Overlay div -->
         <div id="progress_container"
           class="hidden absolute inset-0 flex flex-col items-center justify-center text-white bg-black bg-opacity-75  rounded-md backdrop-blur-sm">
@@ -1830,7 +1864,7 @@
       </div>
 
       <!--Image Option Buttons-->
-      <div id="generatedImageOptions" class="flex justify-center mt-4 mb-4 gap-3 h-12">
+      <div id="generatedImageOptions" class="flex justify-center pt-4 pb-4 gap-3 h-20">
         <button id="downloadBtn"
           class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
           <i class="fas fa-download mr-2"></i> Download
@@ -1842,6 +1876,10 @@
         <button data-modal-target="defaultModal" data-modal-toggle="defaultModal"
           class="automatic1111 comfyui border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded">
           <i class="fa-solid fa-arrow-up"></i> Upscale
+        </button>
+        <button id="faceFixBtn"
+          class="comfyui border-2 border-blue-500 text-blue-500 hover:bg-blue-500 disabled:opacity-50 hover:text-white font-semibold py-2 px-4 rounded">
+          <i class="fa-solid fa-face-smile"></i> Face Fix
         </button>
       </div>
     </div>
@@ -1858,7 +1896,7 @@
           <label class="block text-lg font-semibold mb-2 ">Prompt</label>
 
           <div id="styles" class="bg-gray-800 rounded w-24 relative hidden">
-            
+
           </div>
 
           <!-- Styles DropDown -->
@@ -2198,7 +2236,7 @@
           </div>
           <h2 id="accordion-open-heading-3">
             <button type="button"
-              class="automatic1111 horde flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
               data-accordion-target="#accordion-open-body-3" aria-expanded="false"
               aria-controls="accordion-open-body-3">
               <span class="flex items-center"><svg class="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20"
@@ -2239,9 +2277,11 @@
                   <div id="imageOptions" class="hidden">
                     <label class="block text-lg font-semibold mb-2">Denoising Strength: <span
                         id="weightValue">0.75</span></label>
+
                     <input type="range" id="weightSlider" min="0" max="1" step="0.01" value="0.75"
                       class="w-48 px-4 py-2 rounded-lg border border-gray-500 focus:outline-none focus:border-blue-500 text-lg" />
                     <p id="imagesizeText">Size: 512x512</p>
+                    <label class="block text-gray-400 comfyui" id="img2imgFileName">image.png</label>
 
                     <button data-modal-target="paintModal" data-modal-toggle="paintModal" id="paintBtn"
                       class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded-lg">
@@ -2491,7 +2531,8 @@
     <div id="offlineBanner"
       class="comfyui automatic1111 bg-red-500 text-white text-center py-2 hidden fixed bottom-0 w-screen">Offline</div>
     <div id="connectingBanner"
-      class="flex justify-center items-center comfyui automatic1111 bg-blue-500 text-white text-center py-2 fixed bottom-0 w-screen">Connecting...
+      class="flex justify-center items-center comfyui automatic1111 bg-blue-500 text-white text-center py-2 fixed bottom-0 w-screen">
+      Connecting...
       <button class="ml-2 underline" onClick="window.location.reload();">Refresh</button>
     </div>
 
@@ -2506,7 +2547,7 @@
 
   <script src="scripts/selectivity-3.1.0/selectivity.js"></script>
 
-  <script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+  <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>

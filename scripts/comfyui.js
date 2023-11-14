@@ -9,11 +9,16 @@ let schedulers = [];
 let comfy_loras = []
 let comfy_upscalers = [];
 
+let comfy_imagefile = null;
+let comfy_maskfile = null;
+
 const inputContainer = document.getElementById("comfyInputs");
 
+const faceFixBtn = document.getElementById("faceFixBtn");
 
 object_info_loaded = false;
 workflow_loaded = false;
+// _:
 async function RefreshComfy() {
 
     try {
@@ -56,16 +61,31 @@ async function RefreshComfy() {
             scheduler_select.add(option);
         });
 
-        var upscale_select = document.getElementById("comfy-sd-upscale-upscaler")
-        upscale_select.innerHTML = "";
-        comfy_upscalers.forEach(upscale => {
-            var option = document.createElement("option");
-            option.text = upscale;
-            upscale_select.add(option);
-        });
+        var upscale_select = [
+            document.getElementById("comfy-sd-upscale-upscaler"),
+            document.getElementById("comfy-model-upscale-upscaler")]
+        
+        upscale_select.forEach(select => {
+            select.innerHTML = "";
+            comfy_upscalers.forEach(upscale => {
+                var option = document.createElement("option");
+                option.text = upscale;
+                select.add(option);
+            });
+        })
 
 
 
+        var faceDetailerAvailable = object_info["FaceDetailer"] && object_info["UltralyticsDetectorProvider"];
+        faceFixBtn.disabled = !faceDetailerAvailable;
+
+        if (faceDetailerAvailable) {
+            faceFixBtn.title = "Enhance Details on faces";
+        } else {
+            faceFixBtn.title = "Face Detailer not available Please install ComfyUI-Impact-Pack";
+        }
+
+        document.getElementById("ultimate-upscale").classList.add("hidden");
 
     } catch (error) {
         showMessage(error);
@@ -95,23 +115,12 @@ async function GenerateComfy() {
 
     apiWorkflow = ApplyCurrentSettingsToWorkflow(apiWorkflow);
 
-
+    if (comfy_imagefile != null) {
+        apiWorkflow = ApplyImg2imgToWorkflow(apiWorkflow);
+    }
 
     //create text for history
-    last_generation_info = {
-        "Prompt": document.getElementById("prompt").value,
-        "Negative prompt": document.getElementById("negativePrompt").value,
-        "Steps": document.getElementById("steps-slider").value,
-        "CFG": document.getElementById("scale-slider").value,
-        "Seed":-1,
-        "Size": document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value,
-        "Sampler": document.getElementById("sampling-method").value,
-        "Scheduler": document.getElementById("scheduler").value,
-        "Model": document.getElementById("checkpoint-selector").value,
-        "Loras": current_comfy_loras,
 
-        "Server":"ComfyUI"
-    }
 
     console.log(apiWorkflow);
 
@@ -129,34 +138,42 @@ function ApplyCurrentSettingsToWorkflow(apiWorkflow) {
     }
 
     //apply current settings to workflow
-    if(apiWorkflow["Positive"])
+    if (apiWorkflow["Positive"])
         apiWorkflow["Positive"].inputs.text = prompt || {};
-    
 
-    if(apiWorkflow["Negative"])
+
+    if (apiWorkflow["Negative"])
         apiWorkflow["Negative"].inputs.text = negativePrompt;
-    
 
-    if(apiWorkflow["CheckpointLoader"])
+
+    if (apiWorkflow["CheckpointLoader"])
         apiWorkflow["CheckpointLoader"].inputs.ckpt_name = document.getElementById("checkpoint-selector").value;
 
-    if(apiWorkflow["KSampler"]){
-        
+    if (apiWorkflow["KSampler"]) {
+
         apiWorkflow["KSampler"].inputs.seed = getRandomInt(0, 18446744073709552000);
         apiWorkflow["KSampler"].inputs.steps = document.getElementById("steps-slider").value;
         apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
         apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
         apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
     }
-    if(apiWorkflow["UltimateSDUpscale"]){
+    if (apiWorkflow["UltimateSDUpscale"]) {
         apiWorkflow["UltimateSDUpscale"].inputs.seed = getRandomInt(0, 18446744073709552000);
         apiWorkflow["UltimateSDUpscale"].inputs.steps = document.getElementById("steps-slider").value;
         apiWorkflow["UltimateSDUpscale"].inputs.cfg = document.getElementById("scale-slider").value;
         apiWorkflow["UltimateSDUpscale"].inputs.sampler_name = document.getElementById("sampling-method").value;
         apiWorkflow["UltimateSDUpscale"].inputs.scheduler = document.getElementById("scheduler").value;
     }
-    
-    if(apiWorkflow["EmptyLatentImage"]){
+    if (apiWorkflow["FaceDetailer"]) {
+        apiWorkflow["FaceDetailer"].inputs.seed = getRandomInt(0, 18446744073709552000);
+        apiWorkflow["FaceDetailer"].inputs.steps = document.getElementById("steps-slider").value;
+        apiWorkflow["FaceDetailer"].inputs.cfg = document.getElementById("scale-slider").value;
+        apiWorkflow["FaceDetailer"].inputs.sampler_name = document.getElementById("sampling-method").value;
+        apiWorkflow["FaceDetailer"].inputs.scheduler = document.getElementById("scheduler").value;
+
+    }
+
+    if (apiWorkflow["EmptyLatentImage"]) {
         apiWorkflow["EmptyLatentImage"].inputs.width = document.getElementById("width-slider").value;
         apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
         apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
@@ -194,15 +211,109 @@ function ApplyCurrentSettingsToWorkflow(apiWorkflow) {
         apiWorkflow["Positive"].inputs.clip[0] = lastLoraNode;
         apiWorkflow["Negative"].inputs.clip[0] = lastLoraNode;
 
-        if(apiWorkflow["KSampler"]){
+        if (apiWorkflow["KSampler"]) {
             apiWorkflow["KSampler"].inputs.model[0] = lastLoraNode;
         }
-        if(apiWorkflow["UltimateSDUpscale"]){
+        if (apiWorkflow["UltimateSDUpscale"]) {
             apiWorkflow["UltimateSDUpscale"].inputs.model[0] = lastLoraNode;
+        }
+        if (apiWorkflow["FaceDetailer"]) {
+            apiWorkflow["FaceDetailer"].inputs.model[0] = lastLoraNode;
         }
     }
 
+    last_generation_info = {
+        "Prompt": document.getElementById("prompt").value,
+        "Negative prompt": document.getElementById("negativePrompt").value,
+        "Steps": document.getElementById("steps-slider").value,
+        "CFG": document.getElementById("scale-slider").value,
+        "Seed": -1,
+        "Size": document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value,
+        "Sampler": document.getElementById("sampling-method").value,
+        "Scheduler": document.getElementById("scheduler").value,
+        "Model": document.getElementById("checkpoint-selector").value,
+        "Loras": current_comfy_loras,
+
+        "Server": "ComfyUI"
+    }
+
     return apiWorkflow;
+}
+function ApplyImg2imgToWorkflow(workflow) {
+
+    // [Empty Latent Image] -> Ksampler
+    //↓
+    // [Load Image -> Resize -> VAE Encode -> Repeat Latent Batch] -> Ksampler
+
+    // convert empty latent image to imageloader
+    workflow["EmptyLatentImage"].class_type = "LoadImage";
+    workflow["EmptyLatentImage"].inputs = {
+        "image": comfy_imagefile,
+        "choose file to upload": "image"
+    }
+    workflow = RenameNode(workflow, "EmptyLatentImage", "LoadImage");
+
+    //ImageScale
+    workflow["ImageScale"] = {
+        "inputs": {
+            "width": document.getElementById("width-slider").value,
+            "height": document.getElementById("height-slider").value,
+            "upscale_method": "nearest-exact",
+            "crop": "center",
+            "image": [
+                "LoadImage",
+                0
+            ]
+        },
+        "class_type": "ImageScale"
+    }
+    //VAE Encode
+    workflow["VAEEncode"] = {
+        "inputs": {
+            "pixels": [
+                "ImageScale",
+                0
+            ],
+            "vae": [
+                "CheckpointLoader",
+                2
+            ]
+        },
+        "class_type": "VAEEncode"
+    }
+    workflow["Repeat"] = {
+        "inputs": {
+            "amount": document.getElementById("batchSizeSlider").value,
+            "samples": [
+                "VAEEncode",
+                0
+            ]
+        },
+        "class_type": "RepeatLatentBatch"
+    }
+
+    workflow["KSampler"].inputs.latent_image[0] = "Repeat";
+    workflow["KSampler"].inputs.denoise = parseFloat(document.getElementById("weightSlider").value);
+
+    return workflow;
+}
+
+function RenameNode(workflow, old_id, new_id) {
+    workflow[new_id] = workflow[old_id];
+    delete workflow[old_id];
+    for (const node_id in workflow) {
+        const node = workflow[node_id];
+        for (const input_name in node.inputs) {
+            const input = node.inputs[input_name];
+            if (Array.isArray(input)) {
+                if (input[0] === old_id) {
+                    input[0] = new_id;
+                }
+            }
+        }
+    }
+    return workflow;
+
 }
 
 async function getImages(prompt) {
@@ -636,9 +747,9 @@ function AddInput(id, type, label, options = null) {
         });
     }
 }
-
+document.getElementById("comfy-model-upscale-btn").addEventListener("click", ComfyUpscaleWithModel);
 async function LatentUpscaleWithComfy() {
-    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"),true);
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToBeUpscaled.png", true);
 
     upscale_workflow = await fetch("/workflows/latent_upscale_api.json");
     upscale_workflow = await upscale_workflow.json();
@@ -651,7 +762,7 @@ async function LatentUpscaleWithComfy() {
     upscale_workflow["LatentUpscaleBy"].inputs.scale_by = document.getElementById("comfy-latent-upscale-scale").value;
     upscale_workflow["LatentUpscaleBy"].inputs.upscale_method = document.getElementById("comfy-latent-upscale-method").value;
 
-    if(document.getElementById("comfy-latent-upscale-tiled").checked) {
+    if (document.getElementById("comfy-latent-upscale-tiled").checked) {
         upscale_workflow["VAEDecode"].class_type = "VAEDecodeTiled";
         upscale_workflow["VAEDecode"].inputs.tile_size = 512;
     }
@@ -662,7 +773,7 @@ async function LatentUpscaleWithComfy() {
 }
 
 async function UltimateSDUpscaleWithComfy() {
-    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"),true);
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToBeUpscaled.png", true);
 
     upscale_workflow = await fetch("/workflows/ultimate_sd_upscale_api.json");
     upscale_workflow = await upscale_workflow.json();
@@ -678,14 +789,81 @@ async function UltimateSDUpscaleWithComfy() {
 
     getImages(upscale_workflow);
 }
+async function ComfyUpscaleWithModel() {
 
-async function UploadImageToComfyServer(image,overwrite = true) {
-    var imageBase64 = image.src.replace("data:image/png;base64,", "");
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToBeUpscaled.png", true);
+
+
+    var workflow = {
+        "9": {
+            "inputs": {
+                "filename_prefix": "silverzone/ComfyUI",
+                "images": [
+                    "15",
+                    0
+                ]
+            },
+            "class_type": "SaveImage"
+        },
+        "15": {
+            "inputs": {
+                "upscale_model": [
+                    "17",
+                    0
+                ],
+                "image": [
+                    "19",
+                    0
+                ]
+            },
+            "class_type": "ImageUpscaleWithModel"
+        },
+        "17": {
+            "inputs": {
+                "model_name": document.getElementById("comfy-model-upscale-upscaler").value
+            },
+            "class_type": "UpscaleModelLoader"
+        },
+        "19": {
+            "inputs": {
+                "image": file_name,
+                "choose file to upload": "image"
+            },
+            "class_type": "LoadImage"
+        }
+    }
+    getImages(workflow);
+}
+
+async function FaceFixWithComfy() {
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToFaceFix.png", true);
+
+    var workflow = await fetch("/workflows/facedetailer_api.json");
+    workflow = await workflow.json();
+
+    workflow = ApplyCurrentSettingsToWorkflow(workflow);
+
+    workflow["LoadImage"].inputs.image = file_name;
+
+    getImages(workflow);
+
+}
+faceFixBtn.addEventListener("click", FaceFixWithComfy);
+
+async function UploadImageToComfyServer(image, filename = "Image.png", overwrite = true) {
+
+    var imageBase64;
+    if (image.src) {
+        imageBase64 = image.src.replace("data:image/png;base64,", "");
+    } else {
+        imageBase64 = image.replace("data:image/png;base64,", "");
+    }
     var imageBlob = base64ToBlob(imageBase64, "image/png");
 
     const formData = new FormData();
-    formData.append("image", imageBlob,"ToBeUpscaled.png");
+    formData.append("image", imageBlob, filename);
     formData.append("overwrite", overwrite)
+    formData.append("subfolder", "silverzone")
 
     const response = await fetch(url + "/upload/image", {
         method: "POST",
@@ -699,7 +877,9 @@ async function UploadImageToComfyServer(image,overwrite = true) {
 
     const responseData = await response.json();
     var filename = responseData["name"];
-    return filename;
+    var subfolder = responseData["subfolder"];
+    console.log("Image uploaded:", responseData);
+    return subfolder + "/" + filename;
 }
 
 

@@ -290,7 +290,9 @@ let currentEntry = null;
 let currentID = 0;
 let currentText = ""
 let currentImage = "";
-
+function getNameFromPath(path) {
+  return path.split("\\")[path.split("\\").length - 1].replaceAll(".safetensors", "").replaceAll(".pt", "").replaceAll(".ckpt", "");
+}
 function updateFullscreenImage(image, text, entry, id) {
 
   currentEntry = entry;
@@ -307,6 +309,34 @@ function updateFullscreenImage(image, text, entry, id) {
 
   if (text == "" || text == null) {
     info.innerHTML = "No Info";
+    return;
+  }
+
+  //if text is json
+  if(text.startsWith("{")){
+    text = JSON.parse(text);
+    
+
+    _text = "";
+
+    //loop through all keys
+    for (const [key, value] of Object.entries(text)) {
+      if(key == "Workflow"){
+        continue;
+      }
+      if(key == "Loras"){
+        _text += "<strong>" + key + "</strong>:";
+        text[key].forEach(lora => {
+          _text += getNameFromPath(lora.lora_name) + ", ";
+        });
+        _text += "<br>";
+        continue;
+      }
+
+      _text += "<strong>" + key + "</strong>: " + value + "<br>";
+    }
+
+    info.innerHTML = _text;
     return;
   }
 

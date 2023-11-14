@@ -1,0 +1,107 @@
+{
+  "CheckpointLoader": {
+    "inputs": {
+      "ckpt_name": "Anime\\meinamix_meinaV11.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "Positive": {
+    "inputs": {
+      "text": "pos",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "Negative": {
+    "inputs": {
+      "text": "neg",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "SaveImage": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "FaceDetailer",
+        0
+      ]
+    },
+    "class_type": "SaveImage"
+  },
+  "FaceDetailer": {
+    "inputs": {
+      "guide_size": 256,
+      "guide_size_for": true,
+      "max_size": 768,
+      "seed": 302988836477474,
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.5,
+      "feather": 5,
+      "noise_mask": true,
+      "force_inpaint": true,
+      "bbox_threshold": 0.5,
+      "bbox_dilation": 10,
+      "bbox_crop_factor": 3,
+      "sam_detection_hint": "center-1",
+      "sam_dilation": 0,
+      "sam_threshold": 0.93,
+      "sam_bbox_expansion": 0,
+      "sam_mask_hint_threshold": 0.7,
+      "sam_mask_hint_use_negative": "False",
+      "drop_size": 10,
+      "wildcard": "",
+      "image": [
+        "LoadImage",
+        0
+      ],
+      "model": [
+        "CheckpointLoader",
+        0
+      ],
+      "clip": [
+        "CheckpointLoader",
+        1
+      ],
+      "vae": [
+        "CheckpointLoader",
+        2
+      ],
+      "positive": [
+        "Positive",
+        0
+      ],
+      "negative": [
+        "Negative",
+        0
+      ],
+      "bbox_detector": [
+        "UltralyticsDetectorProvider",
+        0
+      ]
+    },
+    "class_type": "FaceDetailer"
+  },
+  "LoadImage": {
+    "inputs": {
+      "image": "00011-1346030179.png",
+      "choose file to upload": "image"
+    },
+    "class_type": "LoadImage"
+  },
+  "UltralyticsDetectorProvider": {
+    "inputs": {
+      "model_name": "bbox/face_yolov8m.pt"
+    },
+    "class_type": "UltralyticsDetectorProvider"
+  }
+}
