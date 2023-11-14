@@ -1,0 +1,98 @@
+{
+  "CheckpointLoader": {
+    "inputs": {
+      "ckpt_name": "Anime\\CounterfeitV30_v30.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "Positive": {
+    "inputs": {
+      "text": "pos",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "Negative": {
+    "inputs": {
+      "text": "neg",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "SaveImage": {
+    "inputs": {
+      "filename_prefix": "silverzone/upscale/ComfyUI",
+      "images": [
+        "UltimateSDUpscale",
+        0
+      ]
+    },
+    "class_type": "SaveImage"
+  },
+  "LoadImage": {
+    "inputs": {
+      "image": "Image.png",
+      "choose file to upload": "image"
+    },
+    "class_type": "LoadImage"
+  },
+  "UltimateSDUpscale": {
+    "inputs": {
+      "upscale_by": 2,
+      "seed": 781960766687742,
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.3,
+      "mode_type": "Linear",
+      "tile_width": 512,
+      "tile_height": 512,
+      "mask_blur": 8,
+      "tile_padding": 32,
+      "seam_fix_mode": "None",
+      "seam_fix_denoise": 1,
+      "seam_fix_width": 64,
+      "seam_fix_mask_blur": 8,
+      "seam_fix_padding": 16,
+      "force_uniform_tiles": "enable",
+      "image": [
+        "LoadImage",
+        0
+      ],
+      "model": [
+        "CheckpointLoader",
+        0
+      ],
+      "positive": [
+        "Positive",
+        0
+      ],
+      "negative": [
+        "Negative",
+        0
+      ],
+      "vae": [
+        "CheckpointLoader",
+        2
+      ],
+      "upscale_model": [
+        "UpscaleModelLoader",
+        0
+      ]
+    },
+    "class_type": "UltimateSDUpscale"
+  },
+  "UpscaleModelLoader": {
+    "inputs": {
+      "model_name": "4x-AnimeSharp.pth"
+    },
+    "class_type": "UpscaleModelLoader"
+  }
+}

@@ -67,7 +67,7 @@
   },
   "SaveImage": {
     "inputs": {
-      "filename_prefix": "ComfyUI",
+      "filename_prefix": "silverzone/upscale/ComfyUI",
       "images": [
         "VAEDecode",
         0

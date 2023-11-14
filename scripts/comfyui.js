@@ -7,6 +7,7 @@ let models = []
 let sampling_methods = [];
 let schedulers = [];
 let comfy_loras = []
+let comfy_upscalers = [];
 
 const inputContainer = document.getElementById("comfyInputs");
 
@@ -15,14 +16,15 @@ object_info_loaded = false;
 workflow_loaded = false;
 async function RefreshComfy() {
 
-
     try {
         object_info = await FetchInfo("/object_info");
         models = object_info["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0];
+
         sampling_methods = object_info["KSampler"]["input"]["required"]["sampler_name"][0];
         schedulers = object_info["KSampler"]["input"]["required"]["scheduler"][0];
-
         comfy_loras = object_info["LoraLoader"].input.required.lora_name[0];
+        comfy_upscalers = object_info["UpscaleModelLoader"].input.required.model_name[0];
+
         HandleComfyLoras();
 
         console.log(models);
@@ -52,6 +54,14 @@ async function RefreshComfy() {
             var option = document.createElement("option");
             option.text = scheduler;
             scheduler_select.add(option);
+        });
+
+        var upscale_select = document.getElementById("comfy-sd-upscale-upscaler")
+        upscale_select.innerHTML = "";
+        comfy_upscalers.forEach(upscale => {
+            var option = document.createElement("option");
+            option.text = upscale;
+            upscale_select.add(option);
         });
 
 
@@ -137,7 +147,13 @@ function ApplyCurrentSettingsToWorkflow(apiWorkflow) {
         apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
         apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
         apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
-
+    }
+    if(apiWorkflow["UltimateSDUpscale"]){
+        apiWorkflow["UltimateSDUpscale"].inputs.seed = getRandomInt(0, 18446744073709552000);
+        apiWorkflow["UltimateSDUpscale"].inputs.steps = document.getElementById("steps-slider").value;
+        apiWorkflow["UltimateSDUpscale"].inputs.cfg = document.getElementById("scale-slider").value;
+        apiWorkflow["UltimateSDUpscale"].inputs.sampler_name = document.getElementById("sampling-method").value;
+        apiWorkflow["UltimateSDUpscale"].inputs.scheduler = document.getElementById("scheduler").value;
     }
     
     if(apiWorkflow["EmptyLatentImage"]){
@@ -178,7 +194,12 @@ function ApplyCurrentSettingsToWorkflow(apiWorkflow) {
         apiWorkflow["Positive"].inputs.clip[0] = lastLoraNode;
         apiWorkflow["Negative"].inputs.clip[0] = lastLoraNode;
 
-        apiWorkflow["KSampler"].inputs.model[0] = lastLoraNode;
+        if(apiWorkflow["KSampler"]){
+            apiWorkflow["KSampler"].inputs.model[0] = lastLoraNode;
+        }
+        if(apiWorkflow["UltimateSDUpscale"]){
+            apiWorkflow["UltimateSDUpscale"].inputs.model[0] = lastLoraNode;
+        }
     }
 
     return apiWorkflow;
@@ -630,9 +651,34 @@ async function LatentUpscaleWithComfy() {
     upscale_workflow["LatentUpscaleBy"].inputs.scale_by = document.getElementById("comfy-latent-upscale-scale").value;
     upscale_workflow["LatentUpscaleBy"].inputs.upscale_method = document.getElementById("comfy-latent-upscale-method").value;
 
+    if(document.getElementById("comfy-latent-upscale-tiled").checked) {
+        upscale_workflow["VAEDecode"].class_type = "VAEDecodeTiled";
+        upscale_workflow["VAEDecode"].inputs.tile_size = 512;
+    }
+
+
     console.log(upscale_workflow);
     getImages(upscale_workflow);
 }
+
+async function UltimateSDUpscaleWithComfy() {
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"),true);
+
+    upscale_workflow = await fetch("/workflows/ultimate_sd_upscale_api.json");
+    upscale_workflow = await upscale_workflow.json();
+
+    upscale_workflow = ApplyCurrentSettingsToWorkflow(upscale_workflow);
+
+    upscale_workflow["LoadImage"].inputs.image = file_name;
+
+    upscale_workflow["UltimateSDUpscale"].inputs.upscale_by = document.getElementById("comfy-sd-upscale-scale").value;
+    upscale_workflow["UltimateSDUpscale"].inputs.upscale_method = document.getElementById("comfy-sd-upscale-mode_type").value;
+    upscale_workflow["UltimateSDUpscale"].inputs.mode_type = document.getElementById("comfy-sd-upscale-mode_type").value;
+    upscale_workflow["UpscaleModelLoader"].inputs.model_name = document.getElementById("comfy-sd-upscale-upscaler").value;
+
+    getImages(upscale_workflow);
+}
+
 async function UploadImageToComfyServer(image,overwrite = true) {
     var imageBase64 = image.src.replace("data:image/png;base64,", "");
     var imageBlob = base64ToBlob(imageBase64, "image/png");
@@ -682,6 +728,7 @@ function base64ToBlob(base64, mime) {
 
 
 document.getElementById("comfy-latent-upscale-btn").addEventListener("click", LatentUpscaleWithComfy);
+document.getElementById("comfy-sd-upscale-btn").addEventListener("click", UltimateSDUpscaleWithComfy);
 
 //#endregion
 

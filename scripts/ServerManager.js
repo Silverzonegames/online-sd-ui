@@ -31,6 +31,10 @@ function UpdateServer(serverType, changeURL = true) {
         ToggleElements(".automatic1111", false)
         ToggleElements(".horde", false)
         ToggleElements(".comfyui", true)
+
+        document.getElementById("comfy-latent-upscale-tab").click();
+
+
         if (changeURL) {
             urlInput.value = "http://127.0.0.1:8188"
             url = urlInput.value

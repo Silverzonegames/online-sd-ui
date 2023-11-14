@@ -182,7 +182,18 @@
 
 
 
-
+  <!--Fullscreen Image-->
+  <div id="fullscreenPanel" class="fixed w-full h-full bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <button class="mt-2 mr-2 right-0 top-0 fixed z-[100] inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-red-800 to-red-500 group-hover:from-red-800 group-hover:to-red-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-red-800"
+    onclick="document.getElementById('fullscreenPanel').classlist.add('hidden')"
+    >
+      <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+        Close
+      </span>
+    </button>
+    <img class="max-h-full" src="image.png">
+  </div>
+  
 
 
 
@@ -386,6 +397,12 @@
                   class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
                   id="comfy-latent-upscale-tab" data-tabs-target="#comfy-latent-upscale" type="button" role="tab"
                   aria-controls="comfy-latent-upscale" aria-selected="false">Latent Upscale</button>
+              </li>
+              <li class="comfyui" role="presentation">
+                <button
+                  class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                  id="comfy-sd-upscale-tab" data-tabs-target="#comfy-sd-upscale" type="button" role="tab"
+                  aria-controls="comfy-sd-upscale" aria-selected="false">Ultimate SD Upscale</button>
               </li>
             </ul>
           </div>
@@ -716,6 +733,14 @@
           <div class="noautomatic1111 hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="comfy-latent-upscale"
             role="tabpanel" aria-labelledby="comfy-latent-upscale">
 
+
+            <label class="relative inline-flex items-center cursor-pointer dark mb-4" title="Use this if you run out of memory">
+              <input id="comfy-latent-upscale-tiled" type="checkbox" value="" class="sr-only peer">
+              <div
+                class="w-11 h-6 peer-focus:outline-none peer-focus:ring-4  peer-focus:ring-blue-800 rounded-full peer bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-blue-600">
+              </div>
+              <span class="ml-3 text-sm font-medium  text-gray-300">Use Tiled VAE</span>
+            </label>
             
             <label for="comfy-latent-upscale-scale" class="block mt-2" title="Amount to Upscale">
               <span class="mr-2">Upscale By:</span>
@@ -761,8 +786,69 @@
 
           </div>
 
+          <!--comfy-sd-upscale-->
+          <div class="noautomatic1111 hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="comfy-sd-upscale"
+            role="tabpanel" aria-labelledby="comfy-sd-upscale">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Use the <a
+              href="https://github.com/ssitu/ComfyUI_UltimateSDUpscale?tab=readme-ov-file#installation"
+              target="_blank"
+              class="text-blue-500 underline">Ultimate SD Upscale</a> Node to
+            Upscale the current Image. Will not work without the extension</p>
+
+            <label for="comfy-sd-upscale-scale" class="block mt-2" title="Amount to Upscale">
+              <span class="mr-2">Upscale By:</span>
+              <input id="comfy-sd-upscale-scale-value" type="number" value="2" min="1" max="4" step="0.01" class="w-16 bg-transparent">
+            </label>
+            <input id="comfy-sd-upscale-scale" type="range" value="2" min="1" max="4" step="0.01" class="w-full">
+
+            <label for="comfy-sd-upscale-denoise" class="block mt-2" title="Denoising strength, 0=original image, 1=new image, set around 0.2-0.5">
+              <span class="mr-2">Denoising Strengh:</span>
+              <input id="comfy-sd-upscale-denoise-value" type="number" value="0.35" min="0" max="1" step="0.01" class="w-16 bg-transparent">
+            </label>
+            <input id="comfy-sd-upscale-denoise" type="range" value="0.5" min="0" max="1" step="0.01" class="w-full">
+
+            <div class="flex max-w-full">
+              <div class="mb-2">
+                <label for="comfy-sd-upscale-upscaler" class="block">Upscaler</label>
+                <select id="comfy-sd-upscale-upscaler"
+                  class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                  <option value="0">None</option>
+                  <option value="1">Lanczos</option>
+                  <!-- Include other upscaler options -->
+                </select>
+              </div>
+
+              <div class="ml-2">
+                <label for="comfy-sd-upscale-mode_type" class="block">Type</label>
+                <select id="comfy-sd-upscale-mode_type"
+                  class="bg-white border pr-10 pl-2 py-1.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                  <option>Linear</option>
+                  <option>Chess</option>
+                  <!-- Include other type options -->
+                </select>
+              </div>
+            </div>
+
+            <script>
+              document.getElementById("comfy-sd-upscale-scale").addEventListener("input", (e) => {
+                document.getElementById("comfy-sd-upscale-scale-value").value = e.target.value;
+              })
+              document.getElementById("comfy-sd-upscale-scale-value").addEventListener("input", (e) => {
+                document.getElementById("comfy-sd-upscale-scale").value = e.target.value;
+              })
+              document.getElementById("comfy-sd-upscale-denoise").addEventListener("input", (e) => {
+                document.getElementById("comfy-sd-upscale-denoise-value").value = e.target.value;
+              })
+              document.getElementById("comfy-sd-upscale-denoise-value").addEventListener("input", (e) => {
+                document.getElementById("comfy-sd-upscale-denoise").value = e.target.value;
+              })
+            </script>
+
+            <button id="comfy-sd-upscale-btn" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
+            class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">Upscale</button>
         </div>
 
+      
       </div>
 
 
