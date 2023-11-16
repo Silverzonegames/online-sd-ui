@@ -4,6 +4,7 @@ module.exports = {
   content: [
     "./*.{html,js}",
     "./**/*.{html,js}",
+    "./dynamic/*.{html,js}",
     'node_modules/preline/dist/*.js',
   ],
   theme: {

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic (LCM)</title>
+    <!-- Link to Tailwind CSS CDN -->
+    <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.css" />
+
+    <script src="https://kit.fontawesome.com/9685c3d611.js" crossorigin="anonymous"></script>
+
+    <style>
+        body.dark {
+            background-color: #1a202c;
+            color: #d8dee9;
+        }
+    </style>
+</head>
+
+<body class="dark bg-gray-900">
+
+    <header class="h-16 flex flex-col items-center justify-center mt-1">
+        <h1 class="text-2xl font-bold text-gray-100 mb-2">Realtime LCM</h1>
+        <nav class="flex justify-center gap-4">
+            <a href="../index.html" class="text-gray-100 hover:text-gray-300">Generate</a>
+            <a href="../history/index.html" class="text-gray-100 hover:text-gray-300">History</a>
+        </nav>
+    </header>
+
+    <div class="mx-auto w-fit  p-6 bg-slate-700 rounded-lg shadow-lg">
+
+        <!--Error Message-->
+
+        <div class="w-full flex">
+
+            <div class="w-full mr-2">
+                <label for="prompt" class="block mb-2 text-sm font-medium text-gray-100">Prompt</label>
+                <textarea id="prompt" rows="4"
+                    class="block w-full h-10 p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Write Anything..."></textarea>
+            </div>
+            <div>
+                <label for="seed" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Seed</label>
+                <div class="flex">
+                    <input type="number" id="seed"
+                        class="h-10 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="" required />
+                    <button type="button" id="randomize"
+                        class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 ml-1 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"><i
+                            class="fa-solid fa-shuffle"
+                            ></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center ">
+            <input id="canvas-checkbox" type="checkbox" value=""
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label for="canvas-checkbox"
+                class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Canvas</label>
+        </div>
+
+
+
+
+        <div class="md:flex justify-center mt-4 gap-2">
+
+
+            <div id="canvas_container" class="flex justify-center gap-1 hidden">
+
+                <!--Toolbar-->
+                <div class="w-10 bg-gray-800 rounded-lg flex flex-col p-1 gap-1 justify-between">
+                    <div class="gap-1 flex flex-col">
+                        <button id="select" class="bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-solid fa-arrow-pointer"></i></button>
+                        <button id="brush" class="bg-blue-600 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-solid fa-paintbrush"></i></button>
+                        <button id="spray" class="bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-solid fa-spray-can"></i></button>
+                        <button id="square" class="hidden bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-regular fa-square"></i></button>
+                        <button id="circle" class="hidden bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-regular fa-circle"></i></i></button>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+
+                        <input class="input-range mx-auto h-32" id="drawing-line-width" orient="vertical" type="range"
+                            value="5" min="3" max="50">
+
+                        <div class="example circle">
+                            <input class="w-4 h-8 rounded-full bg-transparent ml-4" data-coloris id="drawing-color">
+                        </div>
+                    </div>
+                    <div class="gap-1 flex flex-col">
+                        <input id="upload" type="file" class="hidden">
+                        <button onclick="document.getElementById('upload').click()" class="bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-solid fa-file-arrow-up"></i></button>
+                        <button id="undo" class="bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-solid fa-rotate-left"></i></button>
+                        <button id="redo" class="bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-solid fa-rotate-right"></i></button>
+                        <button id="clear-canvas" class="bg-gray-900 rounded-full p-0.5 pl-0.5 w-8 h-8 mx-auto"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+
+                <div>
+                    <canvas id="canvas">
+                    </canvas>
+                    <div class="flex justify-center">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Denoise
+                            Strength:</label>
+                        <input id="denoise" type="range" class="mb-1 ml-1" value="0.7" min="0" max="1" step="0.01">
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="relative">
+                <!-- Spinner SVG -->
+                <svg id="spinner" aria-hidden="true"
+                    class="hidden z-40 absolute w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                    viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    style="top: calc(50% - 1rem);left: calc(50% - 1rem);">
+                    <path
+                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                        fill="currentColor" />
+                    <path
+                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                        fill="currentFill" />
+                </svg>
+
+                <!-- Image -->
+                <img id="image" src="../placeholder.png" class="relative z-10" alt="Image" />
+            </div>
+
+
+
+        </div>
+
+        <p class="mx-auto text-center" id="image_prompt"></p>
+        <p class="mx-auto text-center text-gray-400" id="image_time"></p>
+
+        <div class="w-full  flex items-center justify-center gap-4 mt-3">
+            <button id="save" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Save</button>
+        </div>
+        <label id="errorMessage" class="block mb-2 text-sm font-medium text-red-500"></label>
+
+
+        <!-- Settings Section -->
+        <div class="mt-8">
+            <label class="block mb-2 text-sm font-medium text-gray-100">Settings</label>
+            <div class="flex items-center gap-2">
+                <div class="w-full"
+                    title="Increasing Steps will Increase Quality but also Make Generations take longer">
+                    <label for="steps" class="mr-4 ml-3 text-sm text-gray-100">Steps: <span
+                            id="stepsValue">4</span></label>
+                    <input type="range" id="steps" name="steps" min="2" max="8" value="4"
+                        class="w-full mx-2 text-sm text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        oninput="document.getElementById('stepsValue').textContent = this.value">
+                </div>
+                <div class="w-full">
+                    <label for="cfg" class="mr-4 ml-3 text-sm text-gray-100">CFG: <span id="cfgValue">1</span></label>
+                    <input type="range" id="cfg" name="cfg" min="1" max="2" step="0.1"
+                        class="w-full mx-2 text-sm text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        oninput="document.getElementById('cfgValue').textContent = this.value">
+                </div>
+                <div class="w-full" title="The strength of the lcm lora. Most of the time keep it at 1">
+                    <label for="lcm" class="mr-4 ml-3 text-sm text-gray-100">LCM Strength: <span
+                            id="lcmValue">1</span></label>
+                    <input type="range" id="lcm" name="lcm" min="0.5" max="1" step="0.05" value="1"
+                        class="w-full mx-2 text-sm text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        oninput="document.getElementById('lcmValue').textContent = this.value">
+                </div>
+            </div>
+
+
+            <div class="mt-4">
+                <label for="negativePrompt" class="block mb-2 text-sm font-medium text-gray-100">Negative Prompt</label>
+                <textarea id="negativePrompt" rows="4"
+                    class="block w-full h-10 p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Write a Negative Prompt...">(low quality, worst quality:1.4)</textarea>
+            </div>
+
+            <div class="flex gap-2 mt-2">
+                <div class="w-full">
+                    <label for="model"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Model</label>
+                    <select id="model"
+                        class=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    </select>
+                </div>
+                <div class="w-full">
+                    <label for="lcm_lora" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">LCM
+                        Lora</label>
+                    <select id="lcm_lora"
+                        class=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    </select>
+                </div>
+
+            </div>
+            <div class="flex gap-2 mt-1" title="Use the appropriate lora for your model">
+                <div class="w-full" title="Only use 1024x1024 on SDXL models. SDXL is significantly slower than 1.5">
+                    <label for="resolution" class="block mb-2 text-sm font-medium text-gray-100">Resolution</label>
+                    <select id="resolution"
+                        class=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="512">512x512 (SD1.5)</option>
+                        <option value="1024">1024x1024 (SDXL)</option>
+                    </select>
+                </div>
+                <div class="w-full">
+                    <label for="url" class="block mb-2 text-sm font-medium text-gray-100">Comfyui URL</label>
+                    <input type="text" id="url"
+                        class="block w-full h-10 p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="http://127.0.0.1:8188" value="http://127.0.0.1:8188">
+                </div>
+
+            </div>
+
+
+
+        </div>
+    </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+    <script src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
+    <script src="dynamic.js"></script>
+    <script src="canvas.js"></script>
+    <script src="../scripts/edit-attention.js"></script>
+    <script src="../scripts/edit-order.js"></script>
+</body>
