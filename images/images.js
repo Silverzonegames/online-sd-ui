@@ -5,19 +5,26 @@ var fetching = false;
 
 function getImagesFromUrl(url, clear = false, update = false) {
 
-    console.log("Fetching images from " + url);
-
+    
     if (fetching) {
         return;
     }
+    console.log("Fetching images from " + url);
 
     fetching = true;
+    //add loading icon to image container
+    if(clear){
+        document.getElementById("imageContainer").innerHTML = "";
+    }
+    const loadingIcon = document.createElement("i");
+    loadingIcon.classList.add("fa-solid", "fa-spinner", "fa-spin", "text-white", "text-4xl", "absolute", "top-1/2", "left-1/2", "transform", "-translate-x-1/2", "-translate-y-1/2", "z-50");
+    document.getElementById("imageContainer").appendChild(loadingIcon);
+
+
     fetch(url).then(response => response.json()).then(data => {
         fetching = false;
 
-        if(clear){
-            document.getElementById("imageContainer").innerHTML = "";
-        }
+        loadingIcon.remove();
 
         if (data.items) {
             next_page = data.metadata.nextPage;
@@ -55,55 +62,29 @@ function getImagesFromUrl(url, clear = false, update = false) {
         }
     });
 }
-let columns = [];
-let columCount;
-function updateColums() {
-    columns = [];
-    const imageContainer = document.getElementById("imageContainer");
-    //Determine the number of columns based on the container's width
-    const containerWidth = imageContainer.clientWidth;
-    const imageWidth = 240; // Adjust this value based on the desired image width
-    columCount = Math.max(1, Math.floor(containerWidth / imageWidth));
-    //const columCount = 4;
 
 
-    const columnWidth = 100 / columCount; // Set the width for each column
-
-    for (let i = 0; i < columCount; i++) {
-        const column = document.createElement("div");
-        column.id = 1;
-        column.classList.add("gap-4");
-        column.style.width = `${columnWidth}%`; // Set the width of each column
-        imageContainer.appendChild(column);
-        columns.push(column);
-    }
-}
 
 async function UpdateShownImages() {
 
-    if(columns.length == 0){
-        updateColums();
-    }
+
 
     images.forEach((image, index) => {
         const imageWrapper = document.createElement("div");
-        imageWrapper.classList.add("mb-4", "rounded-lg", "border-blue-400", "z-[1]", "relative", "bg-gray-900");
+        imageWrapper.classList.add("mb-4", "rounded-lg", "border-blue-400", "z-[1]", "relative","imageWrapper","h-min","w-full");
+        //random bg color
+        imageWrapper.style.backgroundColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
+        
 
         var shortUrl = image.url.split("/width=")[0] + "/width=";
-        var width = columns[index % columCount].clientWidth;
-
-        const loadingImage = document.createElement("img");
-        loadingImage.src = shortUrl + 3;
-        //blurred
-        loadingImage.classList.add("absolute", "w-full", "h-full", "rounded-lg", "blur-lg", );
-        imageWrapper.appendChild(loadingImage);
+        
 
 
         const imageElement = document.createElement("img");
         imageElement.id = image.id;
-        //imageElement.src = image.url;//shortUrl+(columns[index % columCount].clientWidth+10);
-        imageElement.srcset =  `${shortUrl+240} 240w, ${shortUrl+512} 512w, ${shortUrl+768} 768w, ${shortUrl+1024} 1024w`
-        imageElement.sizes = `(max-width: 1024px) 100vw, 1024px`
+        imageElement.classList.add("object-cover")
+        imageElement.srcset =  `${shortUrl+240} 240w, ${shortUrl+512} 512w, ${shortUrl+768} 768w`
+
 
 
         imageElement.setAttribute("decoding", "async");
@@ -111,16 +92,13 @@ async function UpdateShownImages() {
         imageElement.setAttribute("width", image.width);
         imageElement.setAttribute("height", image.height);
         
-        imageElement.addEventListener("load", () => {
-            loadingImage.classList.add("hidden");
-        });
+
 
 
 
 
         //if loading fails turn the imageelemnt to a video element
         imageElement.onerror = function () {
-            loadingImage.remove();
             imageElement.remove();
             
             const videoElement = document.createElement("video");
@@ -193,9 +171,15 @@ async function UpdateShownImages() {
         imageWrapper.appendChild(reactionDiv);
 
         imageWrapper.appendChild(imageElement);
-        columns[index % columCount].appendChild(imageWrapper);
+        document.getElementById("imageContainer").appendChild(imageWrapper);
     });
     initDropdowns();
+}
+function ReorderExistingImages(){
+    //get all images
+    var imageWrappers = document.querySelectorAll(".imageWrapper");
+    console.log(imageWrappers);
+    
 }
 
 const metaElements = {
@@ -284,10 +268,6 @@ window.onscroll = function (ev) {
         }
     }
 };
-window.addEventListener('resize', () => {
-    document.getElementById("imageContainer").innerHTML = "";
-    updateColums();
-    UpdateShownImages();
-});
+
 
 UpdateImages()

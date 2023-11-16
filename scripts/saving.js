@@ -60,6 +60,12 @@ function GetCurrentState(){
     variables["inputs"] = [];
     InputsToSave.forEach(input => {
         const element = document.getElementById(input.id);
+
+        if(!element){
+            console.log("Element not found: "+input.id);
+            return;
+        }
+
         let value;
     
         if (input.type === "checked") {
@@ -82,6 +88,7 @@ const InputsToSave = [
     {id:"civitRandomImage", type:"checked"},
     {id:"allowCivitai",typeof:"checked"},
     {id:"averageWeights", type:"checked"},
+    {id:"useAutocomplete", type:"checked"},
     //ui
     {id:"loras-toggle", type:"checked"},
     {id:"saveToServer", type:"checked"},

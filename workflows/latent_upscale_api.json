@@ -1,0 +1,109 @@
+{
+  "KSampler": {
+    "inputs": {
+      "seed": 165350912224669,
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.6,
+      "model": [
+        "CheckpointLoader",
+        0
+      ],
+      "positive": [
+        "Positive",
+        0
+      ],
+      "negative": [
+        "Negative",
+        0
+      ],
+      "latent_image": [
+        "LatentUpscaleBy",
+        0
+      ]
+    },
+    "class_type": "KSampler"
+  },
+  "CheckpointLoader": {
+    "inputs": {
+      "ckpt_name": "Anime\\kizukiAnimeHentai_animeHentaiV3.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "Positive": {
+    "inputs": {
+      "text": "pos",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "Negative": {
+    "inputs": {
+      "text": "neg",
+      "clip": [
+        "CheckpointLoader",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "VAEDecode": {
+    "inputs": {
+      "samples": [
+        "KSampler",
+        0
+      ],
+      "vae": [
+        "CheckpointLoader",
+        2
+      ]
+    },
+    "class_type": "VAEDecode"
+  },
+  "SaveImage": {
+    "inputs": {
+      "filename_prefix": "silverzone/upscale/ComfyUI",
+      "images": [
+        "VAEDecode",
+        0
+      ]
+    },
+    "class_type": "SaveImage"
+  },
+  "LoadImage": {
+    "inputs": {
+      "image": "ComfyUI_00115_.png",
+      "choose file to upload": "image"
+    },
+    "class_type": "LoadImage"
+  },
+  "VAEEncode": {
+    "inputs": {
+      "pixels": [
+        "LoadImage",
+        0
+      ],
+      "vae": [
+        "CheckpointLoader",
+        2
+      ]
+    },
+    "class_type": "VAEEncode"
+  },
+  "LatentUpscaleBy": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "scale_by": 2,
+      "samples": [
+        "VAEEncode",
+        0
+      ]
+    },
+    "class_type": "LatentUpscaleBy"
+  }
+}

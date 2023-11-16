@@ -1,26 +1,37 @@
 let object_info = {}
 
-let workflow_file = "workflows/txt2img.json";
 let workflow = null
 let workflow_api = {}
 
 let models = []
 let sampling_methods = [];
 let schedulers = [];
+let comfy_loras = []
+let comfy_upscalers = [];
+
+let comfy_imagefile = null;
+let comfy_maskfile = null;
 
 const inputContainer = document.getElementById("comfyInputs");
 
+const faceFixBtn = document.getElementById("faceFixBtn");
 
 object_info_loaded = false;
 workflow_loaded = false;
+// _:
 async function RefreshComfy() {
-
 
     try {
         object_info = await FetchInfo("/object_info");
         models = object_info["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0];
+
         sampling_methods = object_info["KSampler"]["input"]["required"]["sampler_name"][0];
         schedulers = object_info["KSampler"]["input"]["required"]["scheduler"][0];
+        comfy_loras = object_info["LoraLoader"].input.required.lora_name[0];
+        comfy_upscalers = object_info["UpscaleModelLoader"].input.required.model_name[0];
+
+        HandleComfyLoras();
+
         console.log(models);
         offlineBanner.classList.add("hidden");
         connectingBanner.classList.add("hidden");
@@ -50,110 +61,31 @@ async function RefreshComfy() {
             scheduler_select.add(option);
         });
 
-        if (workflow == null) {
-            const workflowResponse = await fetch(workflow_file);
-            workflow = await workflowResponse.json();
-            console.log(workflow);
-        }
+        var upscale_select = [
+            document.getElementById("comfy-sd-upscale-upscaler"),
+            document.getElementById("comfy-model-upscale-upscaler")]
+        
+        upscale_select.forEach(select => {
+            select.innerHTML = "";
+            comfy_upscalers.forEach(upscale => {
+                var option = document.createElement("option");
+                option.text = upscale;
+                select.add(option);
+            });
+        })
 
 
 
-        inputContainer.innerHTML = "";
-        return;
+        var faceDetailerAvailable = object_info["FaceDetailer"] && object_info["UltralyticsDetectorProvider"];
+        faceFixBtn.disabled = !faceDetailerAvailable;
 
-        AddInput("workflowDropdown", "dropdown", "Workflow", ["txt2img", "txt2img_vae", "img2img", "img2img_vae", "inpaint", "lora", "sdxl", "Custom"]);
-
-        if (workflow_file == "Custom") {
-            document.getElementById("workflowDropdown").value = "Custom";
+        if (faceDetailerAvailable) {
+            faceFixBtn.title = "Enhance Details on faces";
         } else {
-            document.getElementById("workflowDropdown").value = workflow_file.split("/")[1].split(".")[0];
+            faceFixBtn.title = "Face Detailer not available Please install ComfyUI-Impact-Pack";
         }
 
-        document.getElementById("workflowDropdown").addEventListener("change", (e) => {
-
-            if (e.target.value == "Custom") {
-                workflow_file == "Custom";
-                // Prompt the user to upload a JSON file
-                const fileInput = document.createElement("input");
-                fileInput.type = "file";
-                fileInput.accept = "application/json";
-                fileInput.addEventListener("change", (event) => {
-                    const uploadedFile = event.target.files[0];
-
-                    if (uploadedFile) {
-                        const reader = new FileReader();
-                        reader.onload = (fileEvent) => {
-                            try {
-                                workflow = JSON.parse(fileEvent.target.result);
-                                RefreshComfy();
-                            } catch (error) {
-                                console.error("Error parsing uploaded JSON:", error);
-                            }
-                        };
-                        reader.readAsText(uploadedFile);
-                    }
-                });
-
-                fileInput.click(); // Simulate a click on the file input to open the file picker
-            } else {
-                workflow_file = "workflows/" + e.target.value + ".json";
-                workflow = null;
-                // Fetch and assign the JSON data from 'workflow_file' if needed
-                RefreshComfy();
-            }
-        });
-
-        workflow["nodes"].forEach(node => {
-            if (node["type"] === "CLIPTextEncode") {
-                const title = node["title"] || "CLIPTextEncode";
-                AddInput(node["id"] + "-text", "text", title, node["widgets_values"]);
-            }
-        });
-
-        workflow["nodes"].forEach(node => {
-            if (node["type"] === "CheckpointLoaderSimple") {
-                const title = node["title"] || "CheckpointLoaderSimple";
-                AddInput(node["id"] + "-ckpt_name", "dropdown", title, models);
-            }
-            if (node["type"] === "VAELoader") {
-                const title = node["title"] || "VAE Loader";
-                AddInput(node["id"], "container", title, object_info["VAELoader"]["input"]["required"]);
-            }
-            if (node["type"] === "LoraLoader") {
-                const title = node["title"] || "Lora Loader";
-                AddInput(node["id"], "container", title, object_info["LoraLoader"]["input"]["required"]);
-            }
-            if (node["type"] === "LoadImage") {
-                console.log("image");
-                const title = node["title"] || "Image";
-                AddInput(node["id"], "image", title);
-            }
-            if (node["type"] === "LoadImageMask") {
-                const title = node["title"] || "Image Mask";
-                AddInput(node["id"], "mask", title);
-            }
-        });
-
-        workflow["nodes"].forEach(node => {
-            if (node["type"] === "KSampler") {
-                const title = node["title"] || "KSampler";
-                AddInput(node["id"], "container", title, object_info["KSampler"]["input"]["required"]);
-            }
-            if (node["type"] === "KSamplerAdvanced") {
-                const title = node["title"] || "KSampler (Advanced)";
-                AddInput(node["id"], "container", title, object_info["KSampler"]["input"]["required"]);
-            }
-            if (node["type"] === "EmptyLatentImage") {
-                const title = node["title"] || "EmptyLatentImage";
-                AddInput(node["id"], "container", title, object_info["EmptyLatentImage"]["input"]["required"]);
-            }
-            if (node["type"] === "ImageScale") {
-                const title = node["title"] || "ImageScale";
-                AddInput(node["id"], "container", title, object_info["ImageScale"]["input"]["required"]);
-            }
-        });
-
-
+        document.getElementById("ultimate-upscale").classList.add("hidden");
 
     } catch (error) {
         showMessage(error);
@@ -164,13 +96,224 @@ async function RefreshComfy() {
 let serverAddress = url.replace("http://", "");
 let clientId = uuid.v4(); // Generate a UUID for the client
 
-function queuePrompt(prompt) {
-    const data = JSON.stringify({ prompt: prompt, client_id: clientId });
-    return fetch(`http://${serverAddress}/prompt`, {
-        method: "POST",
-        body: data,
-        headers: { "Content-Type": "application/json" }
-    }).then(response => response.json());
+
+
+//#region Generation
+
+var last_generation_info = "";
+async function GenerateComfy() {
+    serverAddress = url.replace("http://", "").replace("https://", "");
+
+    var apiWorkflow;;
+
+    // get workflow
+    apiWorkflow = await fetch("/workflows/txt2img_api.json");
+    apiWorkflow = await apiWorkflow.json();
+
+
+
+
+    apiWorkflow = ApplyCurrentSettingsToWorkflow(apiWorkflow);
+
+    if (comfy_imagefile != null) {
+        apiWorkflow = ApplyImg2imgToWorkflow(apiWorkflow);
+    }
+
+    //create text for history
+
+
+    console.log(apiWorkflow);
+
+    getImages(apiWorkflow);
+
+}
+
+function ApplyCurrentSettingsToWorkflow(apiWorkflow) {
+    //format prompts
+    var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
+    var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
+    if (document.getElementById("averageWeights").checked) {
+        prompt = normalizeWeights(prompt);
+        negativePrompt = normalizeWeights(negativePrompt);
+    }
+
+    //apply current settings to workflow
+    if (apiWorkflow["Positive"])
+        apiWorkflow["Positive"].inputs.text = prompt || {};
+
+
+    if (apiWorkflow["Negative"])
+        apiWorkflow["Negative"].inputs.text = negativePrompt;
+
+
+    if (apiWorkflow["CheckpointLoader"])
+        apiWorkflow["CheckpointLoader"].inputs.ckpt_name = document.getElementById("checkpoint-selector").value;
+
+    if (apiWorkflow["KSampler"]) {
+
+        apiWorkflow["KSampler"].inputs.seed = getRandomInt(0, 18446744073709552000);
+        apiWorkflow["KSampler"].inputs.steps = document.getElementById("steps-slider").value;
+        apiWorkflow["KSampler"].inputs.cfg = document.getElementById("scale-slider").value;
+        apiWorkflow["KSampler"].inputs.sampler_name = document.getElementById("sampling-method").value;
+        apiWorkflow["KSampler"].inputs.scheduler = document.getElementById("scheduler").value;
+    }
+    if (apiWorkflow["UltimateSDUpscale"]) {
+        apiWorkflow["UltimateSDUpscale"].inputs.seed = getRandomInt(0, 18446744073709552000);
+        apiWorkflow["UltimateSDUpscale"].inputs.steps = document.getElementById("steps-slider").value;
+        apiWorkflow["UltimateSDUpscale"].inputs.cfg = document.getElementById("scale-slider").value;
+        apiWorkflow["UltimateSDUpscale"].inputs.sampler_name = document.getElementById("sampling-method").value;
+        apiWorkflow["UltimateSDUpscale"].inputs.scheduler = document.getElementById("scheduler").value;
+    }
+    if (apiWorkflow["FaceDetailer"]) {
+        apiWorkflow["FaceDetailer"].inputs.seed = getRandomInt(0, 18446744073709552000);
+        apiWorkflow["FaceDetailer"].inputs.steps = document.getElementById("steps-slider").value;
+        apiWorkflow["FaceDetailer"].inputs.cfg = document.getElementById("scale-slider").value;
+        apiWorkflow["FaceDetailer"].inputs.sampler_name = document.getElementById("sampling-method").value;
+        apiWorkflow["FaceDetailer"].inputs.scheduler = document.getElementById("scheduler").value;
+
+    }
+
+    if (apiWorkflow["EmptyLatentImage"]) {
+        apiWorkflow["EmptyLatentImage"].inputs.width = document.getElementById("width-slider").value;
+        apiWorkflow["EmptyLatentImage"].inputs.height = document.getElementById("height-slider").value;
+        apiWorkflow["EmptyLatentImage"].inputs.batch_size = document.getElementById("batchSizeSlider").value;
+    }
+    if (current_comfy_loras.length > 0) {
+        for (let i = 0; i < current_comfy_loras.length; i++) {
+
+            var input;
+
+            if (i == 0) {
+                input = "CheckpointLoader";
+            } else {
+                input = "lora" + (i - 1);
+            }
+
+            apiWorkflow["lora" + i] = {
+                "inputs": {
+                    "lora_name": current_comfy_loras[i].lora_name,
+                    "strength_model": current_comfy_loras[i].strength_model,
+                    "strength_clip": current_comfy_loras[i].strength_clip,
+                    "model": [
+                        input,
+                        0
+                    ],
+                    "clip": [
+                        input,
+                        1
+                    ]
+                },
+                "class_type": "LoraLoader"
+            };
+        }
+        var lastLoraNode = "lora" + (current_comfy_loras.length - 1);
+
+        apiWorkflow["Positive"].inputs.clip[0] = lastLoraNode;
+        apiWorkflow["Negative"].inputs.clip[0] = lastLoraNode;
+
+        if (apiWorkflow["KSampler"]) {
+            apiWorkflow["KSampler"].inputs.model[0] = lastLoraNode;
+        }
+        if (apiWorkflow["UltimateSDUpscale"]) {
+            apiWorkflow["UltimateSDUpscale"].inputs.model[0] = lastLoraNode;
+        }
+        if (apiWorkflow["FaceDetailer"]) {
+            apiWorkflow["FaceDetailer"].inputs.model[0] = lastLoraNode;
+        }
+    }
+
+    last_generation_info = {
+        "Prompt": document.getElementById("prompt").value,
+        "Negative prompt": document.getElementById("negativePrompt").value,
+        "Steps": document.getElementById("steps-slider").value,
+        "CFG": document.getElementById("scale-slider").value,
+        "Seed": -1,
+        "Size": document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value,
+        "Sampler": document.getElementById("sampling-method").value,
+        "Scheduler": document.getElementById("scheduler").value,
+        "Model": document.getElementById("checkpoint-selector").value,
+        "Loras": current_comfy_loras,
+
+        "Server": "ComfyUI"
+    }
+
+    return apiWorkflow;
+}
+function ApplyImg2imgToWorkflow(workflow) {
+
+    // [Empty Latent Image] -> Ksampler
+    //↓
+    // [Load Image -> Resize -> VAE Encode -> Repeat Latent Batch] -> Ksampler
+
+    // convert empty latent image to imageloader
+    workflow["EmptyLatentImage"].class_type = "LoadImage";
+    workflow["EmptyLatentImage"].inputs = {
+        "image": comfy_imagefile,
+        "choose file to upload": "image"
+    }
+    workflow = RenameNode(workflow, "EmptyLatentImage", "LoadImage");
+
+    //ImageScale
+    workflow["ImageScale"] = {
+        "inputs": {
+            "width": document.getElementById("width-slider").value,
+            "height": document.getElementById("height-slider").value,
+            "upscale_method": "nearest-exact",
+            "crop": "center",
+            "image": [
+                "LoadImage",
+                0
+            ]
+        },
+        "class_type": "ImageScale"
+    }
+    //VAE Encode
+    workflow["VAEEncode"] = {
+        "inputs": {
+            "pixels": [
+                "ImageScale",
+                0
+            ],
+            "vae": [
+                "CheckpointLoader",
+                2
+            ]
+        },
+        "class_type": "VAEEncode"
+    }
+    workflow["Repeat"] = {
+        "inputs": {
+            "amount": document.getElementById("batchSizeSlider").value,
+            "samples": [
+                "VAEEncode",
+                0
+            ]
+        },
+        "class_type": "RepeatLatentBatch"
+    }
+
+    workflow["KSampler"].inputs.latent_image[0] = "Repeat";
+    workflow["KSampler"].inputs.denoise = parseFloat(document.getElementById("weightSlider").value);
+
+    return workflow;
+}
+
+function RenameNode(workflow, old_id, new_id) {
+    workflow[new_id] = workflow[old_id];
+    delete workflow[old_id];
+    for (const node_id in workflow) {
+        const node = workflow[node_id];
+        for (const input_name in node.inputs) {
+            const input = node.inputs[input_name];
+            if (Array.isArray(input)) {
+                if (input[0] === old_id) {
+                    input[0] = new_id;
+                }
+            }
+        }
+    }
+    return workflow;
+
 }
 
 async function getImages(prompt) {
@@ -209,6 +352,8 @@ async function getImages(prompt) {
         let history = await historyResponse.json();
         history = history[promptId];
         console.log("History data:", history);
+        last_generation_info["Workflow"] = history["prompt"]
+        last_generation_info["Seed"] = history["prompt"][2]?.["KSampler"]?.["inputs"]?.["seed"]
 
         const generatedImages = [];
 
@@ -219,9 +364,8 @@ async function getImages(prompt) {
                     const imageData = await getImage(image.filename, image.subfolder, image.type);
                     const base64ImageData = await convertToBase64(imageData);
                     generatedImages.push(base64ImageData);
-                    console.log("Generated image:", base64ImageData);
                     var img = base64ImageData.replaceAll(" ", "").replaceAll("\n", "");
-                    addToImageHistory(img, last_generation_info);
+                    addToImageHistory(img, JSON.stringify(last_generation_info).toString());
                 }
             }
         }
@@ -265,16 +409,13 @@ async function getImages(prompt) {
         });
     };
 }
-
-
-async function convertToBase64(blob) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            resolve(event.target.result.split(',')[1]); // Extract base64 data
-        };
-        reader.readAsDataURL(blob);
-    });
+function queuePrompt(prompt) {
+    const data = JSON.stringify({ prompt: prompt, client_id: clientId });
+    return fetch(`http://${serverAddress}/prompt`, {
+        method: "POST",
+        body: data,
+        headers: { "Content-Type": "application/json" }
+    }).then(response => response.json());
 }
 
 async function getImage(filename, subfolder, folderType) {
@@ -284,59 +425,15 @@ async function getImage(filename, subfolder, folderType) {
     console.log(`http://${serverAddress}/view?${urlValues}`);
     return await response.blob();
 }
-
-var last_generation_info = "";
-
-async function GenerateComfy() {
-    serverAddress = url.replace("http://", "").replace("https://", "");
-
-    var apiWorkflow;;
-
-    if (uploadedImageBase64 == "") {
-        apiWorkflow = await fetch("/workflows/txt2img_api.txt");
-        apiWorkflow = await apiWorkflow.text();
-    }
-    var prompt = document.getElementById("prompt").value.replaceAll("\n", "\\n");
-    var negativePrompt = document.getElementById("negativePrompt").value.replaceAll("\n", "\\n");
-    if (document.getElementById("averageWeights").checked) {
-        prompt = normalizeWeights(prompt);
-        negativePrompt = normalizeWeights(negativePrompt);
-    }
-
-    apiWorkflow = apiWorkflow.replaceAll("{prompt}", prompt);
-    apiWorkflow = apiWorkflow.replaceAll("{negative}", negativePrompt);
-    apiWorkflow = apiWorkflow.replaceAll("{model_name}", document.getElementById("checkpoint-selector").value.replace("\\", "\\\\"));
-    apiWorkflow = apiWorkflow.replaceAll("{sampler}", document.getElementById("sampling-method").value);
-    apiWorkflow = apiWorkflow.replaceAll("{scheduler}", document.getElementById("scheduler").value);
-    apiWorkflow = apiWorkflow.replaceAll("{width}", document.getElementById("width-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{height}", document.getElementById("height-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{batch_size}", document.getElementById("batchSizeSlider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{cfg}", document.getElementById("scale-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{steps}", document.getElementById("steps-slider").value);
-    apiWorkflow = apiWorkflow.replaceAll("{seed}", getRandomInt(0, 18446744073709552000));
-
-    //prompt,negative,steps,size, cfg, model, sampler, scheduler
-    last_generation_info += prompt +
-        "\nNegative prompt: " + negativePrompt +
-        "\nModel: " + document.getElementById("checkpoint-selector").value +
-        "\nSampler: " + document.getElementById("sampling-method").value +
-        "\nScheduler: " + document.getElementById("scheduler").value +
-        "\nSize: " + document.getElementById("width-slider").value + "x" + document.getElementById("height-slider").value +
-        "\nSteps: " + document.getElementById("steps-slider").value +
-        "\nCFG: " + document.getElementById("scale-slider").value;
-        "Server: ComfyUI\n\n";
-
-    //convert to json¨
-    console.log(apiWorkflow);
-    apiWorkflow = JSON.parse(apiWorkflow);
-    console.log(apiWorkflow);
-
-
-
-    getImages(apiWorkflow);
-
+async function convertToBase64(blob) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            resolve(event.target.result.split(',')[1]); // Extract base64 data
+        };
+        reader.readAsDataURL(blob);
+    });
 }
-
 
 function FetchInfo(info) {
     return fetch(url + info)
@@ -650,9 +747,479 @@ function AddInput(id, type, label, options = null) {
         });
     }
 }
+document.getElementById("comfy-model-upscale-btn").addEventListener("click", ComfyUpscaleWithModel);
+async function LatentUpscaleWithComfy() {
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToBeUpscaled.png", true);
+
+    upscale_workflow = await fetch("/workflows/latent_upscale_api.json");
+    upscale_workflow = await upscale_workflow.json();
+
+    upscale_workflow = ApplyCurrentSettingsToWorkflow(upscale_workflow);
+
+
+    upscale_workflow["LoadImage"].inputs.image = file_name;
+
+    upscale_workflow["LatentUpscaleBy"].inputs.scale_by = document.getElementById("comfy-latent-upscale-scale").value;
+    upscale_workflow["LatentUpscaleBy"].inputs.upscale_method = document.getElementById("comfy-latent-upscale-method").value;
+
+    if (document.getElementById("comfy-latent-upscale-tiled").checked) {
+        upscale_workflow["VAEDecode"].class_type = "VAEDecodeTiled";
+        upscale_workflow["VAEDecode"].inputs.tile_size = 512;
+    }
+
+
+    console.log(upscale_workflow);
+    getImages(upscale_workflow);
+}
+
+async function UltimateSDUpscaleWithComfy() {
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToBeUpscaled.png", true);
+
+    upscale_workflow = await fetch("/workflows/ultimate_sd_upscale_api.json");
+    upscale_workflow = await upscale_workflow.json();
+
+    upscale_workflow = ApplyCurrentSettingsToWorkflow(upscale_workflow);
+
+    upscale_workflow["LoadImage"].inputs.image = file_name;
+
+    upscale_workflow["UltimateSDUpscale"].inputs.upscale_by = document.getElementById("comfy-sd-upscale-scale").value;
+    upscale_workflow["UltimateSDUpscale"].inputs.upscale_method = document.getElementById("comfy-sd-upscale-mode_type").value;
+    upscale_workflow["UltimateSDUpscale"].inputs.mode_type = document.getElementById("comfy-sd-upscale-mode_type").value;
+    upscale_workflow["UpscaleModelLoader"].inputs.model_name = document.getElementById("comfy-sd-upscale-upscaler").value;
+
+    getImages(upscale_workflow);
+}
+async function ComfyUpscaleWithModel() {
+
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToBeUpscaled.png", true);
+
+
+    var workflow = {
+        "9": {
+            "inputs": {
+                "filename_prefix": "silverzone/ComfyUI",
+                "images": [
+                    "15",
+                    0
+                ]
+            },
+            "class_type": "SaveImage"
+        },
+        "15": {
+            "inputs": {
+                "upscale_model": [
+                    "17",
+                    0
+                ],
+                "image": [
+                    "19",
+                    0
+                ]
+            },
+            "class_type": "ImageUpscaleWithModel"
+        },
+        "17": {
+            "inputs": {
+                "model_name": document.getElementById("comfy-model-upscale-upscaler").value
+            },
+            "class_type": "UpscaleModelLoader"
+        },
+        "19": {
+            "inputs": {
+                "image": file_name,
+                "choose file to upload": "image"
+            },
+            "class_type": "LoadImage"
+        }
+    }
+    getImages(workflow);
+}
+
+async function FaceFixWithComfy() {
+    var file_name = await UploadImageToComfyServer(document.getElementById("outputImage"), "ToFaceFix.png", true);
+
+    var workflow = await fetch("/workflows/facedetailer_api.json");
+    workflow = await workflow.json();
+
+    workflow = ApplyCurrentSettingsToWorkflow(workflow);
+
+    workflow["LoadImage"].inputs.image = file_name;
+
+    getImages(workflow);
+
+}
+faceFixBtn.addEventListener("click", FaceFixWithComfy);
+
+async function UploadImageToComfyServer(image, filename = "Image.png", overwrite = true) {
+
+    var imageBase64;
+    if (image.src) {
+        imageBase64 = image.src.replace("data:image/png;base64,", "");
+    } else {
+        imageBase64 = image.replace("data:image/png;base64,", "");
+    }
+    var imageBlob = base64ToBlob(imageBase64, "image/png");
+
+    const formData = new FormData();
+    formData.append("image", imageBlob, filename);
+    formData.append("overwrite", overwrite)
+    formData.append("subfolder", "silverzone")
+
+    const response = await fetch(url + "/upload/image", {
+        method: "POST",
+        body: formData,
+    });
+
+    if (!response.ok) {
+        console.error("Image upload failed:", response.status, response.statusText);
+        return;
+    }
+
+    const responseData = await response.json();
+    var filename = responseData["name"];
+    var subfolder = responseData["subfolder"];
+    console.log("Image uploaded:", responseData);
+    return subfolder + "/" + filename;
+}
+
+
+function base64ToBlob(base64, mime) {
+    mime = mime || '';
+    var sliceSize = 1024;
+    var byteChars = window.atob(base64);
+    var byteArrays = [];
+
+    for (var offset = 0, len = byteChars.length; offset < len; offset += sliceSize) {
+        var slice = byteChars.slice(offset, offset + sliceSize);
+
+        var byteNumbers = new Array(slice.length);
+        for (var i = 0, sliceLen = slice.length; i < sliceLen; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, { type: mime });
+
+}
 
 
 
+document.getElementById("comfy-latent-upscale-btn").addEventListener("click", LatentUpscaleWithComfy);
+document.getElementById("comfy-sd-upscale-btn").addEventListener("click", UltimateSDUpscaleWithComfy);
+
+//#endregion
+
+//#region Loras
+const comfyLoraContainer = document.getElementById("comfyLoraContainer");
+const comfy_currentLoraContainer = document.getElementById("comfy_currentLoraContainer");
+
+let current_comfy_loras = [];
+
+function HandleComfyLoras() {
+    let folder = "";
+    categories = ["All"];
+    comfyLoraContainer.innerHTML = "";
+    comfy_loras.forEach(lora => {
+
+        let lora_name = getNameFromPath(lora);
+        //Add Categories
+        lora = lora.replaceAll("/", "\\");
+        let folders = lora.split("\\");
+        for (let i = 0; i < folders.length - 1; i++) {
+
+            folder = (i == 0) ? folders[i] : folder + "\\" + folders[i];
+
+            if (!categories.includes(folder)) {
+                categories.push(folder);
+            }
+        }
+        addComfycategoryButtons();
+
+        // Add Lora Card
+        const loraCard = document.createElement("div");
+        loraCard.id = lora;
+        loraCard.classList.add(
+            "lora",
+            "flex",
+            "flex-col",
+            "items-center",
+            "justify-center",
+            "rounded-lg",
+            "border",
+            "border-gray-700",
+            "p-4",
+            "cursor-pointer",
+            "hover:border-blue-500",
+            "hover:text-blue-500",
+            "transition",
+            "duration-200",
+            "ease-in-out",
+            "bg-gradient-to-br", "from-gray-900", "to-gray-800" // Dark background with gradient
+        );
+        loraCard.addEventListener("click", () => handleComfyLoraClick(lora));
+
+        const label = document.createElement("label");
+        label.textContent = lora_name;
+        label.classList.add(
+            "text-center",
+            "text-xl",
+            "m-1",
+            "break-all",
+            "font-semibold",
+            "text-white", // White text on dark background
+            "drop-shadow-lg", // Add shadow for text
+            "px-2", // Add horizontal padding
+            "py-1" // Add vertical padding
+        );
+        loraCard.appendChild(label);
+
+        comfyLoraContainer.appendChild(loraCard);
+    });
+}
+function handleComfyLoraClick(lora) {
+
+
+    if (current_comfy_loras.find(x => x.lora_name == lora)) {
+        current_comfy_loras = current_comfy_loras.filter(x => x.lora_name != lora);
+    } else {
+        current_comfy_loras.push({
+            lora_name: lora,
+            strength_model: 1,
+            strength_clip: 1,
+        });
+
+    }
+
+
+    RefreshCurrentComfyuiLoras();
+}
+function RefreshCurrentComfyuiLoras() {
+
+    console.log(current_comfy_loras);
+
+    comfy_currentLoraContainer.innerHTML = "";
+
+    current_comfy_loras.forEach((current_lora, index) => {
+        const loraDiv = document.createElement("div");
+        loraDiv.classList.add('border-gray-700', 'border', 'rounded', 'flex', 'items-center', 'p-4');
+
+        const innerDiv = document.createElement('div');
+        innerDiv.classList.add('w-full');
+
+        const flexDiv = document.createElement('div');
+        flexDiv.classList.add('flex', 'justify-between', 'items-center');
+
+        const h1 = document.createElement('h1');
+        h1.classList.add('text-xl', 'font-bold', 'mb-2', 'text-white');
+        h1.textContent = getNameFromPath(current_lora.lora_name);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.classList.add('bg-red-500', 'text-white', 'hover:bg-red-700', 'font-bold', 'py-2', 'px-4', 'rounded', 'mt-4');
+        const icon = document.createElement('i');
+        icon.classList.add('fa-solid', 'fa-trash-can');
+        removeBtn.appendChild(icon);
+
+        removeBtn.addEventListener('click', function () {
+            current_comfy_loras = current_comfy_loras.filter(x => x.lora_name != current_lora.lora_name);
+            RefreshCurrentComfyuiLoras();
+        });
+
+        loraDiv.appendChild(innerDiv);
+        innerDiv.appendChild(flexDiv);
+        flexDiv.appendChild(h1);
+        flexDiv.appendChild(removeBtn);
+
+        // input.setAttribute('type', 'range');
+        // input.setAttribute('id', 'lora_strength_' + id);
+        // input.setAttribute('name', 'strength');
+        // input.classList.add('block', 'w-full', 'mt-1');
+        // input.setAttribute('min', '-2');
+        // input.setAttribute('max', '4');
+        // input.setAttribute('step', '0.05');
+        // input.setAttribute('value', '1');
+
+        const model_slider_label = document.createElement('label');
+        model_slider_label.classList.add('block', 'text-sm', 'font-medium', 'text-white');
+        model_slider_label.setAttribute('for', 'strength_model_' + index);
+        model_slider_label.textContent = "Model Strength:" + current_lora.strength_model;
+
+
+        const model_slider = document.createElement('input');
+        model_slider.type = "range";
+        model_slider.name = "strength_model";
+        model_slider.id = "strength_model_" + index;
+        model_slider.classList.add('block', 'w-full', 'mt-1');
+        model_slider.min = -2;
+        model_slider.max = 4;
+        model_slider.step = 0.05;
+        model_slider.value = current_lora.strength_model;
+
+        const clip_slider_label = document.createElement('label');
+        clip_slider_label.classList.add('block', 'text-sm', 'font-medium', 'text-white');
+        clip_slider_label.setAttribute('for', 'strength_clip_' + index);
+        clip_slider_label.textContent = "Clip Strength:" + current_lora.strength_clip;
+
+
+        const clip_slider = document.createElement('input');
+        clip_slider.type = "range";
+        clip_slider.name = "strength_clip";
+        clip_slider.id = "strength_clip_" + index;
+        clip_slider.classList.add('block', 'w-full', 'mt-1');
+        clip_slider.min = -2;
+        clip_slider.max = 4;
+        clip_slider.step = 0.05;
+        clip_slider.value = current_lora.strength_clip;
+
+
+        model_slider.addEventListener('input', function () {
+            current_comfy_loras[index].strength_model = this.value;
+            model_slider_label.textContent = "Model Strength:" + this.value;
+        });
+        clip_slider.addEventListener('input', function () {
+            current_comfy_loras[index].strength_clip = this.value;
+            clip_slider_label.textContent = "Clip Strength:" + this.value;
+        });
+
+        innerDiv.appendChild(model_slider_label);
+        innerDiv.appendChild(model_slider);
+        innerDiv.appendChild(clip_slider_label);
+        innerDiv.appendChild(clip_slider);
+
+        comfy_currentLoraContainer.appendChild(loraDiv);
+
+    });
+}
+
+
+function addComfycategoryButtons() {
+    const categoriesContainer = document.getElementById("categories");
+    categoriesContainer.innerHTML = "";
+    categories.forEach(category => {
+
+        showButton = false;
+
+        let selectedCategoryLength = subCategory;
+        let buttonCategoryLength = category.split("\\").length;
+        let isSelected = category == currentCategory;
+        let isSubCategory = selectedCategoryLength + 1 == buttonCategoryLength && category.includes(currentCategory + "\\");
+        let selectedFolderHasSubFolders = GetSubCategoryCount(currentCategory) > 0;
+        let isParentFolder = currentCategory.includes(category + "\\");
+        let isSiblingFolder = selectedCategoryLength == buttonCategoryLength && getParentFolder(category) == getParentFolder(currentCategory);
+        if (category == "All" && category != currentCategory) {
+            isParentFolder = true;
+        }
+
+
+        //always show selected category
+        if (isSelected) {
+            showButton = true;
+        }
+        //show next subcategory
+        if (isSubCategory) {
+            showButton = true;
+        }
+        //show parent folder
+        if (isParentFolder) {
+            showButton = true;
+        }
+        if (!selectedFolderHasSubFolders && isSiblingFolder) {
+            showButton = true;
+        }
+
+        //show all folders when all is selected or if selected folder doesn't have any subfolders
+        if (currentCategory == "All" || (!GetSubCategoryCount(currentCategory) && subCategory == 1)) {
+            showButton = buttonCategoryLength == 1;
+        }
+        //always add All category button
+        if (category == "All") {
+            showButton = true;
+        }
+
+        if (showButton) {
+
+            let suffix = "";
+            if (isParentFolder || isSelected) {
+                suffix = "/";
+            }
+
+            const button = document.createElement('button');
+            button.textContent = category.split("\\")[category.split("\\").length - 1] + suffix;
+            button.classList.add('px-4', 'py-2', 'text-white', 'rounded', 'mr-2', 'mb-2');
+            if (isSelected) {
+                button.classList.add('bg-white', 'text-blue-600', "border-blue-600", "border");
+            } else if (isParentFolder) {
+                button.classList.add('bg-blue-600');
+            }
+            else if (isSiblingFolder) {
+                button.classList.add('border');
+            }
+            else {
+                button.classList.add('bg-gray-500');
+            }
+            button.addEventListener('click', () => handleComfyCategoryClick(category));
+            categoriesContainer.appendChild(button);
+        }
+
+    });
+}
+function handleComfyCategoryClick(category) {
+    console.log('Category clicked:', category);
+    currentCategory = category;
+    subCategory = category.split("\\").length;
+
+    addComfycategoryButtons();
+
+
+    //get all elements in comfyLoraContainer
+    const _elements = comfyLoraContainer.querySelectorAll(".lora");
+    for (var i = 0; i < _elements.length; i++) {
+        var element = _elements[i];
+
+        if (category == "All") {
+            element.classList.remove("hidden");
+            continue;
+        }
+
+        loraCategory = element.id;
+        //lower trim replace
+        loraCategory = loraCategory.toLowerCase().trim().replaceAll("\\", "/");
+        category = category.toLowerCase().trim().replaceAll("\\", "/");
+
+        if (loraCategory.startsWith(category)) {
+            element.classList.remove("hidden");
+        } else {
+            element.classList.add("hidden");
+
+        }
+
+    }
+
+}
+document.getElementById("searchInput").addEventListener("input", function (e) {
+    if (serverType === ServerType.ComfyUI) {
+        handleComfySearch(e.target.value);
+    }
+});
+function handleComfySearch(search) {
+    const _elements = comfyLoraContainer.querySelectorAll(".lora");
+    for (var i = 0; i < _elements.length; i++) {
+        var element = _elements[i];
+        if (element.id.toLowerCase().includes(search.toLowerCase())) {
+            element.classList.remove("hidden");
+        } else {
+            element.classList.add("hidden");
+        }
+    }
+}
+
+//#endregion
+
+function getNameFromPath(path) {
+    return path.split("\\")[path.split("\\").length - 1].replaceAll(".safetensors", "").replaceAll(".pt", "").replaceAll(".ckpt", "");
+}
 
 function convertWorkflowToApiFormat(workflow) {
     const apiWorkflow = {};

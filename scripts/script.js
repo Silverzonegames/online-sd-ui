@@ -361,7 +361,7 @@ imageInput.addEventListener('change', function () {
   if (file) {
     const reader = new FileReader();
     reader.onload = function () {
-      UploadImage(reader.result);
+      UploadImage(reader.result,imageInput.files[0].name);
     };
     reader.readAsDataURL(file);
 
@@ -393,7 +393,7 @@ document.getElementById('imageContainer').addEventListener('dragover', function 
 
 //#endregion
 
-function UploadImage(source) {
+async function UploadImage(source,name="image.png") {
   uploadedImage.src = source;
   uploadedImageBase64 = source.replace("data:image/png;base64,", "");
   removeImageButton.classList.remove("hidden")
@@ -434,6 +434,14 @@ function UploadImage(source) {
   document.getElementById("imageUploadText").classList.add("hidden");
   document.getElementById("imageOptions").classList.remove("hidden");
   document.getElementById("accordion-open-body-3").classList.remove("hidden");
+
+  if(serverType == ServerType.ComfyUI){
+
+    //upload image to comfyUI
+    var file_name = await UploadImageToComfyServer(source,name,false);
+    document.getElementById("img2imgFileName").textContent = file_name;
+    comfy_imagefile = file_name;
+  }
 }
 
 //#region Canvas
@@ -933,6 +941,7 @@ removeImageButton.addEventListener('click', () => {
   removeImageButton.classList.add("hidden");
   document.getElementById("imageOptions").classList.add("hidden");
   document.getElementById("imageUploadText").classList.remove("hidden");
+  comfy_imagefile = null;
 })
 searchInput.addEventListener('input', (e) => {
 
@@ -957,7 +966,36 @@ document.getElementById("SDUpscaleBtn").addEventListener('click', () => {
   generateImage(true, false, true);
 })
 
+document.getElementById("outputImage").addEventListener('click', () => {
+  document.getElementById("fullscreenPanel").classList.remove("hidden");
+  document.getElementById("fullscreen_image").src = document.getElementById("outputImage").src;
+  panzoom.reset();
 
+});
+//on esc
+window.addEventListener('keydown', function(e) {
+  if (e.key === "Escape") { // escape key maps to keycode `27`
+    document.getElementById("fullscreenPanel").classList.add("hidden");
+  }
+  //on r
+  if(e.key === "r"){
+    panzoom.reset();
+  }
+}, true);
+
+const elem = document.getElementById("fullscreen_image")
+const panzoom = Panzoom(elem, {
+  minScale:1,
+  maxScale: 10,  
+});
+
+elem.parentElement.addEventListener('wheel', function (event) {
+  panzoom.zoomWithWheel(event)
+})
+
+document.getElementById("closeFullscreenBtn").addEventListener('click', () => {
+  document.getElementById("fullscreenPanel").classList.add("hidden");
+});
 
 
 let _url = GetBackendFromUrlString();
@@ -1033,3 +1071,9 @@ window.addEventListener('keydown', function(e) {
     }
   }
 });
+
+$(document.getElementById("styles")).selectivity({
+  items: ["Masterpiece","Painting","Negative"],
+  multiple: true,
+  placeholder: "Select styles",
+})

@@ -42,7 +42,7 @@ function HandleLoras() {
         path = path.replace('.safetensors', '.png');
         path = path.replace('.ckpt', '.png');
         path = path.replace('.pt', '.png');
-        path = path.replace("\\", "/");
+        path = path.replaceAll("\\", "/");
 
 
         let folder = item.path;

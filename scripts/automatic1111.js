@@ -188,7 +188,7 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
 
     if (data.current_image != null) {
       outputImage.src = "data:image/png;base64, " + data.current_image;
-      
+
     }
 
     if (progress >= 1) {
@@ -227,7 +227,7 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
       isGenerating = false;
       progress_bar.classList.add("hidden");
       clearInterval(progressInterval);
-      
+
 
 
       if (isUpscale) {
@@ -274,6 +274,24 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
 
         if (document.getElementById("saveToHistory").checked && CanSave) {
 
+
+          var image_info = {
+            "Prompt": payload["prompt"],
+            "Negative prompt": payload["negative_prompt"],
+
+            "Steps": payload["steps"],
+            "CFG": payload["cfg_scale"],
+            "Seed": payload["seed"],
+            "Size": payload["width"] + "x" + payload["height"],
+
+            "Sampler": payload["sampler_name"],
+
+            "Model": AOptions["sd_model_checkpoint"],
+
+            "Server": "Automatic1111",
+            "Workflow": "",
+          }
+
           const _payload = {
             "image": imageSrc.replace("data:image/png;base64,", ""),
           }
@@ -291,7 +309,8 @@ function generateImage(isUpscale = false, isUltimate = false, IsSDUpscale = fals
             }
             return response.json();
           }).then(data => {
-            addToImageHistory(imageSrc, data["info"]);
+            image_info["Workflow"] = data["info"];
+            addToImageHistory(imageSrc, JSON.stringify(image_info, null, 2).toString());
           }).catch(error => {
             console.error('Error:', error);
           });
@@ -455,7 +474,7 @@ function getSamplers() {
 
 function getOptions() {
   const selector = document.getElementById("checkpoint-selector");
-  fetch(url+"/sdapi/v1/options").then(response => response.json()).then(_data => {
+  fetch(url + "/sdapi/v1/options").then(response => response.json()).then(_data => {
     AOptions = _data;
     selector.value = AOptions["sd_model_checkpoint"];
   }).catch(error => {
@@ -463,14 +482,14 @@ function getOptions() {
   });
 }
 
-function getCheckpoints(){
+function getCheckpoints() {
   getOptions();
   const selector = document.getElementById("checkpoint-selector");
 
   fetch(url + '/sdapi/v1/sd-models').then(response => response.json()).then(data => {
     all_checkpoints = data;
 
-    fetch(url+"/sdapi/v1/options").then(response => response.json()).then(_data => {
+    fetch(url + "/sdapi/v1/options").then(response => response.json()).then(_data => {
       AOptions = _data;
       selector.value = AOptions["sd_model_checkpoint"];
     }).catch(error => {
@@ -485,9 +504,9 @@ function getCheckpoints(){
       selector.appendChild(option);
     });
 
-    if(!isLocalhost(url)){
+    if (!isLocalhost(url)) {
       selector.disabled = true;
-    }else{
+    } else {
       selector.disabled = false;
     }
 
@@ -498,8 +517,8 @@ function getCheckpoints(){
 }
 
 
-function getAllInstalled(){
-  fetch(url+"civitai/all-installed").then(response => response.json()).then(data => {
+function getAllInstalled() {
+  fetch(url + "civitai/all-installed").then(response => response.json()).then(data => {
     all_models = data;
   }).catch(error => {
     all_models = [];
@@ -509,13 +528,13 @@ function getAllInstalled(){
 
 document.getElementById("checkpoint-selector").addEventListener("change", (e) => {
 
-  if(serverType == ServerType.Automatic1111){
-    if (confirm("Are you sure you want to Change Model?")){
+  if (serverType == ServerType.Automatic1111) {
+    if (confirm("Are you sure you want to Change Model?")) {
       let _options = {}
       _options["sd_model_checkpoint"] = e.target.value;
-  
+
       //post new options to server
-      fetch(url+"/sdapi/v1/options", {
+      fetch(url + "/sdapi/v1/options", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -529,13 +548,13 @@ document.getElementById("checkpoint-selector").addEventListener("change", (e) =>
         return response.json();
       }).then(data => {
         getCheckpoints();
-        showMessage("Model Loaded!",300,"success");
+        showMessage("Model Loaded!", 300, "success");
       }).catch(error => {
         console.error('Error:', error);
       });
     }
   }
-  if (serverType == ServerType.ComfyUI){
+  if (serverType == ServerType.ComfyUI) {
     variables["comfy_model"] = e.target.value;
   }
 
@@ -575,7 +594,7 @@ document.getElementById("esrgan-upscale-btn").addEventListener("click", () => {
   }).then(data => {
     console.log(data);
     document.getElementById("outputImage").src = "data:image/png;base64, " + data.image;
-    generatedImages = ["data:image/png;base64, "+ data.image];
+    generatedImages = ["data:image/png;base64, " + data.image];
     current_image = 0;
     updateFullscreenImage("data:image/png;base64, " + data.image);
 

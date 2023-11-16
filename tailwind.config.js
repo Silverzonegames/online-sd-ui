@@ -2,7 +2,9 @@
 module.exports = {
   darkMode: 'class',
   content: [
-    "./src/**/*.{html,js}",
+    "./*.{html,js}",
+    "./**/*.{html,js}",
+    "./dynamic/*.{html,js}",
     'node_modules/preline/dist/*.js',
   ],
   theme: {
